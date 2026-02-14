@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { Plus, Search, LayoutGrid, List, Download, Upload } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { LinkCard } from "@/components/LinkCard";
@@ -145,6 +146,7 @@ const Index = () => {
               <h1 className="text-2xl font-bold tracking-tight">{filterLabel}</h1>
             </div>
             <div className="flex items-center gap-2">
+              <ThemeToggle />
               <div className="relative flex-1 sm:w-64">
                 <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
