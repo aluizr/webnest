@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Plus, Search, LayoutGrid, List } from "lucide-react";
+import { Plus, Search, LayoutGrid, List, Download, Upload } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { LinkCard } from "@/components/LinkCard";
@@ -7,6 +7,7 @@ import { LinkForm } from "@/components/LinkForm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLinks } from "@/hooks/use-links";
+import { toast } from "sonner";
 import type { LinkItem } from "@/types/link";
 
 type FilterType = { type: "all" | "favorites" | "category" | "tag"; value?: string };
@@ -71,6 +72,51 @@ const Index = () => {
     setFormOpen(true);
   };
 
+  const handleExport = () => {
+    const data = JSON.stringify(links, null, 2);
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `links-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Backup exportado com sucesso!");
+  };
+
+  const handleImport = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const imported = JSON.parse(text) as LinkItem[];
+        if (!Array.isArray(imported)) throw new Error("Formato inválido");
+        let count = 0;
+        for (const item of imported) {
+          if (!item.url) continue;
+          await addLink({
+            url: item.url,
+            title: item.title || item.url,
+            description: item.description || "",
+            category: item.category || "",
+            tags: item.tags || [],
+            isFavorite: item.isFavorite || false,
+            favicon: item.favicon || "",
+          });
+          count++;
+        }
+        toast.success(`${count} link(s) importado(s) com sucesso!`);
+      } catch {
+        toast.error("Erro ao importar: arquivo JSON inválido.");
+      }
+    };
+    input.click();
+  };
+
   const filterLabel =
     filter.type === "all"
       ? "Todos os Links"
@@ -114,6 +160,12 @@ const Index = () => {
                 onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
               >
                 {viewMode === "grid" ? <List className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
+              </Button>
+              <Button variant="outline" size="icon" onClick={handleExport} title="Exportar links">
+                <Download className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon" onClick={handleImport} title="Importar links">
+                <Upload className="h-4 w-4" />
               </Button>
               <Button onClick={() => { setEditingLink(null); setFormOpen(true); }}>
                 <Plus className="mr-1.5 h-4 w-4" />
