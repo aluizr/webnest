@@ -1,14 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { linkSchema, categorySchema } from "@/lib/validation";
+import { toast } from "sonner";
 import type { LinkItem, Category } from "@/types/link";
 
-export function useLinks() {
+export function useLinks(userId: string | undefined) {
   const [links, setLinks] = useState<LinkItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch links and categories on mount
   useEffect(() => {
+    if (!userId) { setLoading(false); return; }
     const fetchData = async () => {
       setLoading(true);
       const [linksRes, catsRes] = await Promise.all([
@@ -36,19 +38,27 @@ export function useLinks() {
       setLoading(false);
     };
     fetchData();
-  }, []);
+  }, [userId]);
 
   const addLink = useCallback(async (link: Omit<LinkItem, "id" | "createdAt">) => {
+    if (!userId) return;
+    const parsed = linkSchema.safeParse(link);
+    if (!parsed.success) {
+      toast.error(parsed.error.errors[0]?.message || "Dados inválidos");
+      return;
+    }
+    const v = parsed.data;
     const { data, error } = await supabase
       .from("links")
       .insert({
-        url: link.url,
-        title: link.title,
-        description: link.description,
-        category: link.category,
-        tags: link.tags,
-        is_favorite: link.isFavorite,
-        favicon: link.favicon,
+        url: v.url,
+        title: v.title,
+        description: v.description,
+        category: v.category,
+        tags: v.tags,
+        is_favorite: v.isFavorite,
+        favicon: v.favicon || "",
+        user_id: userId,
       })
       .select()
       .single();
@@ -66,19 +76,36 @@ export function useLinks() {
       };
       setLinks((prev) => [newLink, ...prev]);
     }
-  }, []);
+  }, [userId]);
 
   const updateLink = useCallback(async (id: string, data: Partial<LinkItem>) => {
-    const dbData: any = {};
-    if (data.url !== undefined) dbData.url = data.url;
-    if (data.title !== undefined) dbData.title = data.title;
-    if (data.description !== undefined) dbData.description = data.description;
-    if (data.category !== undefined) dbData.category = data.category;
-    if (data.tags !== undefined) dbData.tags = data.tags;
-    if (data.isFavorite !== undefined) dbData.is_favorite = data.isFavorite;
-    if (data.favicon !== undefined) dbData.favicon = data.favicon;
+    // Validate fields that are being updated
+    const partial: any = {};
+    if (data.url !== undefined) {
+      const r = linkSchema.shape.url.safeParse(data.url);
+      if (!r.success) { toast.error(r.error.errors[0]?.message); return; }
+      partial.url = r.data;
+    }
+    if (data.title !== undefined) {
+      const r = linkSchema.shape.title.safeParse(data.title);
+      if (!r.success) { toast.error(r.error.errors[0]?.message); return; }
+      partial.title = r.data;
+    }
+    if (data.description !== undefined) {
+      const r = linkSchema.shape.description.safeParse(data.description);
+      if (!r.success) { toast.error(r.error.errors[0]?.message); return; }
+      partial.description = r.data;
+    }
+    if (data.category !== undefined) partial.category = data.category;
+    if (data.tags !== undefined) {
+      const r = linkSchema.shape.tags.safeParse(data.tags);
+      if (!r.success) { toast.error(r.error.errors[0]?.message); return; }
+      partial.tags = r.data;
+    }
+    if (data.isFavorite !== undefined) partial.is_favorite = data.isFavorite;
+    if (data.favicon !== undefined) partial.favicon = data.favicon;
 
-    const { error } = await supabase.from("links").update(dbData).eq("id", id);
+    const { error } = await supabase.from("links").update(partial).eq("id", id);
     if (!error) {
       setLinks((prev) => prev.map((l) => (l.id === id ? { ...l, ...data } : l)));
     }
@@ -104,15 +131,21 @@ export function useLinks() {
   }, [links]);
 
   const addCategory = useCallback(async (name: string) => {
+    if (!userId) return;
+    const parsed = categorySchema.safeParse({ name });
+    if (!parsed.success) {
+      toast.error(parsed.error.errors[0]?.message || "Nome inválido");
+      return;
+    }
     const { data, error } = await supabase
       .from("categories")
-      .insert({ name })
+      .insert({ name: parsed.data.name, user_id: userId })
       .select()
       .single();
     if (data && !error) {
       setCategories((prev) => [...prev, { id: data.id, name: data.name }]);
     }
-  }, []);
+  }, [userId]);
 
   const deleteCategory = useCallback(async (id: string) => {
     const { error } = await supabase.from("categories").delete().eq("id", id);
@@ -122,10 +155,15 @@ export function useLinks() {
   }, []);
 
   const renameCategory = useCallback(async (id: string, name: string) => {
-    const { error } = await supabase.from("categories").update({ name }).eq("id", id);
+    const parsed = categorySchema.safeParse({ name });
+    if (!parsed.success) {
+      toast.error(parsed.error.errors[0]?.message || "Nome inválido");
+      return;
+    }
+    const { error } = await supabase.from("categories").update({ name: parsed.data.name }).eq("id", id);
     if (!error) {
       setCategories((prev) =>
-        prev.map((c) => (c.id === id ? { ...c, name } : c))
+        prev.map((c) => (c.id === id ? { ...c, name: parsed.data.name } : c))
       );
     }
   }, []);

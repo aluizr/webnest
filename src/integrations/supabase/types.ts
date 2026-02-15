@@ -18,14 +18,17 @@ export type Database = {
         Row: {
           id: string
           name: string
+          user_id: string | null
         }
         Insert: {
           id?: string
           name: string
+          user_id?: string | null
         }
         Update: {
           id?: string
           name?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -40,6 +43,7 @@ export type Database = {
           tags: string[]
           title: string
           url: string
+          user_id: string | null
         }
         Insert: {
           category?: string
@@ -51,6 +55,7 @@ export type Database = {
           tags?: string[]
           title?: string
           url: string
+          user_id?: string | null
         }
         Update: {
           category?: string
@@ -62,6 +67,7 @@ export type Database = {
           tags?: string[]
           title?: string
           url?: string
+          user_id?: string | null
         }
         Relationships: []
       }
