@@ -42,8 +42,8 @@ export const supabase = createClient<Database>(
     },
     // ✅ Segurança: Global fetch wrapper
     global: {
-      fetch: (...args) => {
-        return fetch(...args);
+      fetch: (input: RequestInfo | URL, init?: RequestInit) => {
+        return fetch(input, init);
       },
     },
   }
