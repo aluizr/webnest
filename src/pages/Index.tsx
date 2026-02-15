@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Plus, Search, LayoutGrid, List, Download, Upload } from "lucide-react";
+import { Plus, Search, LayoutGrid, List, Download, Upload, LogOut } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
@@ -10,10 +10,16 @@ import { Input } from "@/components/ui/input";
 import { useLinks } from "@/hooks/use-links";
 import { toast } from "sonner";
 import type { LinkItem } from "@/types/link";
+import type { User } from "@supabase/supabase-js";
 
 type FilterType = { type: "all" | "favorites" | "category" | "tag"; value?: string };
 
-const Index = () => {
+interface IndexProps {
+  user: User;
+  onSignOut: () => void;
+}
+
+const Index = ({ user, onSignOut }: IndexProps) => {
   const {
     links,
     categories,
@@ -25,7 +31,7 @@ const Index = () => {
     addCategory,
     deleteCategory,
     renameCategory,
-  } = useLinks();
+  } = useLinks(user.id);
 
   const [filter, setFilter] = useState<FilterType>({ type: "all" });
   const [search, setSearch] = useState("");
@@ -172,6 +178,9 @@ const Index = () => {
               <Button onClick={() => { setEditingLink(null); setFormOpen(true); }}>
                 <Plus className="mr-1.5 h-4 w-4" />
                 Novo Link
+              </Button>
+              <Button variant="ghost" size="icon" onClick={onSignOut} title="Sair">
+                <LogOut className="h-4 w-4" />
               </Button>
             </div>
           </header>
