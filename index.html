@@ -10,8 +10,7 @@
       content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://slzspaijayxtyjmrogcm.supabase.co; base-uri 'self'; form-action 'self'; upgrade-insecure-requests" 
     />
     
-    <!-- ✅ Segurança adicional -->
-    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <!-- ✅ Segurança adicional (via HTML, não HTTP headers) -->
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="format-detection" content="telephone=no" />
     
