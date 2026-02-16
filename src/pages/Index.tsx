@@ -7,6 +7,8 @@ import { LinkCard } from "@/components/LinkCard";
 import { LinkForm } from "@/components/LinkForm";
 import { SearchBar } from "@/components/SearchBar";
 import { StatsDashboard } from "@/components/StatsDashboard";
+import { ExportFormatDialog } from "@/components/ExportFormatDialog";
+import { ImportFormatDialog } from "@/components/ImportFormatDialog";
 import { Button } from "@/components/ui/button";
 import { useLinks } from "@/hooks/use-links";
 import { toast } from "sonner";
@@ -41,6 +43,8 @@ const Index = ({ user, onSignOut }: IndexProps) => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [draggedLink, setDraggedLink] = useState<LinkItem | null>(null);
   const [statsOpen, setStatsOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   const filteredLinks = getFilteredLinks();
 
@@ -103,120 +107,24 @@ const Index = ({ user, onSignOut }: IndexProps) => {
     toast.success("Links reordenados!");
   };
 
-  const handleExport = () => {
-    const data = JSON.stringify(links, null, 2);
-    const blob = new Blob([data], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `links-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success("Backup exportado com sucesso!");
-  };
+  const handleImportLinks = async (
+    importedLinks: Omit<LinkItem, "id" | "createdAt" | "position">[]
+  ) => {
+    let successCount = 0;
+    let errorCount = 0;
 
-  const handleImport = () => {
-    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-    const MAX_LINKS_PER_IMPORT = 1000;
-    
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".json";
-    input.onchange = async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
-      
+    for (const linkData of importedLinks) {
       try {
-        // ✅ Validação 1: Tamanho do arquivo
-        if (file.size > MAX_FILE_SIZE) {
-          toast.error(`Arquivo muito grande (máx ${MAX_FILE_SIZE / 1024 / 1024}MB)`);
-          return;
-        }
-        
-        // ✅ Validação 2: Tipo MIME
-        if (file.type && file.type !== 'application/json') {
-          toast.error("Apenas arquivos JSON são permitidos");
-          return;
-        }
-        
-        // ✅ Validação 3: Leitura segura
-        let fileContent: string;
-        try {
-          fileContent = await file.text();
-        } catch {
-          toast.error("Erro ao ler o arquivo");
-          return;
-        }
-        
-        // ✅ Validação 4: Parsing JSON
-        let imported: any;
-        try {
-          imported = JSON.parse(fileContent);
-        } catch {
-          toast.error("Formato JSON inválido");
-          return;
-        }
-        
-        // ✅ Validação 5: Verificar se é array
-        if (!Array.isArray(imported)) {
-          toast.error("Arquivo deve conter um array de links");
-          return;
-        }
-        
-        // ✅ Validação 6: Limitar quantidade
-        if (imported.length > MAX_LINKS_PER_IMPORT) {
-          toast.error(`Máximo de ${MAX_LINKS_PER_IMPORT} links por importação`);
-          return;
-        }
-        
-        // ✅ Validação 7: Array vazio
-        if (imported.length === 0) {
-          toast.error("Nenhum link encontrado no arquivo");
-          return;
-        }
-        
-        // ✅ Processamento com validação individual
-        let successCount = 0;
-        let errorCount = 0;
-        
-        for (let index = 0; index < imported.length; index++) {
-          const item = imported[index];
-          
-          if (!item.url) {
-            errorCount++;
-            continue;
-          }
-          
-          try {
-            await addLink({
-              url: item.url,
-              title: item.title || item.url,
-              description: item.description || "",
-              category: item.category || "",
-              tags: Array.isArray(item.tags) ? item.tags : [],
-              isFavorite: Boolean(item.isFavorite),
-              favicon: item.favicon || "",
-            });
-            successCount++;
-          } catch {
-            errorCount++;
-          }
-        }
-        
-        // ✅ Feedback detalhado
-        if (successCount > 0) {
-          toast.success(`✅ ${successCount} link(s) importado(s) com sucesso!`);
-        }
-        
-        if (errorCount > 0) {
-          toast.error(`⚠️ ${errorCount} link(s) com erro`);
-        }
-        
+        await addLink(linkData);
+        successCount++;
       } catch {
-        toast.error("Erro inesperado ao importar arquivo");
+        errorCount++;
       }
-    };
-    input.click();
+    }
+
+    if (errorCount > 0) {
+      toast.warning(`⚠️ ${errorCount} link(s) falharam`);
+    }
   };
 
   const filterLabel = searchFilters.query
@@ -259,10 +167,10 @@ const Index = ({ user, onSignOut }: IndexProps) => {
               <Button variant="outline" size="icon" onClick={() => setStatsOpen(true)} title="Ver estatísticas">
                 <BarChart3 className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="icon" onClick={handleExport} title="Exportar links">
+              <Button variant="outline" size="icon" onClick={() => setExportOpen(true)} title="Exportar links">
                 <Download className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="icon" onClick={handleImport} title="Importar links">
+              <Button variant="outline" size="icon" onClick={() => setImportOpen(true)} title="Importar links">
                 <Upload className="h-4 w-4" />
               </Button>
               <Button onClick={() => { setEditingLink(null); setFormOpen(true); }}>
@@ -338,6 +246,10 @@ const Index = ({ user, onSignOut }: IndexProps) => {
       />
 
       <StatsDashboard isOpen={statsOpen} onClose={() => setStatsOpen(false)} />
+
+      <ExportFormatDialog isOpen={exportOpen} onClose={() => setExportOpen(false)} links={links} />
+
+      <ImportFormatDialog isOpen={importOpen} onClose={() => setImportOpen(false)} onImport={handleImportLinks} />
     </SidebarProvider>
   );
 };
