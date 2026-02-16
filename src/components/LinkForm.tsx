@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -111,6 +112,9 @@ export function LinkForm({ open, onOpenChange, categories, editingLink, onSubmit
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{editingLink ? "Editar Link" : "Novo Link"}</DialogTitle>
+          <DialogDescription>
+            {editingLink ? "Atualize os dados do seu link" : "Adicione um novo link à sua coleção"}
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
