@@ -29,7 +29,7 @@ export function useMetadata() {
   });
 
   const fetchMetadata = useCallback(async (url: string): Promise<LinkMetadata> => {
-    if (!url) {
+    if (!url || !url.trim()) {
       setMetadata({
         title: null,
         description: null,
@@ -59,14 +59,28 @@ export function useMetadata() {
     setMetadata((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      // Normalize URL
+      // Normalize URL - ensure it has a protocol
       let normalizedUrl = url.trim();
-      if (!normalizedUrl.startsWith("http://") && !normalizedUrl.startsWith("https://")) {
-        normalizedUrl = "https://" + normalizedUrl;
+      
+      // Check if URL is valid
+      try {
+        new URL(normalizedUrl);
+      } catch {
+        // If invalid, try adding https://
+        if (!normalizedUrl.startsWith("http://") && !normalizedUrl.startsWith("https://")) {
+          normalizedUrl = "https://" + normalizedUrl;
+        }
       }
 
+      // Validate one more time
+      new URL(normalizedUrl);
+
       // Try Microlink API (CORS-friendly, no auth required)
-      const response = await fetch(`https://api.microlink.io?url=${encodeURIComponent(normalizedUrl)}`, {
+      // Use proper URL encoding for the url parameter
+      const microlinkUrl = new URL("https://api.microlink.io");
+      microlinkUrl.searchParams.set("url", normalizedUrl);
+
+      const response = await fetch(microlinkUrl.toString(), {
         method: "GET",
         headers: {
           Accept: "application/json",
@@ -80,7 +94,7 @@ export function useMetadata() {
       const data = await response.json();
 
       if (!data.data) {
-        throw new Error("Invalid response");
+        throw new Error("No metadata found");
       }
 
       const result: LinkMetadata = {
