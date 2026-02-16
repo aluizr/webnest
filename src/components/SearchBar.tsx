@@ -96,7 +96,7 @@ export function SearchBar({
     filters.category ||
     filters.tags.length > 0 ||
     filters.period !== "all" ||
-    filters.sort !== "newest" ||
+    filters.sort !== "manual" ||
     filters.favoritesOnly;
 
   const parentCategories = categories.filter((c) => !c.parentId);
@@ -181,6 +181,7 @@ export function SearchBar({
                 <SelectValue placeholder="Ordenar" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="manual">Manual</SelectItem>
                 <SelectItem value="newest">Mais recentes</SelectItem>
                 <SelectItem value="oldest">Mais antigos</SelectItem>
                 <SelectItem value="alphabetical">A-Z</SelectItem>

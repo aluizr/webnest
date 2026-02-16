@@ -64,6 +64,10 @@ const Index = ({ user, onSignOut }: IndexProps) => {
 
   // ✅ Handlers para Drag & Drop
   const handleDragStart = (e: React.DragEvent, link: LinkItem) => {
+    if (searchFilters.sort !== "manual") {
+      toast.info("Mude a ordenação para Manual para reordenar");
+      return;
+    }
     setDraggedLink(link);
     e.dataTransfer.effectAllowed = 'move';
   };
@@ -76,6 +80,11 @@ const Index = ({ user, onSignOut }: IndexProps) => {
   const handleDrop = (e: React.DragEvent, targetLink: LinkItem) => {
     e.preventDefault();
     
+    if (searchFilters.sort !== "manual") {
+      toast.info("Mude a ordenação para Manual para reordenar");
+      return;
+    }
+
     if (!draggedLink || draggedLink.id === targetLink.id) {
       setDraggedLink(null);
       return;
@@ -95,11 +104,21 @@ const Index = ({ user, onSignOut }: IndexProps) => {
     const [movedLink] = newFilteredLinks.splice(draggedIndex, 1);
     newFilteredLinks.splice(targetIndex, 0, movedLink);
 
-    // Reordenar TODOS os links (não apenas os filtrados)
-    const reorderedAllLinks = links.map(link => {
-      const newPosition = newFilteredLinks.findIndex(fl => fl.id === link.id);
-      return newPosition !== -1 ? { ...link, position: newPosition } : link;
+    // Reordenar mantendo a ordem global e evitando posições duplicadas
+    const allOrdered = [...links].sort((a, b) => a.position - b.position);
+    const filteredIdSet = new Set(newFilteredLinks.map((l) => l.id));
+    let nextFilteredIndex = 0;
+
+    const merged = allOrdered.map((link) => {
+      if (!filteredIdSet.has(link.id)) return link;
+      const next = newFilteredLinks[nextFilteredIndex++];
+      return next ? { ...next } : link;
     });
+
+    const reorderedAllLinks = merged.map((link, index) => ({
+      ...link,
+      position: index,
+    }));
 
     // Chamar função para salvar no banco
     reorderLinks(reorderedAllLinks);
@@ -222,9 +241,9 @@ const Index = ({ user, onSignOut }: IndexProps) => {
                   onToggleFavorite={toggleFavorite}
                   onEdit={handleEdit}
                   onDelete={deleteLink}
-                  onDragStart={handleDragStart} // ✅ Adicionar drag handlers
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop}
+                  onDragStart={searchFilters.sort === "manual" ? handleDragStart : undefined}
+                  onDragOver={searchFilters.sort === "manual" ? handleDragOver : undefined}
+                  onDrop={searchFilters.sort === "manual" ? handleDrop : undefined}
                   isDragging={draggedLink?.id === link.id}
                 />
               ))}

@@ -64,6 +64,7 @@ export function filterAndSortLinks(
 
   // 6. Ordenar
   const sortFunctions: Record<string, (a: LinkItem, b: LinkItem) => number> = {
+    manual: (a, b) => (a.position ?? 0) - (b.position ?? 0),
     newest: (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     oldest: (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
     alphabetical: (a, b) => (a.title || a.url).localeCompare(b.title || b.url),

@@ -18,7 +18,7 @@ export interface Category {
   parentId?: string | null;
 }
 
-export type SortOption = "newest" | "oldest" | "alphabetical" | "favorites";
+export type SortOption = "manual" | "newest" | "oldest" | "alphabetical" | "favorites";
 export type DatePeriod = "all" | "week" | "month" | "3months" | "year";
 
 export interface SearchFilters {

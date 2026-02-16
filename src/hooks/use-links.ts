@@ -14,7 +14,7 @@ export function useLinks(userId: string | undefined) {
     category: null,
     tags: [],
     period: "all",
-    sort: "newest",
+    sort: "manual",
     favoritesOnly: false,
   });
 

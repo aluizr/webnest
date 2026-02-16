@@ -16,6 +16,7 @@ interface LinkCardProps {
 }
 
 export function LinkCard({ link, onToggleFavorite, onEdit, onDelete, onDragStart, onDragOver, onDrop, isDragging }: LinkCardProps) {
+  const dragEnabled = Boolean(onDragStart);
   // ✅ Usar serviço mais privado para favicons (icon.horse)
   const getFaviconUrl = () => {
     if (link.favicon && link.favicon.startsWith('http')) {
@@ -35,7 +36,7 @@ export function LinkCard({ link, onToggleFavorite, onEdit, onDelete, onDragStart
 
   return (
     <Card 
-      draggable 
+      draggable={dragEnabled}
       onDragStart={(e) => onDragStart?.(e, link)}
       onDragOver={(e) => {
         e.preventDefault();
@@ -47,7 +48,7 @@ export function LinkCard({ link, onToggleFavorite, onEdit, onDelete, onDragStart
       }}
       className={`group relative overflow-hidden transition-all ${
         isDragging ? 'opacity-50 scale-95' : 'hover:shadow-md'
-      } cursor-grab active:cursor-grabbing`}
+      } ${dragEnabled ? 'cursor-grab active:cursor-grabbing' : ''}`}
     >
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
