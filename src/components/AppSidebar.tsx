@@ -168,6 +168,8 @@ export function AppSidebar({
                     />
                     <Input
                       autoFocus
+                      id="new-category"
+                      name="newCategory"
                       className="h-7 text-xs flex-1"
                       value={newCat}
                       onChange={(e) => setNewCat(e.target.value)}
@@ -208,6 +210,8 @@ export function AppSidebar({
                     <div className="flex items-center gap-1 px-2">
                       <Input
                         autoFocus
+                        id={`edit-category-${cat.id}`}
+                        name="editCategory"
                         className="h-7 text-xs"
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}

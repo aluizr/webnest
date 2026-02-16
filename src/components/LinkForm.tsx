@@ -170,6 +170,8 @@ export function LinkForm({ open, onOpenChange, categories, editingLink, onSubmit
             <Label>Tags</Label>
             <div className="flex gap-2">
               <Input
+                id="link-tags"
+                name="tags"
                 placeholder="Adicionar tag..."
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}

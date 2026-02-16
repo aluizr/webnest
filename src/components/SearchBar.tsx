@@ -105,6 +105,8 @@ export function SearchBar({
       <div className="flex items-center gap-2">
         <Search className="h-4 w-4 text-muted-foreground" />
         <Input
+          id="search-query"
+          name="searchQuery"
           placeholder="Buscar por título, URL, descrição, tags..."
           value={filters.query}
           onChange={(e) => handleQueryChange(e.target.value)}
