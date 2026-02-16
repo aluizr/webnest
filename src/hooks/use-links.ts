@@ -34,7 +34,7 @@ export function useLinks(userId: string | undefined) {
         );
       }
       if (catsRes.data) {
-        setCategories(catsRes.data.map((r: any) => ({ id: r.id, name: r.name })));
+        setCategories(catsRes.data.map((r: any) => ({ id: r.id, name: r.name, icon: r.icon || "Folder" })));
       }
       setLoading(false);
     };
@@ -135,20 +135,20 @@ export function useLinks(userId: string | undefined) {
     }
   }, [links]);
 
-  const addCategory = useCallback(async (name: string) => {
+  const addCategory = useCallback(async (name: string, icon: string = "Folder") => {
     if (!userId) return;
-    const parsed = categorySchema.safeParse({ name });
+    const parsed = categorySchema.safeParse({ name, icon });
     if (!parsed.success) {
-      toast.error(parsed.error.errors[0]?.message || "Nome inválido");
+      toast.error(parsed.error.errors[0]?.message || "Dados inválidos");
       return;
     }
     const { data, error } = await supabase
       .from("categories")
-      .insert({ name: parsed.data.name, user_id: userId })
+      .insert({ name: parsed.data.name, user_id: userId, icon: parsed.data.icon })
       .select()
       .single();
     if (data && !error) {
-      setCategories((prev) => [...prev, { id: data.id, name: data.name }]);
+      setCategories((prev) => [...prev, { id: data.id, name: data.name, icon: data.icon }]);
     }
   }, [userId]);
 

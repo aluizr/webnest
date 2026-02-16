@@ -14,4 +14,5 @@ export interface LinkItem {
 export interface Category {
   id: string;
   name: string;
+  icon: string; // ✅ Lucide icon name (e.g., "Folder", "BookOpen", etc.)
 }

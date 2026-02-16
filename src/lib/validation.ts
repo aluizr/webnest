@@ -83,6 +83,14 @@ export const linkSchema = z.object({
     ),
 });
 
+// ✅ Lista de ícones Lucide suportados para categorias
+const ALLOWED_ICONS = [
+  'Folder', 'BookOpen', 'Code', 'Palette', 'Music', 'Video', 'Image',
+  'News', 'Briefcase', 'Heart', 'Star', 'Shield', 'Settings', 'Layout',
+  'Lightbulb', 'Zap', 'Trending', 'Shopping', 'Archive', 'Tag',
+  'Globe', 'Database', 'Cloud', 'Cpu', 'Award', 'Radio', 'Gamepad2'
+];
+
 export const categorySchema = z.object({
   name: z
     .string()
@@ -92,6 +100,14 @@ export const categorySchema = z.object({
     .refine(
       name => !/[<>'"]/i.test(name),
       "Caracteres especiais não permitidos no nome"
+    ),
+  icon: z
+    .string()
+    .max(50, "Nome do ícone muito longo")
+    .default("Folder")
+    .refine(
+      icon => ALLOWED_ICONS.includes(icon),
+      `Ícone inválido. Permitidos: ${ALLOWED_ICONS.join(", ")}`
     ),
 });
 

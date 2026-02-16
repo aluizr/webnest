@@ -9,6 +9,32 @@ import {
   Pencil,
   Check,
   X,
+  Folder,
+  BookOpen,
+  Code,
+  Palette,
+  Music,
+  Video,
+  Image,
+  News,
+  Briefcase,
+  Heart,
+  Shield,
+  Settings,
+  Layout,
+  Lightbulb,
+  Zap,
+  TrendingUp,
+  ShoppingCart,
+  Archive,
+  Globe,
+  Database,
+  Cloud,
+  Cpu,
+  Award,
+  Radio,
+  Gamepad2,
+  LucideIcon,
 } from "lucide-react";
 import {
   Sidebar,
@@ -22,14 +48,49 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { IconPicker } from "@/components/IconPicker";
 import type { Category } from "@/types/link";
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  Folder,
+  BookOpen,
+  Code,
+  Palette,
+  Music,
+  Video,
+  Image,
+  News,
+  Briefcase,
+  Heart,
+  Star,
+  Shield,
+  Settings,
+  Layout,
+  Lightbulb,
+  Zap,
+  Trending: TrendingUp,
+  Shopping: ShoppingCart,
+  Archive,
+  Tag,
+  Globe,
+  Database,
+  Cloud,
+  Cpu,
+  Award,
+  Radio,
+  Gamepad2,
+};
+
+const getCategoryIcon = (iconName: string): LucideIcon => {
+  return ICON_MAP[iconName] || ICON_MAP.Folder;
+};
 
 interface AppSidebarProps {
   categories: Category[];
   allTags: string[];
   activeFilter: { type: "all" | "favorites" | "category" | "tag"; value?: string };
   onFilterChange: (filter: { type: "all" | "favorites" | "category" | "tag"; value?: string }) => void;
-  onAddCategory: (name: string) => void;
+  onAddCategory: (name: string, icon: string) => void;
   onDeleteCategory: (id: string) => void;
   onRenameCategory: (id: string, name: string) => void;
 }
@@ -44,6 +105,7 @@ export function AppSidebar({
   onRenameCategory,
 }: AppSidebarProps) {
   const [newCat, setNewCat] = useState("");
+  const [newCatIcon, setNewCatIcon] = useState("Folder");
   const [addingCat, setAddingCat] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
@@ -100,15 +162,20 @@ export function AppSidebar({
               {addingCat && (
                 <SidebarMenuItem>
                   <div className="flex items-center gap-1 px-2">
+                    <IconPicker
+                      value={newCatIcon}
+                      onSelect={setNewCatIcon}
+                    />
                     <Input
                       autoFocus
-                      className="h-7 text-xs"
+                      className="h-7 text-xs flex-1"
                       value={newCat}
                       onChange={(e) => setNewCat(e.target.value)}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && newCat.trim()) {
-                          onAddCategory(newCat.trim());
+                          onAddCategory(newCat.trim(), newCatIcon);
                           setNewCat("");
+                          setNewCatIcon("Folder");
                           setAddingCat(false);
                         }
                         if (e.key === "Escape") setAddingCat(false);
@@ -121,8 +188,9 @@ export function AppSidebar({
                       className="h-6 w-6"
                       onClick={() => {
                         if (newCat.trim()) {
-                          onAddCategory(newCat.trim());
+                          onAddCategory(newCat.trim(), newCatIcon);
                           setNewCat("");
+                          setNewCatIcon("Folder");
                         }
                         setAddingCat(false);
                       }}
@@ -132,7 +200,9 @@ export function AppSidebar({
                   </div>
                 </SidebarMenuItem>
               )}
-              {categories.map((cat) => (
+              {categories.map((cat) => {
+                const IconComponent = getCategoryIcon(cat.icon);
+                return (
                 <SidebarMenuItem key={cat.id}>
                   {editingId === cat.id ? (
                     <div className="flex items-center gap-1 px-2">
@@ -164,6 +234,7 @@ export function AppSidebar({
                       onClick={() => onFilterChange({ type: "category", value: cat.name })}
                       className={`group/cat ${isActive("category", cat.name) ? "bg-accent text-accent-foreground font-medium" : ""}`}
                     >
+                      <IconComponent className="h-4 w-4" />
                       <span className="flex-1 truncate">{cat.name}</span>
                       <span className="ml-auto flex gap-0.5 opacity-0 group-hover/cat:opacity-100 transition-opacity">
                         <button onClick={(e) => { e.stopPropagation(); setEditingId(cat.id); setEditName(cat.name); }}>
@@ -176,7 +247,8 @@ export function AppSidebar({
                     </SidebarMenuButton>
                   )}
                 </SidebarMenuItem>
-              ))}
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
