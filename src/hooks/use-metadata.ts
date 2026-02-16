@@ -15,8 +15,91 @@ const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
 const cacheTimestamps = new Map<string, number>();
 
 /**
+ * Try to extract metadata using Microlink API with fallback
+ */
+async function fetchFromMicrolink(url: string): Promise<LinkMetadata | null> {
+  try {
+    const microlinkUrl = new URL("https://api.microlink.io");
+    microlinkUrl.searchParams.set("url", url);
+
+    const response = await fetch(microlinkUrl.toString(), {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    // If 400, endpoint doesn't support this URL - return null for fallback
+    if (response.status === 400) {
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (!data.data) {
+      return null;
+    }
+
+    return {
+      title: data.data.title || null,
+      description: data.data.description || null,
+      image: data.data.image?.url || null,
+      favicon: data.data.logo?.url || null,
+      loading: false,
+      error: null,
+    };
+  } catch (err) {
+    console.debug("Microlink error:", err);
+    return null;
+  }
+}
+
+/**
+ * Fallback: use other-meta API which is more permissive
+ */
+async function fetchFromOtherMeta(url: string): Promise<LinkMetadata | null> {
+  try {
+    const otherMetaUrl = new URL("https://other.myjson.online/get-meta");
+    otherMetaUrl.searchParams.set("url", url);
+
+    const response = await fetch(otherMetaUrl.toString(), {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+
+    if (!data.meta) {
+      return null;
+    }
+
+    return {
+      title: data.meta.title || null,
+      description: data.meta.description || null,
+      image: data.meta.image || data.meta["og:image"] || null,
+      favicon: null,
+      loading: false,
+      error: null,
+    };
+  } catch (err) {
+    console.debug("OtherMeta error:", err);
+    return null;
+  }
+}
+
+/**
  * Hook to fetch metadata from a URL
- * Uses Microlink API as fallback with CORS support
+ * Uses Microlink API as primary, with OtherMeta as fallback
  */
 export function useMetadata() {
   const [metadata, setMetadata] = useState<LinkMetadata>({
@@ -75,36 +158,25 @@ export function useMetadata() {
       // Validate one more time
       new URL(normalizedUrl);
 
-      // Try Microlink API (CORS-friendly, no auth required)
-      // Use proper URL encoding for the url parameter
-      const microlinkUrl = new URL("https://api.microlink.io");
-      microlinkUrl.searchParams.set("url", normalizedUrl);
+      // Try primary API - Microlink
+      let result = await fetchFromMicrolink(normalizedUrl);
 
-      const response = await fetch(microlinkUrl.toString(), {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+      // If failed, try fallback - OtherMeta
+      if (!result) {
+        result = await fetchFromOtherMeta(normalizedUrl);
       }
 
-      const data = await response.json();
-
-      if (!data.data) {
-        throw new Error("No metadata found");
+      // If still no result, create empty result (don't show error, just empty preview)
+      if (!result) {
+        result = {
+          title: null,
+          description: null,
+          image: null,
+          favicon: null,
+          loading: false,
+          error: null,
+        };
       }
-
-      const result: LinkMetadata = {
-        title: data.data.title || null,
-        description: data.data.description || null,
-        image: data.data.image?.url || null,
-        favicon: data.data.logo?.url || null,
-        loading: false,
-        error: null,
-      };
 
       // Update cache
       metadataCache.set(url, result);
@@ -120,10 +192,10 @@ export function useMetadata() {
         image: null,
         favicon: null,
         loading: false,
-        error,
+        error: null, // Don't show error to user, just silently fail
       };
       
-      // Still cache the error for a shorter period (5 minutes)
+      // Still cache the result
       metadataCache.set(url, result);
       cacheTimestamps.set(url, Date.now());
       
