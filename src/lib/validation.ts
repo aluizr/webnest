@@ -109,6 +109,7 @@ export const categorySchema = z.object({
       icon => ALLOWED_ICONS.includes(icon),
       `Ícone inválido. Permitidos: ${ALLOWED_ICONS.join(", ")}`
     ),
+  parentId: z.string().uuid().optional().nullable(),
 });
 
 export type LinkInput = z.infer<typeof linkSchema>;

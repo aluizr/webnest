@@ -90,7 +90,7 @@ interface AppSidebarProps {
   allTags: string[];
   activeFilter: { type: "all" | "favorites" | "category" | "tag"; value?: string };
   onFilterChange: (filter: { type: "all" | "favorites" | "category" | "tag"; value?: string }) => void;
-  onAddCategory: (name: string, icon: string) => void;
+  onAddCategory: (name: string, icon: string, parentId?: string | null) => void;
   onDeleteCategory: (id: string) => void;
   onRenameCategory: (id: string, name: string) => void;
 }
@@ -107,11 +107,19 @@ export function AppSidebar({
   const [newCat, setNewCat] = useState("");
   const [newCatIcon, setNewCatIcon] = useState("Folder");
   const [addingCat, setAddingCat] = useState(false);
+  const [addingSubcatForId, setAddingSubcatForId] = useState<string | null>(null);
+  const [newSubcat, setNewSubcat] = useState("");
+  const [newSubcatIcon, setNewSubcatIcon] = useState("Tag");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
 
   const isActive = (type: string, value?: string) =>
     activeFilter.type === type && activeFilter.value === value;
+
+  const parentCategories = categories.filter((c) => !c.parentId);
+  const childCategories = categories.filter((c) => c.parentId);
+  const getFullName = (cat: Category, parent?: Category | null) =>
+    parent ? `${parent.name} / ${cat.name}` : cat.name;
 
   return (
     <Sidebar className="border-r">
@@ -202,67 +210,197 @@ export function AppSidebar({
                   </div>
                 </SidebarMenuItem>
               )}
-              {categories.map((cat) => {
-                const IconComponent = getCategoryIcon(cat.icon);
+              {parentCategories.map((parent) => {
+                const IconComponent = getCategoryIcon(parent.icon);
+                const children = childCategories.filter((c) => c.parentId === parent.id);
                 return (
-                <SidebarMenuItem key={cat.id}>
-                  {editingId === cat.id ? (
-                    <div className="flex items-center gap-1 px-2">
-                      <Input
-                        autoFocus
-                        id={`edit-category-${cat.id}`}
-                        name="editCategory"
-                        className="h-7 text-xs"
-                        value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && editName.trim()) {
-                            onRenameCategory(cat.id, editName.trim());
+                  <div key={parent.id} className="space-y-1">
+                    <SidebarMenuItem>
+                      {editingId === parent.id ? (
+                        <div className="flex items-center gap-1 px-2">
+                          <Input
+                            autoFocus
+                            id={`edit-category-${parent.id}`}
+                            name="editCategory"
+                            className="h-7 text-xs"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && editName.trim()) {
+                                onRenameCategory(parent.id, editName.trim());
+                                setEditingId(null);
+                              }
+                              if (e.key === "Escape") setEditingId(null);
+                            }}
+                          />
+                          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => {
+                            if (editName.trim()) onRenameCategory(parent.id, editName.trim());
                             setEditingId(null);
-                          }
-                          if (e.key === "Escape") setEditingId(null);
-                        }}
-                      />
-                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => {
-                        if (editName.trim()) onRenameCategory(cat.id, editName.trim());
-                        setEditingId(null);
-                      }}>
-                        <Check className="h-3 w-3" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setEditingId(null)}>
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <SidebarMenuButton
-                      onClick={() => onFilterChange({ type: "category", value: cat.name })}
-                      className={`group/cat ${isActive("category", cat.name) ? "bg-accent text-accent-foreground font-medium" : ""}`}
-                    >
-                      <IconComponent className="h-4 w-4" />
-                      <span className="flex-1 truncate">{cat.name}</span>
-                      <span className="ml-auto flex gap-0.5 opacity-0 group-hover/cat:opacity-100 transition-opacity">
-                        <div
-                          role="button"
-                          tabIndex={0}
-                          className="cursor-pointer p-1 hover:bg-muted rounded transition-colors"
-                          onClick={(e) => { e.stopPropagation(); setEditingId(cat.id); setEditName(cat.name); }}
-                          onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); setEditingId(cat.id); setEditName(cat.name); } }}
-                        >
-                          <Pencil className="h-3 w-3" />
+                          }}>
+                            <Check className="h-3 w-3" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setEditingId(null)}>
+                            <X className="h-3 w-3" />
+                          </Button>
                         </div>
-                        <div
-                          role="button"
-                          tabIndex={0}
-                          className="cursor-pointer p-1 hover:bg-muted rounded transition-colors"
-                          onClick={(e) => { e.stopPropagation(); onDeleteCategory(cat.id); }}
-                          onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); onDeleteCategory(cat.id); } }}
+                      ) : (
+                        <SidebarMenuButton
+                          onClick={() => onFilterChange({ type: "category", value: parent.name })}
+                          className={`group/cat ${isActive("category", parent.name) ? "bg-accent text-accent-foreground font-medium" : ""}`}
                         >
-                          <Trash2 className="h-3 w-3 text-destructive" />
+                          <IconComponent className="h-4 w-4" />
+                          <span className="flex-1 truncate">{parent.name}</span>
+                          <span className="ml-auto flex gap-0.5 opacity-0 group-hover/cat:opacity-100 transition-opacity">
+                            <div
+                              role="button"
+                              tabIndex={0}
+                              className="cursor-pointer p-1 hover:bg-muted rounded transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setAddingSubcatForId(parent.id);
+                                setNewSubcat("");
+                                setNewSubcatIcon("Tag");
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.stopPropagation();
+                                  setAddingSubcatForId(parent.id);
+                                  setNewSubcat("");
+                                  setNewSubcatIcon("Tag");
+                                }
+                              }}
+                            >
+                              <Plus className="h-3 w-3" />
+                            </div>
+                            <div
+                              role="button"
+                              tabIndex={0}
+                              className="cursor-pointer p-1 hover:bg-muted rounded transition-colors"
+                              onClick={(e) => { e.stopPropagation(); setEditingId(parent.id); setEditName(parent.name); }}
+                              onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); setEditingId(parent.id); setEditName(parent.name); } }}
+                            >
+                              <Pencil className="h-3 w-3" />
+                            </div>
+                            <div
+                              role="button"
+                              tabIndex={0}
+                              className="cursor-pointer p-1 hover:bg-muted rounded transition-colors"
+                              onClick={(e) => { e.stopPropagation(); onDeleteCategory(parent.id); }}
+                              onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); onDeleteCategory(parent.id); } }}
+                            >
+                              <Trash2 className="h-3 w-3 text-destructive" />
+                            </div>
+                          </span>
+                        </SidebarMenuButton>
+                      )}
+                    </SidebarMenuItem>
+
+                    {addingSubcatForId === parent.id && (
+                      <SidebarMenuItem>
+                        <div className="flex items-center gap-1 px-2 pl-6">
+                          <IconPicker value={newSubcatIcon} onSelect={setNewSubcatIcon} />
+                          <Input
+                            autoFocus
+                            id={`new-subcategory-${parent.id}`}
+                            name="newSubcategory"
+                            className="h-7 text-xs flex-1"
+                            value={newSubcat}
+                            onChange={(e) => setNewSubcat(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && newSubcat.trim()) {
+                                onAddCategory(newSubcat.trim(), newSubcatIcon, parent.id);
+                                setNewSubcat("");
+                                setNewSubcatIcon("Tag");
+                                setAddingSubcatForId(null);
+                              }
+                              if (e.key === "Escape") setAddingSubcatForId(null);
+                            }}
+                            placeholder="Nova subcategoria"
+                          />
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => {
+                              if (newSubcat.trim()) {
+                                onAddCategory(newSubcat.trim(), newSubcatIcon, parent.id);
+                                setNewSubcat("");
+                                setNewSubcatIcon("Tag");
+                              }
+                              setAddingSubcatForId(null);
+                            }}
+                          >
+                            <Check className="h-3 w-3" />
+                          </Button>
                         </div>
-                      </span>
-                    </SidebarMenuButton>
-                  )}
-                </SidebarMenuItem>
+                      </SidebarMenuItem>
+                    )}
+
+                    {children.map((child) => {
+                      const ChildIcon = getCategoryIcon(child.icon);
+                      const fullName = getFullName(child, parent);
+                      return (
+                        <SidebarMenuItem key={child.id}>
+                          {editingId === child.id ? (
+                            <div className="flex items-center gap-1 px-2 pl-6">
+                              <Input
+                                autoFocus
+                                id={`edit-category-${child.id}`}
+                                name="editCategory"
+                                className="h-7 text-xs"
+                                value={editName}
+                                onChange={(e) => setEditName(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" && editName.trim()) {
+                                    onRenameCategory(child.id, editName.trim());
+                                    setEditingId(null);
+                                  }
+                                  if (e.key === "Escape") setEditingId(null);
+                                }}
+                              />
+                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => {
+                                if (editName.trim()) onRenameCategory(child.id, editName.trim());
+                                setEditingId(null);
+                              }}>
+                                <Check className="h-3 w-3" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setEditingId(null)}>
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <SidebarMenuButton
+                              onClick={() => onFilterChange({ type: "category", value: fullName })}
+                              className={`group/cat pl-6 ${isActive("category", fullName) ? "bg-accent text-accent-foreground font-medium" : ""}`}
+                            >
+                              <ChildIcon className="h-4 w-4" />
+                              <span className="flex-1 truncate">{child.name}</span>
+                              <span className="ml-auto flex gap-0.5 opacity-0 group-hover/cat:opacity-100 transition-opacity">
+                                <div
+                                  role="button"
+                                  tabIndex={0}
+                                  className="cursor-pointer p-1 hover:bg-muted rounded transition-colors"
+                                  onClick={(e) => { e.stopPropagation(); setEditingId(child.id); setEditName(child.name); }}
+                                  onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); setEditingId(child.id); setEditName(child.name); } }}
+                                >
+                                  <Pencil className="h-3 w-3" />
+                                </div>
+                                <div
+                                  role="button"
+                                  tabIndex={0}
+                                  className="cursor-pointer p-1 hover:bg-muted rounded transition-colors"
+                                  onClick={(e) => { e.stopPropagation(); onDeleteCategory(child.id); }}
+                                  onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); onDeleteCategory(child.id); } }}
+                                >
+                                  <Trash2 className="h-3 w-3 text-destructive" />
+                                </div>
+                              </span>
+                            </SidebarMenuButton>
+                          )}
+                        </SidebarMenuItem>
+                      );
+                    })}
+                  </div>
                 );
               })}
             </SidebarMenu>

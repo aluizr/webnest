@@ -20,18 +20,21 @@ export type Database = {
           name: string
           user_id: string | null
           icon: string
+          parent_id: string | null
         }
         Insert: {
           id?: string
           name: string
           user_id?: string | null
           icon?: string
+          parent_id?: string | null
         }
         Update: {
           id?: string
           name?: string
           user_id?: string | null
           icon?: string
+          parent_id?: string | null
         }
         Relationships: []
       }

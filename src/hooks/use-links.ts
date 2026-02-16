@@ -18,6 +18,10 @@ export function useLinks(userId: string | undefined) {
     favoritesOnly: false,
   });
 
+  const getCategoryFullName = useCallback((cat: Category, parent?: Category | null) => {
+    return parent ? `${parent.name} / ${cat.name}` : cat.name;
+  }, []);
+
   useEffect(() => {
     if (!userId) { setLoading(false); return; }
     const fetchData = async () => {
@@ -43,7 +47,14 @@ export function useLinks(userId: string | undefined) {
         );
       }
       if (catsRes.data) {
-        setCategories(catsRes.data.map((r: any) => ({ id: r.id, name: r.name, icon: r.icon || "Folder" })));
+        setCategories(
+          catsRes.data.map((r: any) => ({
+            id: r.id,
+            name: r.name,
+            icon: r.icon || "Folder",
+            parentId: r.parent_id ?? null,
+          }))
+        );
       }
       setLoading(false);
     };
@@ -144,29 +155,62 @@ export function useLinks(userId: string | undefined) {
     }
   }, [links]);
 
-  const addCategory = useCallback(async (name: string, icon: string = "Folder") => {
+  const addCategory = useCallback(async (name: string, icon: string = "Folder", parentId?: string | null) => {
     if (!userId) return;
-    const parsed = categorySchema.safeParse({ name, icon });
+    const parsed = categorySchema.safeParse({ name, icon, parentId: parentId ?? null });
     if (!parsed.success) {
       toast.error(parsed.error.errors[0]?.message || "Dados inválidos");
       return;
     }
+    if (parsed.data.parentId) {
+      const parent = categories.find((c) => c.id === parsed.data.parentId);
+      if (!parent) {
+        toast.error("Categoria pai não encontrada");
+        return;
+      }
+      if (parent.parentId) {
+        toast.error("Subcategorias só podem ter 2 níveis");
+        return;
+      }
+    }
     const { data, error } = await supabase
       .from("categories")
-      .insert({ name: parsed.data.name, user_id: userId, icon: parsed.data.icon })
+      .insert({
+        name: parsed.data.name,
+        user_id: userId,
+        icon: parsed.data.icon,
+        parent_id: parsed.data.parentId ?? null,
+      })
       .select()
       .single();
     if (data && !error) {
-      setCategories((prev) => [...prev, { id: data.id, name: data.name, icon: data.icon }]);
+      setCategories((prev) => [
+        ...prev,
+        { id: data.id, name: data.name, icon: data.icon, parentId: data.parent_id ?? null },
+      ]);
     }
-  }, [userId]);
+  }, [userId, categories]);
 
   const deleteCategory = useCallback(async (id: string) => {
+    const category = categories.find((c) => c.id === id);
+    if (!category) return;
+
+    const hasChildren = categories.some((c) => c.parentId === id);
+    if (hasChildren) {
+      toast.error("Remova as subcategorias antes de excluir esta categoria");
+      return;
+    }
+
+    const parent = category.parentId ? categories.find((c) => c.id === category.parentId) : null;
+    const fullName = getCategoryFullName(category, parent || undefined);
+
     const { error } = await supabase.from("categories").delete().eq("id", id);
     if (!error) {
+      await supabase.from("links").update({ category: "" }).eq("category", fullName);
+      setLinks((prev) => prev.map((l) => (l.category === fullName ? { ...l, category: "" } : l)));
       setCategories((prev) => prev.filter((c) => c.id !== id));
     }
-  }, []);
+  }, [categories, getCategoryFullName]);
 
   const renameCategory = useCallback(async (id: string, name: string) => {
     const parsed = categorySchema.safeParse({ name });
@@ -174,13 +218,45 @@ export function useLinks(userId: string | undefined) {
       toast.error(parsed.error.errors[0]?.message || "Nome inválido");
       return;
     }
+    const category = categories.find((c) => c.id === id);
+    if (!category) return;
+
+    const parent = category.parentId ? categories.find((c) => c.id === category.parentId) : null;
+    const oldName = getCategoryFullName(category, parent || undefined);
+
+    const updates: Array<{ from: string; to: string }> = [];
+    if (category.parentId) {
+      const newName = getCategoryFullName({ ...category, name: parsed.data.name }, parent || undefined);
+      updates.push({ from: oldName, to: newName });
+    } else {
+      const newParentName = parsed.data.name;
+      updates.push({ from: oldName, to: newParentName });
+
+      const children = categories.filter((c) => c.parentId === id);
+      children.forEach((child) => {
+        updates.push({
+          from: getCategoryFullName(child, category),
+          to: getCategoryFullName(child, { ...category, name: newParentName }),
+        });
+      });
+    }
+
     const { error } = await supabase.from("categories").update({ name: parsed.data.name }).eq("id", id);
     if (!error) {
+      await Promise.all(
+        updates.map((u) => supabase.from("links").update({ category: u.to }).eq("category", u.from))
+      );
+      setLinks((prev) =>
+        prev.map((l) => {
+          const update = updates.find((u) => u.from === l.category);
+          return update ? { ...l, category: update.to } : l;
+        })
+      );
       setCategories((prev) =>
         prev.map((c) => (c.id === id ? { ...c, name: parsed.data.name } : c))
       );
     }
-  }, []);
+  }, [categories, getCategoryFullName]);
 
   // ✅ Função para reordenar links via drag & drop
   const reorderLinks = useCallback(async (reorderedLinks: LinkItem[]) => {

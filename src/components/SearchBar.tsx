@@ -99,6 +99,19 @@ export function SearchBar({
     filters.sort !== "newest" ||
     filters.favoritesOnly;
 
+  const parentCategories = categories.filter((c) => !c.parentId);
+  const childCategories = categories.filter((c) => c.parentId);
+  const categoryOptions = parentCategories.flatMap((parent) => {
+    const children = childCategories.filter((c) => c.parentId === parent.id);
+    return [
+      { value: parent.name, label: parent.name },
+      ...children.map((child) => ({
+        value: `${parent.name} / ${child.name}`,
+        label: `${parent.name} / ${child.name}`,
+      })),
+    ];
+  });
+
   return (
     <div className="space-y-3 rounded-lg border bg-card p-4 shadow-sm">
       {/* Main Search Input */}
@@ -140,9 +153,9 @@ export function SearchBar({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas as categorias</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.name}>
-                    {cat.name}
+                {categoryOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>
