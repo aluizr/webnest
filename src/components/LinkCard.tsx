@@ -63,46 +63,48 @@ export function LinkCard({
   const faviconUrl = getFaviconUrl();
 
   return (
-    <>
-      {/* Drop zone indicator above */}
-      {isDropZone && dragDirection === "above" && (
-        <div className="h-1 bg-primary rounded-full mb-2 animate-pulse shadow-[0_0_8px_hsl(var(--primary)/0.6)]" />
+    <Card
+      draggable={dragEnabled}
+      onDragStart={(e) => onDragStart?.(e, link)}
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onDragOver?.(e, link.id);
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onDrop?.(e, link);
+      }}
+      onDragLeave={(e) => {
+        const relatedTarget = e.relatedTarget as HTMLElement;
+        if (!e.currentTarget.contains(relatedTarget)) {
+          onDragLeave?.(e);
+        }
+      }}
+      onDragEnd={(e) => onDragEnd?.(e)}
+      data-card-id={link.id}
+      className={`group relative overflow-hidden transition-all duration-200 border-2 ${
+        isDragging
+          ? "opacity-25 scale-[0.97] shadow-none border-dashed border-primary/40 bg-primary/5 pointer-events-none"
+          : ""
+      } ${isDropZone && !isDragging
+          ? "border-primary/50 bg-primary/10 shadow-lg shadow-primary/10 scale-[1.02] ring-1 ring-primary/30"
+          : !isDragging ? "border-transparent" : ""
+      } ${
+        dragEnabled ? "cursor-grab active:cursor-grabbing" : ""
+      }`}
+    >
+      {/* Drop zone indicator above - inside Card, absolutely positioned */}
+      {isDropZone && !isDragging && dragDirection === "above" && (
+        <div className="absolute top-0 left-2 right-2 h-[3px] bg-primary rounded-full animate-pulse shadow-[0_0_8px_hsl(var(--primary)/0.6)] z-10" />
+      )}
+      {/* Drop zone indicator below - inside Card, absolutely positioned */}
+      {isDropZone && !isDragging && dragDirection === "below" && (
+        <div className="absolute bottom-0 left-2 right-2 h-[3px] bg-primary rounded-full animate-pulse shadow-[0_0_8px_hsl(var(--primary)/0.6)] z-10" />
       )}
 
-      <Card
-        draggable={dragEnabled}
-        onDragStart={(e) => onDragStart?.(e, link)}
-        onDragOver={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onDragOver?.(e, link.id);
-        }}
-        onDrop={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onDrop?.(e, link);
-        }}
-        onDragLeave={(e) => {
-          // Só limpar se realmente saiu do card (não de um filho)
-          const relatedTarget = e.relatedTarget as HTMLElement;
-          if (!e.currentTarget.contains(relatedTarget)) {
-            onDragLeave?.(e);
-          }
-        }}
-        onDragEnd={(e) => onDragEnd?.(e)}
-        data-card-id={link.id}
-        className={`group relative overflow-hidden transition-all duration-200 border-2 ${
-          isDragging
-            ? "opacity-25 scale-[0.97] shadow-none border-dashed border-primary/40 bg-primary/5"
-            : ""
-        } ${isDropZone && !isDragging
-            ? "border-primary/50 bg-primary/10 shadow-lg shadow-primary/10 scale-[1.02] ring-1 ring-primary/30"
-            : !isDragging ? "border-transparent" : ""
-        } ${
-          dragEnabled ? "cursor-grab active:cursor-grabbing" : ""
-        }`}
-      >
-        <CardContent className="p-4">
+      <CardContent className="p-4">
           <div className="flex items-start gap-3">
             {/* ✅ Ícone de grip para indicar que é draggable */}
             <div className="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -191,12 +193,6 @@ export function LinkCard({
           </div>
         </div>
         </CardContent>
-      </Card>
-
-      {/* Drop zone indicator below */}
-      {isDropZone && dragDirection === "below" && (
-        <div className="h-1 bg-primary rounded-full mt-2 animate-pulse shadow-[0_0_8px_hsl(var(--primary)/0.6)]" />
-      )}
-    </>
+    </Card>
   );
 }

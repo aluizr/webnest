@@ -42,6 +42,12 @@ export function useDragDropManager(initialLinks: LinkItem[], categories: Categor
     targetId: null,
     direction: undefined,
   });
+  // Guardar a última direção e target conhecidos para fallback no drop
+  const lastKnownDropRef = useRef<{ targetId: string | null; direction: "above" | "below" | undefined }>({
+    targetId: null,
+    direction: undefined,
+  });
+  const dragLeaveTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Sincronizar histórico quando links mudam externamente (de use-links)
   useEffect(() => {
@@ -194,6 +200,15 @@ export function useDragDropManager(initialLinks: LinkItem[], categories: Categor
 
       if (hasChanged) {
         lastDragOverRef.current = { targetId: targetId || null, direction: dragDirection };
+        // Salvar última posição válida para fallback
+        if (targetId) {
+          lastKnownDropRef.current = { targetId, direction: dragDirection };
+        }
+        // Cancelar qualquer dragLeave pendente
+        if (dragLeaveTimeoutRef.current) {
+          clearTimeout(dragLeaveTimeoutRef.current);
+          dragLeaveTimeoutRef.current = undefined;
+        }
         setDragState((prev) => ({
           ...prev,
           dropZoneId: targetId || null,
@@ -211,20 +226,30 @@ export function useDragDropManager(initialLinks: LinkItem[], categories: Categor
     [handleAutoScroll]
   );
 
-  // Drag leave
+  // Drag leave - debounced para evitar flicker ao transitar entre cards
   const handleDragLeave = useCallback(() => {
-    lastDragOverRef.current = { targetId: null, direction: undefined };
-    setDragState((prev) => ({
-      ...prev,
-      dropZoneId: null,
-      isDraggingOverCategory: false,
-      dragDirection: undefined,
-    }));
+    if (dragLeaveTimeoutRef.current) {
+      clearTimeout(dragLeaveTimeoutRef.current);
+    }
+    dragLeaveTimeoutRef.current = setTimeout(() => {
+      lastDragOverRef.current = { targetId: null, direction: undefined };
+      setDragState((prev) => ({
+        ...prev,
+        dropZoneId: null,
+        isDraggingOverCategory: false,
+        dragDirection: undefined,
+      }));
+    }, 50); // Pequeno delay para dar tempo do dragOver do próximo card disparar
   }, []);
 
   // Drag end
   const handleDragEnd = useCallback(() => {
+    if (dragLeaveTimeoutRef.current) {
+      clearTimeout(dragLeaveTimeoutRef.current);
+      dragLeaveTimeoutRef.current = undefined;
+    }
     lastDragOverRef.current = { targetId: null, direction: undefined };
+    lastKnownDropRef.current = { targetId: null, direction: undefined };
     setDragState({
       draggedLink: null,
       dropZoneId: null,
@@ -309,6 +334,7 @@ export function useDragDropManager(initialLinks: LinkItem[], categories: Categor
     dragState,
     canUndo: historyIndex > 0,
     canRedo: historyIndex < history.length - 1,
+    lastKnownDrop: lastKnownDropRef,
     handleDragStart,
     handleDragOver,
     handleDragLeave,

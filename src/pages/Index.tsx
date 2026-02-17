@@ -44,6 +44,7 @@ const Index = ({ user, onSignOut }: IndexProps) => {
     dragState,
     canUndo,
     canRedo,
+    lastKnownDrop,
     handleDragStart: dragStart,
     handleDragOver: dragOver,
     handleDragLeave: dragLeave,
@@ -104,7 +105,9 @@ const Index = ({ user, onSignOut }: IndexProps) => {
       return;
     }
 
-    const reordered = dragReorderLinks(dragId, targetLink.id, dragState.dragDirection);
+    // Usar direction do state, ou fallback para a última direção conhecida
+    const direction = dragState.dragDirection || lastKnownDrop.current?.direction || "above";
+    const reordered = dragReorderLinks(dragId, targetLink.id, direction);
     if (reordered) {
       reorderLinks(reordered);
       toast.success("Links reordenados!");
