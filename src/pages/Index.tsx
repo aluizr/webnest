@@ -104,7 +104,15 @@ const Index = ({ user, onSignOut }: IndexProps) => {
       return;
     }
 
+    console.log("🔄 Drag & Drop", {
+      dragId: dragState.draggedLink?.title || dragId,
+      targetId: targetLink.title,
+      direction: dragState.dragDirection,
+      links: links.map((l) => l.title),
+    });
+
     const reordered = dragReorderLinks(dragId, targetLink.id, dragState.dragDirection);
+    console.log("📋 Reordered:", reordered?.map((l) => l.title));
     if (reordered) {
       reorderLinks(reordered);
       toast.success("Links reordenados!");
@@ -230,7 +238,6 @@ const Index = ({ user, onSignOut }: IndexProps) => {
                   onDragStart={searchFilters.sort === "manual" ? handleDragStart : undefined}
                   onDragOver={searchFilters.sort === "manual" ? handleDragOver : undefined}
                   onDrop={searchFilters.sort === "manual" ? handleDrop : undefined}
-                  onDragLeave={searchFilters.sort === "manual" ? dragLeave : undefined}
                   isDragging={dragState.draggedLink?.id === link.id}
                   isDropZone={dragState.dropZoneId === link.id && dragState.draggedLink !== null}
                   dragDirection={dragState.dragDirection}

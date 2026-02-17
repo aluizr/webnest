@@ -2,7 +2,6 @@ import { Star, ExternalLink, Pencil, Trash2, GripVertical } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,7 +23,6 @@ interface LinkCardProps {
   onDragStart?: (e: React.DragEvent, link: LinkItem) => void;
   onDragOver?: (e: React.DragEvent, linkId: string) => void;
   onDrop?: (e: React.DragEvent, link: LinkItem) => void;
-  onDragLeave?: (e: React.DragEvent) => void;
   isDragging?: boolean;
   isDropZone?: boolean;
   dragDirection?: "above" | "below";
@@ -43,7 +41,6 @@ export function LinkCard({
   isDropZone,
   dragDirection,
 }: LinkCardProps) {
-  const [isHovering, setIsHovering] = useState(false);
   const dragEnabled = Boolean(onDragStart);
   // ✅ Usar serviço mais privado para favicons (icon.horse)
   const getFaviconUrl = () => {
@@ -75,28 +72,19 @@ export function LinkCard({
         onDragOver={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          setIsHovering(true);
           onDragOver?.(e, link.id);
         }}
         onDrop={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          setIsHovering(false);
           onDrop?.(e, link);
         }}
-        onDragLeave={(e) => {
-          // Apenas processar se o mouse REALMENTE saiu do Card
-          // (e não apenas entrou em um elemento filho)
-          if (e.currentTarget === e.target || (e.relatedTarget as Element)?.closest('[data-card-id]') !== e.currentTarget) {
-            setIsHovering(false);
-            onDragLeave?.(e);
-          }
-        }}
-        onDragEnd={() => setIsHovering(false)}
+        onDragLeave={() => {}}
+        onDragEnd={() => {}}
         data-card-id={link.id}
         className={`group relative overflow-hidden transition-all duration-200 border-2 ${
           isDragging ? "opacity-50 scale-95 shadow-sm" : ""
-        } ${isHovering && isDropZone ? "border-blue-300 bg-blue-50 shadow-md" : "border-transparent"} ${
+        } ${isDropZone ? "border-blue-300 bg-blue-50 shadow-md" : "border-transparent"} ${
           dragEnabled ? "cursor-grab active:cursor-grabbing" : ""
         }`}
       >
