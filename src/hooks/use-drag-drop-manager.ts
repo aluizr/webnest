@@ -227,10 +227,11 @@ export function useDragDropManager(initialLinks: LinkItem[], categories: Categor
     }
   }, []);
 
-  // Reordenar links
+  // Reordenar links usando initialLinks (dados reais do parent)
   const reorderLinks = useCallback(
     (dragId: string, targetId: string, direction?: "above" | "below", isCategory?: boolean): LinkItem[] | null => {
-      const currentLinks = getCurrentLinks();
+      // Sempre usar initialLinks como fonte de verdade
+      const currentLinks = initialLinks;
       const dragIndex = currentLinks.findIndex((l) => l.id === dragId);
       const targetIndex = currentLinks.findIndex((l) => l.id === targetId);
 
@@ -271,11 +272,9 @@ export function useDragDropManager(initialLinks: LinkItem[], categories: Categor
         position: index,
       }));
 
-      // Não adicionar ao histórico aqui - deixar para o caller fazer
-      // O histórico será sincronizado quando initialLinks mudar
       return reordered;
     },
-    [getCurrentLinks]
+    [initialLinks]
   );
 
   // Keyboard shortcuts
@@ -299,11 +298,8 @@ export function useDragDropManager(initialLinks: LinkItem[], categories: Categor
 
   return {
     dragState,
-    history,
-    historyIndex,
     canUndo: historyIndex > 0,
     canRedo: historyIndex < history.length - 1,
-    getCurrentLinks,
     handleDragStart,
     handleDragOver,
     handleDragLeave,
@@ -311,6 +307,5 @@ export function useDragDropManager(initialLinks: LinkItem[], categories: Categor
     reorderLinks,
     undo,
     redo,
-    addToHistory,
   };
 }

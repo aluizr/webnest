@@ -74,19 +74,26 @@ export function LinkCard({
         onDragStart={(e) => onDragStart?.(e, link)}
         onDragOver={(e) => {
           e.preventDefault();
+          e.stopPropagation();
           setIsHovering(true);
           onDragOver?.(e, link.id);
         }}
         onDrop={(e) => {
           e.preventDefault();
+          e.stopPropagation();
           setIsHovering(false);
           onDrop?.(e, link);
         }}
         onDragLeave={(e) => {
-          setIsHovering(false);
-          onDragLeave?.(e);
+          // Apenas processar se o mouse REALMENTE saiu do Card
+          // (e não apenas entrou em um elemento filho)
+          if (e.currentTarget === e.target || (e.relatedTarget as Element)?.closest('[data-card-id]') !== e.currentTarget) {
+            setIsHovering(false);
+            onDragLeave?.(e);
+          }
         }}
         onDragEnd={() => setIsHovering(false)}
+        data-card-id={link.id}
         className={`group relative overflow-hidden transition-all duration-200 border-2 ${
           isDragging ? "opacity-50 scale-95 shadow-sm" : ""
         } ${isHovering && isDropZone ? "border-blue-300 bg-blue-50 shadow-md" : "border-transparent"} ${
