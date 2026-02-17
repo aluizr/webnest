@@ -264,8 +264,13 @@ const Index = ({ user, onSignOut }: IndexProps) => {
           if (!open) setEditingLink(null);
         }}
         categories={categories}
+        links={links}
         editingLink={editingLink}
         onSubmit={handleSubmit}
+        onEditDuplicate={(link) => {
+          setEditingLink(link);
+          setFormOpen(true);
+        }}
       />
 
       <StatsDashboard isOpen={statsOpen} onClose={() => setStatsOpen(false)} />

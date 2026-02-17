@@ -12,9 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { X, AlertCircle } from "lucide-react";
+import { X, AlertCircle, Link2 } from "lucide-react";
 import { useMetadata } from "@/hooks/use-metadata";
 import { useLinkDraft } from "@/hooks/use-link-draft";
+import { useDuplicateDetector } from "@/hooks/use-duplicate-detector";
 import { LinkPreview } from "@/components/LinkPreview";
 import type { LinkItem, Category } from "@/types/link";
 
@@ -22,11 +23,13 @@ interface LinkFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   categories: Category[];
+  links: LinkItem[];
   editingLink?: LinkItem | null;
-  onSubmit: (data: Omit<LinkItem, "id" | "createdAt" | "position">) => void; // ✅ Remover position
+  onSubmit: (data: Omit<LinkItem, "id" | "createdAt" | "position">) => void;
+  onEditDuplicate?: (link: LinkItem) => void;
 }
 
-export function LinkForm({ open, onOpenChange, categories, editingLink, onSubmit }: LinkFormProps) {
+export function LinkForm({ open, onOpenChange, categories, links, editingLink, onSubmit, onEditDuplicate }: LinkFormProps) {
   const [url, setUrl] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -36,9 +39,11 @@ export function LinkForm({ open, onOpenChange, categories, editingLink, onSubmit
   const [tags, setTags] = useState<string[]>([]);
   const [favicon, setFavicon] = useState("");
   const [showDraftRecovery, setShowDraftRecovery] = useState(false);
+  const [forceAllowDuplicate, setForceAllowDuplicate] = useState(false);
   const { metadata, fetchMetadata } = useMetadata();
   const [autoFilledTitle, setAutoFilledTitle] = useState(false);
   const { hasDraft, draftData, saveDraft, restoreDraft, clearDraft, discardDraft } = useLinkDraft();
+  const { isDuplicate, duplicateLink } = useDuplicateDetector(url, links, editingLink?.id);
   const draftTimeoutRef = useRef<NodeJS.Timeout>();
   const initialLoadDone = useRef(false);
 
@@ -75,6 +80,7 @@ export function LinkForm({ open, onOpenChange, categories, editingLink, onSubmit
       setFavicon(editingLink.favicon);
       setAutoFilledTitle(true);
       setShowDraftRecovery(false);
+      setForceAllowDuplicate(false);
       initialLoadDone.current = true;
     } else {
       // Abrir formulário novo - mostrar opção de recuperar rascunho se existe
@@ -83,6 +89,7 @@ export function LinkForm({ open, onOpenChange, categories, editingLink, onSubmit
       } else if (!open) {
         // Fechar formulário - resetar flag
         initialLoadDone.current = false;
+        setForceAllowDuplicate(false);
       } else if (open && !hasDraft) {
         // Formulário aberto sem rascunho
         setUrl("");
@@ -93,10 +100,16 @@ export function LinkForm({ open, onOpenChange, categories, editingLink, onSubmit
         setTags([]);
         setFavicon("");
         setAutoFilledTitle(false);
+        setForceAllowDuplicate(false);
         initialLoadDone.current = true;
       }
     }
   }, [editingLink, open, categories, hasDraft]);
+
+  // Reset forceAllowDuplicate quando URL mudar
+  useEffect(() => {
+    setForceAllowDuplicate(false);
+  }, [url]);
 
   // Auto-preview: when URL changes, try to get favicon and metadata
   useEffect(() => {
@@ -163,6 +176,13 @@ export function LinkForm({ open, onOpenChange, categories, editingLink, onSubmit
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!url.trim()) return;
+
+    // Validar duplicata
+    if (isDuplicate && !forceAllowDuplicate) {
+      setForceAllowDuplicate(true);
+      return;
+    }
+
     const parent = parentCategories.find((p) => p.id === selectedParentId);
     const child = childCategories.find((c) => c.id === selectedChildId);
     const categoryValue = child && parent
@@ -214,6 +234,13 @@ export function LinkForm({ open, onOpenChange, categories, editingLink, onSubmit
     initialLoadDone.current = true;
   };
 
+  const handleEditDuplicate = () => {
+    if (duplicateLink && onEditDuplicate) {
+      onEditDuplicate(duplicateLink);
+      onOpenChange(false);
+    }
+  };
+
   return (
     <>
       {/* Dialog de recuperação de rascunho */}
@@ -232,6 +259,39 @@ export function LinkForm({ open, onOpenChange, categories, editingLink, onSubmit
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleRecoverDraft} className="bg-primary">
               Recuperar
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog de aviso de duplicata */}
+      <AlertDialog open={forceAllowDuplicate && isDuplicate && !!duplicateLink} onOpenChange={setForceAllowDuplicate}>
+        <AlertDialogContent>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <Link2 className="h-5 w-5 text-blue-600" />
+            Link duplicado encontrado
+          </AlertDialogTitle>
+          <AlertDialogDescription className="space-y-3">
+            <p>Já existe um link com esta mesma URL salvo:</p>
+            {duplicateLink && (
+              <div className="rounded-md bg-muted p-2 text-sm">
+                <p className="font-semibold truncate">{duplicateLink.title}</p>
+                <p className="text-xs text-muted-foreground truncate">{duplicateLink.url}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Adicionado em {new Date(duplicateLink.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+            )}
+          </AlertDialogDescription>
+          <div className="flex justify-end gap-3 pt-4">
+            <AlertDialogCancel>Não, obrigado</AlertDialogCancel>
+            {onEditDuplicate && duplicateLink && (
+              <AlertDialogAction onClick={handleEditDuplicate} className="bg-blue-600">
+                Editar link existente
+              </AlertDialogAction>
+            )}
+            <AlertDialogAction onClick={() => setForceAllowDuplicate(false)} className="bg-primary">
+              Adicionar mesmo assim
             </AlertDialogAction>
           </div>
         </AlertDialogContent>
@@ -269,6 +329,29 @@ export function LinkForm({ open, onOpenChange, categories, editingLink, onSubmit
               required
             />
           </div>
+          {isDuplicate && duplicateLink && !forceAllowDuplicate && (
+            <div className="rounded-md bg-blue-50 border border-blue-200 p-3 text-sm">
+              <p className="flex items-center gap-2 font-medium text-blue-900 mb-1">
+                <Link2 className="h-4 w-4" />
+                Link já existe
+              </p>
+              <p className="text-blue-800 text-xs mb-2">
+                Você já tem este link na sua coleção:
+              </p>
+              <p className="text-blue-700 font-semibold text-xs truncate">{duplicateLink.title}</p>
+              {onEditDuplicate && (
+                <Button
+                  type="button"
+                  variant="link"
+                  size="sm"
+                  className="h-auto p-0 mt-2 text-blue-600 hover:text-blue-700"
+                  onClick={handleEditDuplicate}
+                >
+                  Clicar para editar →
+                </Button>
+              )}
+            </div>
+          )}
           {url && <LinkPreview metadata={metadata} url={url} />}
           <div className="space-y-2">
             <Label htmlFor="title">Título</Label>
