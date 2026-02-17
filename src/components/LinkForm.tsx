@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,8 +11,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { X, AlertCircle } from "lucide-react";
 import { useMetadata } from "@/hooks/use-metadata";
+import { useLinkDraft } from "@/hooks/use-link-draft";
 import { LinkPreview } from "@/components/LinkPreview";
 import type { LinkItem, Category } from "@/types/link";
 
@@ -33,8 +35,12 @@ export function LinkForm({ open, onOpenChange, categories, editingLink, onSubmit
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [favicon, setFavicon] = useState("");
+  const [showDraftRecovery, setShowDraftRecovery] = useState(false);
   const { metadata, fetchMetadata } = useMetadata();
   const [autoFilledTitle, setAutoFilledTitle] = useState(false);
+  const { hasDraft, draftData, saveDraft, restoreDraft, clearDraft, discardDraft } = useLinkDraft();
+  const draftTimeoutRef = useRef<NodeJS.Timeout>();
+  const initialLoadDone = useRef(false);
 
   const parentCategories = categories.filter((c) => !c.parentId);
   const childCategories = categories.filter((c) => c.parentId);
@@ -68,17 +74,29 @@ export function LinkForm({ open, onOpenChange, categories, editingLink, onSubmit
       setTags(editingLink.tags);
       setFavicon(editingLink.favicon);
       setAutoFilledTitle(true);
+      setShowDraftRecovery(false);
+      initialLoadDone.current = true;
     } else {
-      setUrl("");
-      setTitle("");
-      setDescription("");
-      setSelectedParentId("");
-      setSelectedChildId("");
-      setTags([]);
-      setFavicon("");
-      setAutoFilledTitle(false);
+      // Abrir formulário novo - mostrar opção de recuperar rascunho se existe
+      if (open && hasDraft && !initialLoadDone.current) {
+        setShowDraftRecovery(true);
+      } else if (!open) {
+        // Fechar formulário - resetar flag
+        initialLoadDone.current = false;
+      } else if (open && !hasDraft) {
+        // Formulário aberto sem rascunho
+        setUrl("");
+        setTitle("");
+        setDescription("");
+        setSelectedParentId("");
+        setSelectedChildId("");
+        setTags([]);
+        setFavicon("");
+        setAutoFilledTitle(false);
+        initialLoadDone.current = true;
+      }
     }
-  }, [editingLink, open, categories]);
+  }, [editingLink, open, categories, hasDraft]);
 
   // Auto-preview: when URL changes, try to get favicon and metadata
   useEffect(() => {
@@ -109,6 +127,31 @@ export function LinkForm({ open, onOpenChange, categories, editingLink, onSubmit
     return () => clearTimeout(timer);
   }, [url, editingLink, autoFilledTitle, title, description, fetchMetadata]);
 
+  // Auto-save draft com debounce (não salva enquanto está editando um link existente)
+  useEffect(() => {
+    if (editingLink) return; // Não salvar rascunho enquanto edita um link
+
+    // Limpar timeout anterior
+    if (draftTimeoutRef.current) clearTimeout(draftTimeoutRef.current);
+
+    // Agendar salvamento do rascunho
+    draftTimeoutRef.current = setTimeout(() => {
+      saveDraft({
+        url,
+        title,
+        description,
+        selectedParentId,
+        selectedChildId,
+        tags,
+        favicon,
+      });
+    }, 500);
+
+    return () => {
+      if (draftTimeoutRef.current) clearTimeout(draftTimeoutRef.current);
+    };
+  }, [url, title, description, selectedParentId, selectedChildId, tags, favicon, editingLink, saveDraft]);
+
   const handleAddTag = () => {
     const trimmed = tagInput.trim().toLowerCase();
     if (trimmed && !tags.includes(trimmed)) {
@@ -136,18 +179,82 @@ export function LinkForm({ open, onOpenChange, categories, editingLink, onSubmit
       isFavorite: editingLink?.isFavorite ?? false,
       favicon,
     });
+    // Limpar rascunho após envio bem-sucedido
+    clearDraft();
     onOpenChange(false);
   };
 
+  const handleRecoverDraft = () => {
+    const draft = restoreDraft();
+    if (draft) {
+      setUrl(draft.url);
+      setTitle(draft.title);
+      setDescription(draft.description);
+      setSelectedParentId(draft.selectedParentId);
+      setSelectedChildId(draft.selectedChildId);
+      setTags(draft.tags);
+      setFavicon(draft.favicon);
+      setAutoFilledTitle(!!draft.title); // Mark as auto-filled so it doesn't get overwritten
+    }
+    setShowDraftRecovery(false);
+    initialLoadDone.current = true;
+  };
+
+  const handleDiscardDraft = () => {
+    discardDraft();
+    setShowDraftRecovery(false);
+    setUrl("");
+    setTitle("");
+    setDescription("");
+    setSelectedParentId("");
+    setSelectedChildId("");
+    setTags([]);
+    setFavicon("");
+    setAutoFilledTitle(false);
+    initialLoadDone.current = true;
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{editingLink ? "Editar Link" : "Novo Link"}</DialogTitle>
-          <DialogDescription>
-            {editingLink ? "Atualize os dados do seu link" : "Adicione um novo link à sua coleção"}
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      {/* Dialog de recuperação de rascunho */}
+      <AlertDialog open={showDraftRecovery} onOpenChange={setShowDraftRecovery}>
+        <AlertDialogContent>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-amber-600" />
+            Recuperar rascunho anterior?
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            Encontramos um rascunho de link salvo automaticamente. Deseja restaurá-lo ou descartar e começar do zero?
+          </AlertDialogDescription>
+          <div className="flex justify-end gap-3 pt-4">
+            <AlertDialogCancel onClick={handleDiscardDraft}>
+              Descartar
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleRecoverDraft} className="bg-primary">
+              Recuperar
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog principal do formulário */}
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1">
+                <DialogTitle>{editingLink ? "Editar Link" : "Novo Link"}</DialogTitle>
+                <DialogDescription>
+                  {editingLink ? "Atualize os dados do seu link" : "Adicione um novo link à sua coleção"}
+                </DialogDescription>
+              </div>
+              {!editingLink && (url || title || description) && (
+                <Badge variant="outline" className="whitespace-nowrap h-fit">
+                  💾 Rascunho
+                </Badge>
+              )}
+            </div>
+          </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="url">URL *</Label>
@@ -270,5 +377,6 @@ export function LinkForm({ open, onOpenChange, categories, editingLink, onSubmit
         </form>
       </DialogContent>
     </Dialog>
+    </>
   );
 }
