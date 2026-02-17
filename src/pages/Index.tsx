@@ -275,7 +275,7 @@ const Index = ({ user, onSignOut }: IndexProps) => {
 
       <StatsDashboard isOpen={statsOpen} onClose={() => setStatsOpen(false)} />
 
-      <ExportFormatDialog isOpen={exportOpen} onClose={() => setExportOpen(false)} links={links} />
+      <ExportFormatDialog isOpen={exportOpen} onClose={() => setExportOpen(false)} links={links} categories={categories} />
 
       <ImportFormatDialog isOpen={importOpen} onClose={() => setImportOpen(false)} onImport={handleImportLinks} />
     </SidebarProvider>

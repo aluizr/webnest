@@ -1,5 +1,6 @@
 import type { LinkItem } from "@/types/link";
 import { linkSchema } from "@/lib/validation";
+import { parseBookmarksHTML, bookmarksToLinks } from "@/lib/bookmarks-parser";
 import { ZodError } from "zod";
 
 interface ImportResult {
@@ -252,6 +253,57 @@ export function parseJSON(content: string): ImportResult {
       successCount: 0, 
       errorCount: 0, 
       errors: [{ row: 0, error: 'JSON inválido' }], 
+      links: [] 
+    };
+  }
+}
+
+/**
+ * Parse bookmarks HTML file (from browsers like Chrome, Firefox, Safari, Edge)
+ * Format: standard Netscape bookmark format used by all browsers
+ */
+export function parseBookmarks(content: string): ImportResult {
+  try {
+    const bookmarks = parseBookmarksHTML(content);
+    const bookmarkLinks = bookmarksToLinks(bookmarks);
+
+    const links: Omit<LinkItem, "id" | "createdAt" | "position">[] = [];
+    const errors: Array<{ row: number; error: string }> = [];
+
+    bookmarkLinks.forEach((link, idx) => {
+      try {
+        const linkData = {
+          title: link.title || '',
+          url: link.url || '',
+          category: link.category || '',
+          tags: [],
+          description: link.description,
+          isFavorite: false,
+          favicon: link.favicon,
+        };
+
+        const validated = linkSchema.parse(linkData);
+        links.push(validated);
+      } catch (err) {
+        const errorMsg = err instanceof ZodError 
+          ? err.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`).join(', ')
+          : err instanceof Error ? err.message : 'Unknown error';
+        errors.push({ row: idx + 1, error: errorMsg });
+      }
+    });
+
+    return {
+      successCount: links.length,
+      errorCount: errors.length,
+      errors,
+      links,
+    };
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : 'Erro ao parsear bookmarks';
+    return { 
+      successCount: 0, 
+      errorCount: 1, 
+      errors: [{ row: 0, error: errorMsg }], 
       links: [] 
     };
   }

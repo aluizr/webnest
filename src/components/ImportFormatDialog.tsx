@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,8 +8,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
-import { parseCSV, parseHTML, parseJSON } from "@/lib/import";
+import { AlertCircle, CheckCircle2, Loader2, FileJson, FileText, Bookmark } from "lucide-react";
+import { parseCSV, parseHTML, parseJSON, parseBookmarks } from "@/lib/import";
 import { linkSchema } from "@/lib/validation";
 import { toast } from "sonner";
 import type { LinkItem } from "@/types/link";
@@ -22,8 +22,13 @@ interface ImportFormatDialogProps {
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
+type ImportType = 'json' | 'csv' | 'html' | 'bookmarks';
+
 export function ImportFormatDialog({ isOpen, onClose, onImport }: ImportFormatDialogProps) {
   const [importing, setImporting] = useState(false);
+  const [importType, setImportType] = useState<ImportType | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const bookmarksInputRef = useRef<HTMLInputElement>(null);
   const [result, setResult] = useState<{
     successCount: number;
     errorCount: number;
@@ -46,28 +51,45 @@ export function ImportFormatDialog({ isOpen, onClose, onImport }: ImportFormatDi
       const extension = file.name.split('.').pop()?.toLowerCase();
 
       let parseResult;
+      let detectedType = importType;
 
-      switch (extension) {
-        case "json":
-          parseResult = parseJSON(content);
-          break;
-        case "csv":
-          parseResult = parseCSV(content);
-          break;
-        case "html":
-          parseResult = parseHTML(content);
-          break;
-        default:
-          toast.error("Formato de arquivo não suportado. Use JSON, CSV ou HTML.");
-          return;
+      // Auto-detect bookmarks format (has <!DOCTYPE NETSCAPE-Bookmark-file-1> or contains <DT><A HREF)
+      if (
+        content.includes("<!DOCTYPE NETSCAPE-Bookmark-file-1") ||
+        content.includes("NETSCAPE-Bookmark-file") ||
+        (content.includes("<DT>") && content.includes("<A HREF"))
+      ) {
+        parseResult = parseBookmarks(content);
+        detectedType = 'bookmarks';
+      } else {
+        switch (extension) {
+          case "json":
+            parseResult = parseJSON(content);
+            detectedType = 'json';
+            break;
+          case "csv":
+            parseResult = parseCSV(content);
+            detectedType = 'csv';
+            break;
+          case "html":
+            parseResult = parseHTML(content);
+            detectedType = 'html';
+            break;
+          default:
+            toast.error("Formato de arquivo não suportado. Use JSON, CSV, HTML ou Bookmarks.");
+            return;
+        }
       }
 
       setResult(parseResult);
+      setImportType(detectedType);
 
       if (parseResult.errorCount > 0) {
         toast.warning(
           `⚠️ ${parseResult.successCount} link(s) importado(s), ${parseResult.errorCount} com erro`
         );
+      } else if (parseResult.successCount > 0) {
+        toast.success(`✅ ${parseResult.successCount} link(s) encontrado(s)`);
       }
     } catch (err) {
       toast.error("Erro ao ler o arquivo");
@@ -91,54 +113,106 @@ export function ImportFormatDialog({ isOpen, onClose, onImport }: ImportFormatDi
 
   const handleCancel = () => {
     setResult(null);
+    setImportType(null);
     onClose();
+  };
+
+  const triggerFileInput = (type: ImportType) => {
+    setImportType(type);
+    if (type === 'bookmarks') {
+      bookmarksInputRef.current?.click();
+    } else {
+      fileInputRef.current?.click();
+    }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleCancel}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Importar Links</DialogTitle>
+          <DialogTitle>
+            {result ? "Confirmar Importação" : "Importar Links"}
+          </DialogTitle>
           <DialogDescription>
-            Suportados: JSON, CSV ou HTML
+            {result ? "Revise e confirme os links" : "Selecione o formato do arquivo"}
           </DialogDescription>
         </DialogHeader>
 
         {!result ? (
           <div className="space-y-4">
-            <div className="border-2 border-dashed rounded-lg p-8 text-center">
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant="outline"
+                className="flex flex-col items-center justify-center h-24 gap-2"
+                onClick={() => triggerFileInput('json')}
+                disabled={importing}
+              >
+                <FileJson className="h-6 w-6" />
+                <span className="text-xs font-medium">JSON</span>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="flex flex-col items-center justify-center h-24 gap-2"
+                onClick={() => triggerFileInput('csv')}
+                disabled={importing}
+              >
+                <FileText className="h-6 w-6" />
+                <span className="text-xs font-medium">CSV</span>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="flex flex-col items-center justify-center h-24 gap-2"
+                onClick={() => triggerFileInput('html')}
+                disabled={importing}
+              >
+                <FileText className="h-6 w-6" />
+                <span className="text-xs font-medium">HTML</span>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="flex flex-col items-center justify-center h-24 gap-2 border-blue-200 hover:bg-blue-50"
+                onClick={() => triggerFileInput('bookmarks')}
+                disabled={importing}
+              >
+                <Bookmark className="h-6 w-6 text-blue-600" />
+                <span className="text-xs font-medium">Bookmarks</span>
+              </Button>
+            </div>
+
+            <div hidden>
               <input
                 type="file"
-                id="import-file"
+                ref={fileInputRef}
                 accept=".json,.csv,.html"
                 onChange={handleFileSelect}
-                disabled={importing}
-                className="hidden"
+                aria-hidden="true"
               />
-              <label
-                htmlFor="import-file"
-                className="flex flex-col items-center gap-2 cursor-pointer"
-              >
-                {importing ? (
-                  <>
-                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                    <p className="text-sm font-medium">Processando...</p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-sm font-medium">Clique para selecionar arquivo</p>
-                    <p className="text-xs text-muted-foreground">ou arraste para cá</p>
-                  </>
-                )}
-              </label>
+              <input
+                type="file"
+                ref={bookmarksInputRef}
+                accept=".html"
+                onChange={handleFileSelect}
+                aria-hidden="true"
+              />
             </div>
 
             <Alert>
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                Máximo 5MB. Arquivos duplicados não serão adicionados novamente.
+              <AlertDescription className="text-xs">
+                <strong>Bookmarks:</strong> Exporte os bookmarks do seu navegador (Chrome, Firefox, Safari, Edge) e importe aqui.
+                Pastas de bookmarks se tornarão categorias.
               </AlertDescription>
             </Alert>
+
+            {importing && (
+              <div className="flex items-center justify-center gap-2 py-4">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">Processando...</p>
+              </div>
+            )}
           </div>
         ) : (
           <div className="space-y-4">

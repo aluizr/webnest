@@ -1,4 +1,5 @@
 import type { LinkItem } from "@/types/link";
+import { linksToBookmarksHTML } from "@/lib/bookmarks-parser";
 
 /**
  * Escape CSV special characters
@@ -241,4 +242,16 @@ export function downloadFile(blob: Blob, filename: string) {
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+/**
+ * Export links as bookmarks HTML (compatible with all browsers)
+ * Can be imported back into Chrome, Firefox, Safari, Edge, etc.
+ */
+export function exportAsBookmarks(
+  links: LinkItem[],
+  categories?: { id: string; name: string; parentId?: string | null }[]
+): Blob {
+  const bookmarksHTML = linksToBookmarksHTML(links, categories || []);
+  return new Blob([bookmarksHTML], { type: 'text/html;charset=utf-8;' });
 }

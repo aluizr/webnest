@@ -7,17 +7,18 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { FileJson, FileText, FileSpreadsheet } from "lucide-react";
-import { downloadFile, exportAsJSON, exportAsCSV, exportAsHTML } from "@/lib/export";
-import type { LinkItem } from "@/types/link";
+import { FileJson, FileText, FileSpreadsheet, Bookmark } from "lucide-react";
+import { downloadFile, exportAsJSON, exportAsCSV, exportAsHTML, exportAsBookmarks } from "@/lib/export";
+import type { LinkItem, Category } from "@/types/link";
 
 interface ExportFormatDialogProps {
   isOpen: boolean;
   onClose: () => void;
   links: LinkItem[];
+  categories?: Category[];
 }
 
-type ExportFormat = "json" | "csv" | "html";
+type ExportFormat = "json" | "csv" | "html" | "bookmarks";
 
 const formats: Array<{
   id: ExportFormat;
@@ -47,9 +48,16 @@ const formats: Array<{
     icon: <FileText className="h-8 w-8" />,
     extension: "html",
   },
+  {
+    id: "bookmarks",
+    name: "Bookmarks",
+    description: "Importe de volta para Chrome, Firefox, Safari, Edge...",
+    icon: <Bookmark className="h-8 w-8 text-blue-600" />,
+    extension: "html",
+  },
 ];
 
-export function ExportFormatDialog({ isOpen, onClose, links }: ExportFormatDialogProps) {
+export function ExportFormatDialog({ isOpen, onClose, links, categories }: ExportFormatDialogProps) {
   const [exporting, setExporting] = useState(false);
 
   const handleExport = async (format: ExportFormat) => {
@@ -71,6 +79,10 @@ export function ExportFormatDialog({ isOpen, onClose, links }: ExportFormatDialo
         case "html":
           blob = exportAsHTML(links, "Meus Links");
           filename = `links-${timestamp}.html`;
+          break;
+        case "bookmarks":
+          blob = exportAsBookmarks(links, categories);
+          filename = `bookmarks-${timestamp}.html`;
           break;
       }
 
