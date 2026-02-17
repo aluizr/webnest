@@ -6,11 +6,13 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { LinkCard } from "@/components/LinkCard";
 import { LinkForm } from "@/components/LinkForm";
 import { SearchBar } from "@/components/SearchBar";
+import { DragDropOverlay } from "@/components/DragDropOverlay";
 import { StatsDashboard } from "@/components/StatsDashboard";
 import { ExportFormatDialog } from "@/components/ExportFormatDialog";
 import { ImportFormatDialog } from "@/components/ImportFormatDialog";
 import { Button } from "@/components/ui/button";
 import { useLinks } from "@/hooks/use-links";
+import { useDragDropManager } from "@/hooks/use-drag-drop-manager";
 import { toast } from "sonner";
 import type { LinkItem, SearchFilters } from "@/types/link";
 import type { User } from "@supabase/supabase-js";
@@ -38,10 +40,23 @@ const Index = ({ user, onSignOut }: IndexProps) => {
     reorderLinks,
   } = useLinks(user.id);
 
+  const {
+    dragState,
+    canUndo,
+    canRedo,
+    handleDragStart: dragStart,
+    handleDragOver: dragOver,
+    handleDragLeave: dragLeave,
+    handleDragEnd: dragEnd,
+    reorderLinks: dragReorderLinks,
+    undo,
+    redo,
+    getCurrentLinks,
+  } = useDragDropManager(links, categories);
+
   const [formOpen, setFormOpen] = useState(false);
   const [editingLink, setEditingLink] = useState<LinkItem | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [draggedLink, setDraggedLink] = useState<LinkItem | null>(null);
   const [statsOpen, setStatsOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -62,72 +77,39 @@ const Index = ({ user, onSignOut }: IndexProps) => {
     setFormOpen(true);
   };
 
-  // ✅ Handlers para Drag & Drop
+  // ✅ Handlers para Drag & Drop com validação
   const handleDragStart = (e: React.DragEvent, link: LinkItem) => {
     if (searchFilters.sort !== "manual") {
-      toast.info("Mude a ordenação para Manual para reordenar");
+      toast.error("Ative 'Manual' para reordenar links");
+      e.preventDefault();
       return;
     }
-    setDraggedLink(link);
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData("text/plain", link.id);
+    dragStart(e, link);
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
+  const handleDragOver = (e: React.DragEvent, linkId: string) => {
+    if (searchFilters.sort !== "manual") return;
+    dragOver(e, linkId);
   };
 
   const handleDrop = (e: React.DragEvent, targetLink: LinkItem) => {
-    e.preventDefault();
-    
     if (searchFilters.sort !== "manual") {
-      toast.info("Mude a ordenação para Manual para reordenar");
+      toast.error("Ative 'Manual' para reordenar links");
       return;
     }
 
-    const dragId = draggedLink?.id || e.dataTransfer.getData("text/plain");
-    const dragItem = dragId ? links.find((l) => l.id === dragId) : null;
-
-    if (!dragItem || dragItem.id === targetLink.id) {
-      setDraggedLink(null);
+    const dragId = dragState.draggedLink?.id || e.dataTransfer.getData("text/plain");
+    if (!dragId || dragId === targetLink.id) {
+      dragEnd();
       return;
     }
 
-    // Encontrar índices dos links na lista filtrada
-    const draggedIndex = filteredLinks.findIndex(l => l.id === dragItem.id);
-    const targetIndex = filteredLinks.findIndex(l => l.id === targetLink.id);
-
-    if (draggedIndex === -1 || targetIndex === -1) {
-      setDraggedLink(null);
-      return;
+    const reordered = dragReorderLinks(dragId, targetLink.id);
+    if (reordered) {
+      reorderLinks(reordered);
+      toast.success("Links reordenados!");
     }
-
-    // Criar nova lista com os links reordenados
-    const newFilteredLinks = [...filteredLinks];
-    const [movedLink] = newFilteredLinks.splice(draggedIndex, 1);
-    newFilteredLinks.splice(targetIndex, 0, movedLink);
-
-    // Reordenar mantendo a ordem global e evitando posições duplicadas
-    const allOrdered = [...links].sort((a, b) => a.position - b.position);
-    const filteredIdSet = new Set(newFilteredLinks.map((l) => l.id));
-    let nextFilteredIndex = 0;
-
-    const merged = allOrdered.map((link) => {
-      if (!filteredIdSet.has(link.id)) return link;
-      const next = newFilteredLinks[nextFilteredIndex++];
-      return next ? { ...next } : link;
-    });
-
-    const reorderedAllLinks = merged.map((link, index) => ({
-      ...link,
-      position: index,
-    }));
-
-    // Chamar função para salvar no banco
-    reorderLinks(reorderedAllLinks);
-    setDraggedLink(null);
-    toast.success("Links reordenados!");
+    dragEnd();
   };
 
   const handleImportLinks = async (
@@ -248,13 +230,24 @@ const Index = ({ user, onSignOut }: IndexProps) => {
                   onDragStart={searchFilters.sort === "manual" ? handleDragStart : undefined}
                   onDragOver={searchFilters.sort === "manual" ? handleDragOver : undefined}
                   onDrop={searchFilters.sort === "manual" ? handleDrop : undefined}
-                  isDragging={draggedLink?.id === link.id}
+                  onDragLeave={searchFilters.sort === "manual" ? dragLeave : undefined}
+                  isDragging={dragState.draggedLink?.id === link.id}
+                  isDropZone={dragState.dropZoneId === link.id && dragState.draggedLink !== null}
                 />
               ))}
             </div>
           )}
           </div>
         </main>
+
+        {/* Drag & Drop Overlay com Undo/Redo */}
+        <DragDropOverlay
+          canUndo={canUndo}
+          canRedo={canRedo}
+          onUndo={undo}
+          onRedo={redo}
+          isDragging={dragState.draggedLink !== null}
+        />
       </div>
 
       <LinkForm

@@ -2,6 +2,7 @@ import { Star, ExternalLink, Pencil, Trash2, GripVertical } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,13 +21,29 @@ interface LinkCardProps {
   onToggleFavorite: (id: string) => void;
   onEdit: (link: LinkItem) => void;
   onDelete: (id: string) => void;
-  onDragStart?: (e: React.DragEvent, link: LinkItem) => void; // ✅ Para drag & drop
-  onDragOver?: (e: React.DragEvent) => void;
+  onDragStart?: (e: React.DragEvent, link: LinkItem) => void;
+  onDragOver?: (e: React.DragEvent, linkId: string) => void;
   onDrop?: (e: React.DragEvent, link: LinkItem) => void;
+  onDragLeave?: (e: React.DragEvent) => void;
   isDragging?: boolean;
+  isDropZone?: boolean;
+  dragDirection?: "above" | "below";
 }
 
-export function LinkCard({ link, onToggleFavorite, onEdit, onDelete, onDragStart, onDragOver, onDrop, isDragging }: LinkCardProps) {
+export function LinkCard({
+  link,
+  onToggleFavorite,
+  onEdit,
+  onDelete,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onDragLeave,
+  isDragging,
+  isDropZone,
+  dragDirection,
+}: LinkCardProps) {
+  const [isHovering, setIsHovering] = useState(false);
   const dragEnabled = Boolean(onDragStart);
   // ✅ Usar serviço mais privado para favicons (icon.horse)
   const getFaviconUrl = () => {
@@ -46,27 +63,42 @@ export function LinkCard({ link, onToggleFavorite, onEdit, onDelete, onDragStart
   const faviconUrl = getFaviconUrl();
 
   return (
-    <Card 
-      draggable={dragEnabled}
-      onDragStart={(e) => onDragStart?.(e, link)}
-      onDragOver={(e) => {
-        e.preventDefault();
-        onDragOver?.(e);
-      }}
-      onDrop={(e) => {
-        e.preventDefault();
-        onDrop?.(e, link);
-      }}
-      className={`group relative overflow-hidden transition-all ${
-        isDragging ? 'opacity-50 scale-95' : 'hover:shadow-md'
-      } ${dragEnabled ? 'cursor-grab active:cursor-grabbing' : ''}`}
-    >
-      <CardContent className="p-4">
-        <div className="flex items-start gap-3">
-          {/* ✅ Ícone de grip para indicar que é draggable */}
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-            <GripVertical className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-          </div>
+    <>
+      {/* Drop zone indicator above */}
+      {isDropZone && dragDirection === "above" && (
+        <div className="h-1 bg-blue-500 rounded-full mb-2 animate-pulse" />
+      )}
+
+      <Card
+        draggable={dragEnabled}
+        onDragStart={(e) => onDragStart?.(e, link)}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsHovering(true);
+          onDragOver?.(e, link.id);
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          setIsHovering(false);
+          onDrop?.(e, link);
+        }}
+        onDragLeave={(e) => {
+          setIsHovering(false);
+          onDragLeave?.(e);
+        }}
+        onDragEnd={() => setIsHovering(false)}
+        className={`group relative overflow-hidden transition-all duration-200 ${
+          isDragging ? "opacity-50 scale-95 shadow-sm" : ""
+        } ${isHovering && isDropZone ? "bg-blue-50 border-blue-300 border-2" : ""} ${
+          dragEnabled ? "cursor-grab active:cursor-grabbing" : ""
+        }`}
+      >
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3">
+            {/* ✅ Ícone de grip para indicar que é draggable */}
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+              <GripVertical className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+            </div>
           
           <img
             src={faviconUrl}
@@ -118,38 +150,44 @@ export function LinkCard({ link, onToggleFavorite, onEdit, onDelete, onDragStart
               ))}
             </div>
           </div>
-        </div>
 
-        <div className="absolute right-2 bottom-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEdit(link)}>
-            <Pencil className="h-3.5 w-3.5" />
-          </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive">
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Excluir link?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Esta acao nao pode ser desfeita. O link sera removido permanentemente.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  onClick={() => onDelete(link.id)}
-                >
-                  Excluir
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <div className="absolute right-2 bottom-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEdit(link)}>
+              <Pencil className="h-3.5 w-3.5" />
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive">
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Excluir link?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Esta acao nao pode ser desfeita. O link sera removido permanentemente.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={() => onDelete(link.id)}
+                  >
+                    Excluir
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      {/* Drop zone indicator below */}
+      {isDropZone && dragDirection === "below" && (
+        <div className="h-1 bg-blue-500 rounded-full mt-2 animate-pulse" />
+      )}
+    </>
   );
 }
