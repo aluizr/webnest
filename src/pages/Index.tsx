@@ -105,9 +105,8 @@ const Index = ({ user, onSignOut }: IndexProps) => {
       return;
     }
 
-    // Usar direction do state, ou fallback para a última direção conhecida
-    const direction = dragState.dragDirection || lastKnownDrop.current?.direction || "above";
-    const reordered = dragReorderLinks(dragId, targetLink.id, direction);
+    // Reordenar: item sempre toma a posição do alvo
+    const reordered = dragReorderLinks(dragId, targetLink.id);
     if (reordered) {
       reorderLinks(reordered);
       toast.success("Links reordenados!");

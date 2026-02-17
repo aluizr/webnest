@@ -183,13 +183,16 @@ export function useDragDropManager(initialLinks: LinkItem[], categories: Categor
       e.preventDefault();
       e.dataTransfer!.dropEffect = "move";
 
-      // Calcular a direção com base na posição vertical do mouse
+      // Calcular direção visual baseada na posição do mouse no card
       let dragDirection: "above" | "below" | undefined = undefined;
       const element = e.currentTarget as HTMLElement;
       if (element && targetId) {
         const rect = element.getBoundingClientRect();
-        const midpoint = rect.top + rect.height / 2;
-        dragDirection = e.clientY < midpoint ? "above" : "below";
+        // Usar eixo horizontal E vertical para funcionar em grid e list
+        const relX = (e.clientX - rect.left) / rect.width; // 0 a 1
+        const relY = (e.clientY - rect.top) / rect.height; // 0 a 1
+        // Diagonal: top-left = before, bottom-right = after
+        dragDirection = (relX + relY) < 1 ? "above" : "below";
       }
 
       // Comparar com os últimos valores - só atualizar se realmente mudou
@@ -268,35 +271,31 @@ export function useDragDropManager(initialLinks: LinkItem[], categories: Categor
     (dragId: string, targetId: string, direction?: "above" | "below", isCategory?: boolean): LinkItem[] | null => {
       // Sempre usar initialLinks como fonte de verdade
       const currentLinks = initialLinks;
-      let dragIndex = currentLinks.findIndex((l) => l.id === dragId);
-      let targetIndex = currentLinks.findIndex((l) => l.id === targetId);
+      const dragIndex = currentLinks.findIndex((l) => l.id === dragId);
+      const targetIndex = currentLinks.findIndex((l) => l.id === targetId);
 
       if (dragIndex === -1 || targetIndex === -1) return null;
       if (dragIndex === targetIndex) return null;
 
+      const draggedItem = currentLinks[dragIndex];
+
       // Criar array novo removendo o item arrastado
       const newLinks = currentLinks.filter((_, idx) => idx !== dragIndex);
-      
-      // Recalcular targetIndex depois de remover (se era depois do item arrastado)
-      if (dragIndex < targetIndex) {
-        targetIndex = targetIndex - 1;
-      }
 
-      const draggedItem = currentLinks[dragIndex];
-      
       if (isCategory) {
         // Mover para categoria
+        const adjustedTarget = dragIndex < targetIndex ? targetIndex - 1 : targetIndex;
         const updatedLink = {
           ...draggedItem,
           category: targetId,
         };
-        newLinks.splice(targetIndex, 0, updatedLink);
+        newLinks.splice(adjustedTarget, 0, updatedLink);
       } else {
-        // Inserir baseado na direção
-        let insertIndex = targetIndex;
-        if (direction === "below") {
-          insertIndex = targetIndex + 1;
-        }
+        // Item sempre toma a posição do alvo
+        // Após remoção, se arrastou para frente, inserir em targetIndex
+        // coloca o item exatamente na posição original do alvo.
+        // Se arrastou para trás, targetIndex não mudou, mesmo efeito.
+        const insertIndex = dragIndex < targetIndex ? targetIndex - 1 : targetIndex;
         newLinks.splice(insertIndex, 0, draggedItem);
       }
 
