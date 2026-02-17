@@ -130,29 +130,40 @@ export function useDragDropManager(initialLinks: LinkItem[], categories: Categor
         draggedLink: link,
       }));
 
-      // Criar drag image customizado
+      // Criar drag image customizado (respeita dark/light mode)
+      const isDark = document.documentElement.classList.contains("dark");
       const dragPreview = document.createElement("div");
+      dragPreview.style.position = "absolute";
+      dragPreview.style.top = "-9999px";
+      dragPreview.style.left = "-9999px";
       dragPreview.innerHTML = `
         <div style="
-          background: white;
-          border-radius: 8px;
-          padding: 8px 12px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-          font-size: 14px;
-          font-weight: 500;
-          color: #333;
-          max-width: 200px;
+          background: ${isDark ? "hsl(222.2, 84%, 8%)" : "white"};
+          border: 1px solid ${isDark ? "hsl(217.2, 32.6%, 25%)" : "hsl(214.3, 31.8%, 85%)"};
+          border-radius: 10px;
+          padding: 10px 14px;
+          box-shadow: 0 8px 24px ${isDark ? "rgba(0,0,0,0.5)" : "rgba(0,0,0,0.15)"}, 
+                      0 0 0 1px ${isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"};
+          font-size: 13px;
+          font-weight: 600;
+          color: ${isDark ? "hsl(210, 40%, 92%)" : "#333"};
+          max-width: 220px;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+          transform: rotate(2deg);
+          display: flex;
+          align-items: center;
+          gap: 8px;
         ">
-          🔗 ${link.title || link.url}
+          <span style="font-size: 16px;">🔗</span>
+          <span>${link.title || link.url}</span>
         </div>
       `;
       document.body.appendChild(dragPreview);
-      e.dataTransfer!.setDragImage(dragPreview, 0, 0);
+      e.dataTransfer!.setDragImage(dragPreview, 110, 20);
 
-      setTimeout(() => document.body.removeChild(dragPreview), 0);
+      requestAnimationFrame(() => document.body.removeChild(dragPreview));
 
       e.dataTransfer!.effectAllowed = "move";
       e.dataTransfer!.setData("text/plain", link.id);

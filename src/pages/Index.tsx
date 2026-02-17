@@ -229,6 +229,8 @@ const Index = ({ user, onSignOut }: IndexProps) => {
                   onDelete={deleteLink}
                   onDragStart={searchFilters.sort === "manual" ? handleDragStart : undefined}
                   onDragOver={searchFilters.sort === "manual" ? handleDragOver : undefined}
+                  onDragLeave={searchFilters.sort === "manual" ? dragLeave : undefined}
+                  onDragEnd={searchFilters.sort === "manual" ? dragEnd : undefined}
                   onDrop={searchFilters.sort === "manual" ? handleDrop : undefined}
                   isDragging={dragState.draggedLink?.id === link.id}
                   isDropZone={dragState.dropZoneId === link.id && dragState.draggedLink !== null}

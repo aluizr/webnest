@@ -22,6 +22,8 @@ interface LinkCardProps {
   onDelete: (id: string) => void;
   onDragStart?: (e: React.DragEvent, link: LinkItem) => void;
   onDragOver?: (e: React.DragEvent, linkId: string) => void;
+  onDragLeave?: (e: React.DragEvent) => void;
+  onDragEnd?: (e: React.DragEvent) => void;
   onDrop?: (e: React.DragEvent, link: LinkItem) => void;
   isDragging?: boolean;
   isDropZone?: boolean;
@@ -35,8 +37,9 @@ export function LinkCard({
   onDelete,
   onDragStart,
   onDragOver,
-  onDrop,
   onDragLeave,
+  onDragEnd,
+  onDrop,
   isDragging,
   isDropZone,
   dragDirection,
@@ -63,7 +66,7 @@ export function LinkCard({
     <>
       {/* Drop zone indicator above */}
       {isDropZone && dragDirection === "above" && (
-        <div className="h-1 bg-blue-500 rounded-full mb-2 animate-pulse" />
+        <div className="h-1 bg-primary rounded-full mb-2 animate-pulse shadow-[0_0_8px_hsl(var(--primary)/0.6)]" />
       )}
 
       <Card
@@ -79,12 +82,23 @@ export function LinkCard({
           e.stopPropagation();
           onDrop?.(e, link);
         }}
-        onDragLeave={() => {}}
-        onDragEnd={() => {}}
+        onDragLeave={(e) => {
+          // Só limpar se realmente saiu do card (não de um filho)
+          const relatedTarget = e.relatedTarget as HTMLElement;
+          if (!e.currentTarget.contains(relatedTarget)) {
+            onDragLeave?.(e);
+          }
+        }}
+        onDragEnd={(e) => onDragEnd?.(e)}
         data-card-id={link.id}
         className={`group relative overflow-hidden transition-all duration-200 border-2 ${
-          isDragging ? "opacity-50 scale-95 shadow-sm" : ""
-        } ${isDropZone ? "border-blue-300 bg-blue-50 shadow-md" : "border-transparent"} ${
+          isDragging
+            ? "opacity-25 scale-[0.97] shadow-none border-dashed border-primary/40 bg-primary/5"
+            : ""
+        } ${isDropZone && !isDragging
+            ? "border-primary/50 bg-primary/10 shadow-lg shadow-primary/10 scale-[1.02] ring-1 ring-primary/30"
+            : !isDragging ? "border-transparent" : ""
+        } ${
           dragEnabled ? "cursor-grab active:cursor-grabbing" : ""
         }`}
       >
@@ -181,7 +195,7 @@ export function LinkCard({
 
       {/* Drop zone indicator below */}
       {isDropZone && dragDirection === "below" && (
-        <div className="h-1 bg-blue-500 rounded-full mt-2 animate-pulse" />
+        <div className="h-1 bg-primary rounded-full mt-2 animate-pulse shadow-[0_0_8px_hsl(var(--primary)/0.6)]" />
       )}
     </>
   );

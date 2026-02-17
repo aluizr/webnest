@@ -103,3 +103,14 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* Drag & Drop transitions */
+[draggable="true"] {
+  touch-action: none;
+  -webkit-user-drag: element;
+  transition: opacity 200ms ease, transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease, background-color 200ms ease;
+}
+
+[draggable="true"]:active {
+  cursor: grabbing;
+}
