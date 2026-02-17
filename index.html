@@ -7,7 +7,7 @@
     <!-- ✅ CRITICAL: Content Security Policy -->
     <meta 
       http-equiv="Content-Security-Policy" 
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://api.microlink.io https://other.myjson.online; base-uri 'self'; form-action 'self'; upgrade-insecure-requests" 
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' http://localhost:* http://127.0.0.1:* https://*.supabase.co https://api.microlink.io https://other.myjson.online https://*.icon.horse; base-uri 'self'; form-action 'self'; upgrade-insecure-requests" 
     />
     
     <!-- ✅ Segurança adicional (via HTML, não HTTP headers) -->
