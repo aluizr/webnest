@@ -38,6 +38,10 @@ export function useDragDropManager(initialLinks: LinkItem[], categories: Categor
   const autoScrollRef = useRef<NodeJS.Timeout>();
   const dragImageRef = useRef<HTMLDivElement>(null);
   const lastLinksRef = useRef<LinkItem[]>(initialLinks);
+  const lastDragOverRef = useRef<{ targetId: string | null; direction: "above" | "below" | undefined }>({
+    targetId: null,
+    direction: undefined,
+  });
 
   // Sincronizar histórico quando links mudam externamente (de use-links)
   useEffect(() => {
@@ -156,7 +160,7 @@ export function useDragDropManager(initialLinks: LinkItem[], categories: Categor
     []
   );
 
-  // Drag over - detecta direção do arrasto
+  // Drag over - detecta direção do arrasto com cache
   const handleDragOver = useCallback(
     (e: React.DragEvent, targetId?: string, isCategory?: boolean) => {
       e.preventDefault();
@@ -171,12 +175,21 @@ export function useDragDropManager(initialLinks: LinkItem[], categories: Categor
         dragDirection = e.clientY < midpoint ? "above" : "below";
       }
 
-      setDragState((prev) => ({
-        ...prev,
-        dropZoneId: targetId || null,
-        isDraggingOverCategory: isCategory || false,
-        dragDirection,
-      }));
+      // Comparar com os últimos valores - só atualizar se realmente mudou
+      const lastOver = lastDragOverRef.current;
+      const hasChanged = 
+        lastOver.targetId !== targetId || 
+        lastOver.direction !== dragDirection;
+
+      if (hasChanged) {
+        lastDragOverRef.current = { targetId: targetId || null, direction: dragDirection };
+        setDragState((prev) => ({
+          ...prev,
+          dropZoneId: targetId || null,
+          isDraggingOverCategory: isCategory || false,
+          dragDirection,
+        }));
+      }
 
       // Auto-scroll
       if (autoScrollRef.current) clearTimeout(autoScrollRef.current);
@@ -189,6 +202,7 @@ export function useDragDropManager(initialLinks: LinkItem[], categories: Categor
 
   // Drag leave
   const handleDragLeave = useCallback(() => {
+    lastDragOverRef.current = { targetId: null, direction: undefined };
     setDragState((prev) => ({
       ...prev,
       dropZoneId: null,
@@ -199,6 +213,7 @@ export function useDragDropManager(initialLinks: LinkItem[], categories: Categor
 
   // Drag end
   const handleDragEnd = useCallback(() => {
+    lastDragOverRef.current = { targetId: null, direction: undefined };
     setDragState({
       draggedLink: null,
       dropZoneId: null,

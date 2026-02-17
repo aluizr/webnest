@@ -87,9 +87,9 @@ export function LinkCard({
           onDragLeave?.(e);
         }}
         onDragEnd={() => setIsHovering(false)}
-        className={`group relative overflow-hidden transition-all duration-200 ${
+        className={`group relative overflow-hidden transition-all duration-200 border-2 ${
           isDragging ? "opacity-50 scale-95 shadow-sm" : ""
-        } ${isHovering && isDropZone ? "bg-blue-50 border-blue-300 border-2" : ""} ${
+        } ${isHovering && isDropZone ? "border-blue-300 bg-blue-50 shadow-md" : "border-transparent"} ${
           dragEnabled ? "cursor-grab active:cursor-grabbing" : ""
         }`}
       >
