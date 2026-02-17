@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  # Production com Node.js serve
+  prod-serve:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    container_name: internet-gems-finder-prod-serve
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+
+  # Production com Nginx (recomendado)
+  prod-nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    ports:
+      - "3001:80"
+    container_name: internet-gems-finder-prod-nginx
+    restart: unless-stopped
+
+  # Desenvolvimento com hot-reload
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5173:5173"
+    container_name: internet-gems-finder-dev
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:5173
+    restart: unless-stopped
