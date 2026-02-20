@@ -117,5 +117,30 @@ export default defineConfig(({ mode }) => ({
     // ✅ Não expor source maps em produção
     sourcemap: mode !== 'production',
     minify: 'esbuild',
+    // ✅ Separar vendor libraries em chunks independentes (cacheamento + parallelismo)
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            // React core — muda raramente
+            if (id.includes('react-dom') || id.includes('react-router') || id.includes('/react/')) {
+              return 'vendor-react';
+            }
+            // Supabase
+            if (id.includes('@supabase')) {
+              return 'vendor-supabase';
+            }
+            // Radix UI
+            if (id.includes('@radix-ui')) {
+              return 'vendor-ui';
+            }
+            // Recharts (pesado, só carrega na página de stats)
+            if (id.includes('recharts') || id.includes('d3-')) {
+              return 'vendor-charts';
+            }
+          }
+        },
+      },
+    },
   },
 }));
