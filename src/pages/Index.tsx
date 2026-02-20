@@ -8,6 +8,7 @@ import { LinkCard } from "@/components/LinkCard";
 import { LinkTableView } from "@/components/LinkTableView";
 import { LinkBoardView } from "@/components/LinkBoardView";
 import { ViewSwitcher } from "@/components/ViewSwitcher";
+import type { GridColumns } from "@/components/ViewSwitcher";
 import { LinkForm } from "@/components/LinkForm";
 import { SearchBar } from "@/components/SearchBar";
 import { DragDropOverlay } from "@/components/DragDropOverlay";
@@ -64,6 +65,7 @@ const Index = ({ user, onSignOut }: IndexProps) => {
   const [formOpen, setFormOpen] = useState(false);
   const [editingLink, setEditingLink] = useState<LinkItem | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [gridColumns, setGridColumns] = useState<GridColumns>(3);
   const [statsOpen, setStatsOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -242,7 +244,7 @@ const Index = ({ user, onSignOut }: IndexProps) => {
             </div>
             <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
               <ThemeToggle />
-              <ViewSwitcher viewMode={viewMode} onViewModeChange={setViewMode} />
+              <ViewSwitcher viewMode={viewMode} onViewModeChange={setViewMode} gridColumns={gridColumns} onGridColumnsChange={setGridColumns} />
               <Button variant="outline" size="icon" onClick={() => setStatsOpen(true)} title="Estatísticas (S)">
                 <BarChart3 className="h-4 w-4" />
               </Button>
@@ -310,7 +312,12 @@ const Index = ({ user, onSignOut }: IndexProps) => {
             <div
               className={
                 viewMode === "grid"
-                  ? "grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                  ? `grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 ${
+                      gridColumns === 2 ? "lg:grid-cols-2" :
+                      gridColumns === 4 ? "lg:grid-cols-4" :
+                      gridColumns === 5 ? "lg:grid-cols-4 xl:grid-cols-5" :
+                      "lg:grid-cols-3"
+                    }`
                   : "flex flex-col gap-2 md:gap-3"
               }
             >

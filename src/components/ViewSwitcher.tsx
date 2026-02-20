@@ -1,11 +1,15 @@
-import { LayoutGrid, List, Table2, Columns3, Check } from "lucide-react";
+import { LayoutGrid, List, Table2, Columns3, Check, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { ViewMode } from "@/types/link";
 
+export type GridColumns = 2 | 3 | 4 | 5;
+
 interface ViewSwitcherProps {
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
+  gridColumns: GridColumns;
+  onGridColumnsChange: (cols: GridColumns) => void;
 }
 
 const views: { mode: ViewMode; label: string; icon: React.ElementType; description: string }[] = [
@@ -22,7 +26,9 @@ const activeIcons: Record<ViewMode, React.ElementType> = {
   board: Columns3,
 };
 
-export function ViewSwitcher({ viewMode, onViewModeChange }: ViewSwitcherProps) {
+const columnOptions: GridColumns[] = [2, 3, 4, 5];
+
+export function ViewSwitcher({ viewMode, onViewModeChange, gridColumns, onGridColumnsChange }: ViewSwitcherProps) {
   const ActiveIcon = activeIcons[viewMode];
 
   return (
@@ -32,7 +38,7 @@ export function ViewSwitcher({ viewMode, onViewModeChange }: ViewSwitcherProps) 
           <ActiveIcon className="h-4 w-4" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-48 p-1">
+      <PopoverContent align="end" className="w-52 p-1">
         {views.map((view) => {
           const Icon = view.icon;
           const isActive = viewMode === view.mode;
@@ -55,6 +61,62 @@ export function ViewSwitcher({ viewMode, onViewModeChange }: ViewSwitcherProps) 
             </button>
           );
         })}
+
+        {/* Grid size selector — only when grid is active */}
+        {viewMode === "grid" && (
+          <>
+            <div className="mx-2 my-1.5 border-t" />
+            <div className="px-3 py-2">
+              <p className="text-xs font-medium text-muted-foreground mb-2">Tamanho da grade</p>
+              <div className="flex items-center gap-1.5">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  disabled={gridColumns <= 2}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const i = columnOptions.indexOf(gridColumns);
+                    if (i > 0) onGridColumnsChange(columnOptions[i - 1]);
+                  }}
+                >
+                  <Minus className="h-3.5 w-3.5" />
+                </Button>
+                <div className="flex-1 flex justify-center gap-1">
+                  {columnOptions.map((col) => (
+                    <button
+                      key={col}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onGridColumnsChange(col);
+                      }}
+                      className={`w-7 h-7 rounded text-xs font-medium transition-colors ${
+                        gridColumns === col
+                          ? "bg-primary text-primary-foreground"
+                          : "hover:bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {col}
+                    </button>
+                  ))}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  disabled={gridColumns >= 5}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const i = columnOptions.indexOf(gridColumns);
+                    if (i < columnOptions.length - 1) onGridColumnsChange(columnOptions[i + 1]);
+                  }}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
       </PopoverContent>
     </Popover>
   );
