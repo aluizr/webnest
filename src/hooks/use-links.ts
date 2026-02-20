@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { linkSchema, categorySchema } from "@/lib/validation";
 import { filterAndSortLinks } from "@/lib/utils";
 import { toast } from "sonner";
+import { enforceRateLimit, RateLimitError } from "@/lib/rate-limiter";
 import {
   cacheLinks,
   cacheCategories,
@@ -11,6 +12,20 @@ import {
   addPendingAction,
 } from "@/lib/offline-cache";
 import type { LinkItem, Category, SearchFilters } from "@/types/link";
+
+/** Helper para executar operação com rate limiting */
+function withRateLimit(operation: string, fn: () => Promise<void>): Promise<void> {
+  try {
+    enforceRateLimit(operation);
+  } catch (e) {
+    if (e instanceof RateLimitError) {
+      toast.error(e.message);
+      return Promise.resolve();
+    }
+    throw e;
+  }
+  return fn();
+}
 
 export function useLinks(userId: string | undefined) {
   const [links, setLinks] = useState<LinkItem[]>([]);
@@ -92,6 +107,7 @@ export function useLinks(userId: string | undefined) {
 
   const addLink = useCallback(async (link: Omit<LinkItem, "id" | "createdAt" | "position">) => {
     if (!userId) return;
+    return withRateLimit("link:create", async () => {
     const parsed = linkSchema.safeParse(link);
     if (!parsed.success) {
       toast.error(parsed.error.errors[0]?.message || "Dados inválidos");
@@ -132,9 +148,11 @@ export function useLinks(userId: string | undefined) {
       };
       setLinks((prev) => [newLink, ...prev]);
     }
+    }); // withRateLimit
   }, [userId, links]);
 
   const updateLink = useCallback(async (id: string, data: Partial<LinkItem>) => {
+    return withRateLimit("link:update", async () => {
     // Validate fields that are being updated
     const partial: any = {};
     if (data.url !== undefined) {
@@ -166,16 +184,20 @@ export function useLinks(userId: string | undefined) {
     if (!error) {
       setLinks((prev) => prev.map((l) => (l.id === id ? { ...l, ...data } : l)));
     }
+    }); // withRateLimit
   }, []);
 
   const deleteLink = useCallback(async (id: string) => {
+    return withRateLimit("link:delete", async () => {
     const { error } = await supabase.from("links").delete().eq("id", id);
     if (!error) {
       setLinks((prev) => prev.filter((l) => l.id !== id));
     }
+    }); // withRateLimit
   }, []);
 
   const toggleFavorite = useCallback(async (id: string) => {
+    return withRateLimit("link:favorite", async () => {
     const link = links.find((l) => l.id === id);
     if (!link) return;
     const newVal = !link.isFavorite;
@@ -185,10 +207,12 @@ export function useLinks(userId: string | undefined) {
         prev.map((l) => (l.id === id ? { ...l, isFavorite: newVal } : l))
       );
     }
+    }); // withRateLimit
   }, [links]);
 
   const addCategory = useCallback(async (name: string, icon: string = "Folder", parentId?: string | null) => {
     if (!userId) return;
+    return withRateLimit("category:create", async () => {
     const parsed = categorySchema.safeParse({ name, icon, parentId: parentId ?? null });
     if (!parsed.success) {
       toast.error(parsed.error.errors[0]?.message || "Dados inválidos");
@@ -226,9 +250,11 @@ export function useLinks(userId: string | undefined) {
         { id: data.id, name: data.name, icon: data.icon, parentId: data.parent_id ?? null },
       ]);
     }
+    }); // withRateLimit
   }, [userId, categories]);
 
   const deleteCategory = useCallback(async (id: string) => {
+    return withRateLimit("category:delete", async () => {
     const category = categories.find((c) => c.id === id);
     if (!category) return;
 
@@ -247,9 +273,11 @@ export function useLinks(userId: string | undefined) {
       setLinks((prev) => prev.map((l) => (l.category === fullName ? { ...l, category: "" } : l)));
       setCategories((prev) => prev.filter((c) => c.id !== id));
     }
+    }); // withRateLimit
   }, [categories, getCategoryFullName]);
 
   const renameCategory = useCallback(async (id: string, name: string) => {
+    return withRateLimit("category:rename", async () => {
     const parsed = categorySchema.safeParse({ name });
     if (!parsed.success) {
       toast.error(parsed.error.errors[0]?.message || "Nome inválido");
@@ -293,10 +321,12 @@ export function useLinks(userId: string | undefined) {
         prev.map((c) => (c.id === id ? { ...c, name: parsed.data.name } : c))
       );
     }
+    }); // withRateLimit
   }, [categories, getCategoryFullName]);
 
   // ✅ Função para reordenar links via drag & drop
   const reorderLinks = useCallback(async (reorderedLinks: LinkItem[]) => {
+    return withRateLimit("link:reorder", async () => {
     try {
       // Atualizar estado local imediatamente (otimista)
       setLinks(reorderedLinks);
@@ -317,6 +347,7 @@ export function useLinks(userId: string | undefined) {
       console.error("Erro ao reordenar links:", error);
       toast.error("Erro ao reordenar links");
     }
+    }); // withRateLimit
   }, []);
 
   const allTags = Array.from(new Set(links.flatMap((l) => l.tags)));

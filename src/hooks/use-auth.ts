@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { enforceRateLimit, RateLimitError } from "@/lib/rate-limiter";
 import type { User, Session } from "@supabase/supabase-js";
 
 export function useAuth() {
@@ -24,11 +25,29 @@ export function useAuth() {
   }, []);
 
   const signUp = async (email: string, password: string) => {
+    // ✅ Rate limiting: 3 tentativas por 10 min
+    try {
+      enforceRateLimit("auth:signup");
+    } catch (e) {
+      if (e instanceof RateLimitError) {
+        return { error: { message: e.message } as any };
+      }
+      throw e;
+    }
     const { error } = await supabase.auth.signUp({ email, password });
     return { error };
   };
 
   const signIn = async (email: string, password: string) => {
+    // ✅ Rate limiting: 5 tentativas por 5 min
+    try {
+      enforceRateLimit("auth:signin");
+    } catch (e) {
+      if (e instanceof RateLimitError) {
+        return { error: { message: e.message } as any };
+      }
+      throw e;
+    }
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error };
   };

@@ -2,6 +2,7 @@ import { Star, ExternalLink, Pencil, Trash2, GripVertical, StickyNote } from "lu
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { FaviconWithFallback } from "@/components/FaviconWithFallback";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,22 +46,6 @@ export function LinkCard({
   dragDirection,
 }: LinkCardProps) {
   const dragEnabled = Boolean(onDragStart);
-  // ✅ Usar serviço mais privado para favicons (icon.horse)
-  const getFaviconUrl = () => {
-    if (link.favicon && link.favicon.startsWith('http')) {
-      return link.favicon;
-    }
-    try {
-      const hostname = new URL(link.url).hostname;
-      if (!hostname) return '/placeholder.svg';
-      // Usar icon.horse (mais privado que Google)
-      return `https://icon.horse/icon/${hostname}?size=32`;
-    } catch {
-      return '/placeholder.svg';
-    }
-  };
-  
-  const faviconUrl = getFaviconUrl();
 
   return (
     <Card
@@ -111,13 +96,11 @@ export function LinkCard({
               <GripVertical className="h-5 w-5 text-muted-foreground flex-shrink-0" />
             </div>
           
-          <img
-            src={faviconUrl}
-            alt=""
-            className="mt-1 h-6 w-6 shrink-0 rounded"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = "/placeholder.svg";
-            }}
+          <FaviconWithFallback
+            url={link.url}
+            favicon={link.favicon}
+            size={24}
+            className="mt-1"
           />
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
