@@ -4,6 +4,53 @@ Todas as mudanças relevantes deste projeto estão documentadas neste arquivo.
 
 ---
 
+## [0.7.0] — 2026-02-20
+
+### Error Boundary + Logging Centralizado
+
+#### Sistema de Logging (`logger.ts`)
+- 5 níveis: `debug`, `info`, `warn`, `error`, `fatal`
+- Persistência em `localStorage` (últimos 100 erros, chave `webnest-error-log`)
+- Handlers globais para `window.onerror` e `unhandledrejection`
+- Funções `identifyUser()` / `clearUserIdentity()` para rastreio por usuário
+- `getStoredLogs()` e `exportLogs()` para diagnóstico e suporte
+- Integração lazy opcional com Sentry (`VITE_SENTRY_DSN`) e LogRocket (`VITE_LOGROCKET_APP_ID`) — sem dependências obrigatórias
+
+#### Error Boundary (`ErrorBoundary.tsx`)
+- Class component com `componentDidCatch` → loga via `logger.fatal()`
+- Fallback padrão com UI amigável: ícone de erro, mensagem, botões "Tentar novamente" e "Recarregar página"
+- Stack trace visível apenas em modo dev (collapsible)
+- Suporte a fallback customizado (elemento ou render function)
+- Dois boundaries no `App.tsx`: um externo (toda a árvore) e um interno (envolvendo `AppRoutes`)
+
+#### Integração de Logging nos Hooks
+- `use-links.ts`: `logger.error()` em falhas de add/update/delete link, criar categoria e reordenar
+- `use-auth.ts`: `logger.warn()` em falhas de login/cadastro, `identifyUser()` no login e `clearUserIdentity()` no logout
+
+### Favicon Fallback com Avatar Colorido
+
+- Componente `FaviconWithFallback.tsx` integrado no `LinkCard`
+- Tenta carregar favicon via `icon.horse`; em caso de falha, exibe avatar colorido
+- 16 cores determinísticas por hostname (hash consistente)
+- Letra inicial do domínio em maiúscula como fallback visual
+
+### Otimização de Bundle (P0)
+
+#### Manual Chunks (`vite.config.ts`)
+- `vendor-react`: React, React DOM, React Router (~83 KB gzip)
+- `vendor-supabase`: Supabase JS (~46 KB gzip)
+- `vendor-ui`: Radix UI (~27 KB gzip)
+- `vendor-charts`: Recharts + D3 (~113 KB gzip)
+- Chunk inicial do app reduzido de 166 KB → 27 KB gzip (**-84%**)
+- Vendor chunks cacheáveis separadamente pelo browser
+
+#### Limpeza
+- Removido `slider.tsx` (componente UI não utilizado)
+- Removido `ui/use-toast.ts` (re-export não utilizado)
+- Meta tag `apple-mobile-web-app-capable` substituída por `mobile-web-app-capable` (deprecation fix)
+
+---
+
 ## [0.6.0] — 2026-02-20
 
 ### Rate Limiting & Anti-Abuso
