@@ -89,6 +89,21 @@ export function LinkCard({
         <div className="absolute bottom-0 left-2 right-2 h-[3px] bg-primary rounded-full animate-pulse shadow-[0_0_8px_hsl(var(--primary)/0.6)] z-10" />
       )}
 
+      {/* OG Image Cover */}
+      {link.ogImage && (
+        <div className="w-full h-36 overflow-hidden bg-muted">
+          <img
+            src={link.ogImage}
+            alt=""
+            loading="lazy"
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              (e.currentTarget.parentElement as HTMLElement).style.display = 'none';
+            }}
+          />
+        </div>
+      )}
+
       <CardContent className="p-4">
           <div className="flex items-start gap-3">
             {/* ✅ Ícone de grip para indicar que é draggable */}

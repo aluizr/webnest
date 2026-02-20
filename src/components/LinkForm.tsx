@@ -39,6 +39,7 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
   const [tags, setTags] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
   const [favicon, setFavicon] = useState("");
+  const [ogImage, setOgImage] = useState("");
   const [showDraftRecovery, setShowDraftRecovery] = useState(false);
   const [forceAllowDuplicate, setForceAllowDuplicate] = useState(false);
   const { metadata, fetchMetadata } = useMetadata();
@@ -80,6 +81,7 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
       setTags(editingLink.tags);
       setNotes(editingLink.notes || "");
       setFavicon(editingLink.favicon);
+      setOgImage(editingLink.ogImage || "");
       setAutoFilledTitle(true);
       setShowDraftRecovery(false);
       setForceAllowDuplicate(false);
@@ -102,6 +104,7 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
         setTags([]);
         setNotes("");
         setFavicon("");
+        setOgImage("");
         setAutoFilledTitle(false);
         setForceAllowDuplicate(false);
         initialLoadDone.current = true;
@@ -137,6 +140,10 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
         if (!description && result.description) {
           setDescription(result.description);
         }
+        // Auto-fill OG image
+        if (result.image) {
+          setOgImage(result.image);
+        }
       });
     }, 500);
 
@@ -161,13 +168,14 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
         selectedChildId,
         tags,
         favicon,
+        ogImage,
       });
     }, 500);
 
     return () => {
       if (draftTimeoutRef.current) clearTimeout(draftTimeoutRef.current);
     };
-  }, [url, title, description, notes, selectedParentId, selectedChildId, tags, favicon, editingLink, saveDraft]);
+  }, [url, title, description, notes, selectedParentId, selectedChildId, tags, favicon, ogImage, editingLink, saveDraft]);
 
   const handleAddTag = () => {
     const trimmed = tagInput.trim().toLowerCase();
@@ -203,6 +211,7 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
       notes: notes.trim(),
       isFavorite: editingLink?.isFavorite ?? false,
       favicon,
+      ogImage,
     });
     // Limpar rascunho após envio bem-sucedido
     clearDraft();
@@ -220,6 +229,7 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
       setSelectedChildId(draft.selectedChildId);
       setTags(draft.tags);
       setFavicon(draft.favicon);
+      setOgImage(draft.ogImage || "");
       setAutoFilledTitle(!!draft.title); // Mark as auto-filled so it doesn't get overwritten
     }
     setShowDraftRecovery(false);
@@ -237,6 +247,7 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
     setSelectedChildId("");
     setTags([]);
     setFavicon("");
+    setOgImage("");
     setAutoFilledTitle(false);
     initialLoadDone.current = true;
   };

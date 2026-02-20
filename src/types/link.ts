@@ -7,6 +7,7 @@ export interface LinkItem {
   tags: string[];
   isFavorite: boolean;
   favicon: string;
+  ogImage: string;
   notes: string;
   createdAt: string;
   position: number; // ✅ Para drag & drop ordering

@@ -82,6 +82,15 @@ export const linkSchema = z.object({
       favicon => !favicon || favicon.startsWith('http'),
       "Favicon deve ser uma URL válida"
     ),
+  ogImage: z
+    .string()
+    .max(2048, "OG Image URL muito longa")
+    .optional()
+    .default("")
+    .refine(
+      img => !img || img.startsWith('http'),
+      "OG Image deve ser uma URL válida"
+    ),
 });
 
 // ✅ Lista de ícones Lucide suportados para categorias
