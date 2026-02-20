@@ -1,10 +1,13 @@
 import { useState, useRef, useCallback } from "react";
-import { Plus, LayoutGrid, List, Download, Upload, LogOut, BarChart3, Menu } from "lucide-react";
+import { Plus, Download, Upload, LogOut, BarChart3 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { LinkCard } from "@/components/LinkCard";
+import { LinkTableView } from "@/components/LinkTableView";
+import { LinkBoardView } from "@/components/LinkBoardView";
+import { ViewSwitcher } from "@/components/ViewSwitcher";
 import { LinkForm } from "@/components/LinkForm";
 import { SearchBar } from "@/components/SearchBar";
 import { DragDropOverlay } from "@/components/DragDropOverlay";
@@ -16,7 +19,7 @@ import { useLinks } from "@/hooks/use-links";
 import { useDragDropManager } from "@/hooks/use-drag-drop-manager";
 import { toast } from "sonner";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import type { LinkItem, SearchFilters } from "@/types/link";
+import type { LinkItem, SearchFilters, ViewMode } from "@/types/link";
 import type { User } from "@supabase/supabase-js";
 
 interface IndexProps {
@@ -60,7 +63,7 @@ const Index = ({ user, onSignOut }: IndexProps) => {
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingLink, setEditingLink] = useState<LinkItem | null>(null);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [statsOpen, setStatsOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -72,7 +75,11 @@ const Index = ({ user, onSignOut }: IndexProps) => {
   useKeyboardShortcuts({
     onNewLink: useCallback(() => { setEditingLink(null); setFormOpen(true); }, []),
     onFocusSearch: useCallback(() => searchInputRef.current?.focus(), []),
-    onToggleView: useCallback(() => setViewMode((v) => (v === "grid" ? "list" : "grid")), []),
+    onToggleView: useCallback(() => setViewMode((v) => {
+      const modes: ViewMode[] = ["grid", "list", "table", "board"];
+      const i = modes.indexOf(v);
+      return modes[(i + 1) % modes.length];
+    }), []),
     onOpenStats: useCallback(() => setStatsOpen(true), []),
     onOpenExport: useCallback(() => setExportOpen(true), []),
     onOpenImport: useCallback(() => setImportOpen(true), []),
@@ -235,14 +242,7 @@ const Index = ({ user, onSignOut }: IndexProps) => {
             </div>
             <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
               <ThemeToggle />
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
-                title={`Alternar visualização (G)`}
-              >
-                {viewMode === "grid" ? <List className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
-              </Button>
+              <ViewSwitcher viewMode={viewMode} onViewModeChange={setViewMode} />
               <Button variant="outline" size="icon" onClick={() => setStatsOpen(true)} title="Estatísticas (S)">
                 <BarChart3 className="h-4 w-4" />
               </Button>
@@ -291,6 +291,21 @@ const Index = ({ user, onSignOut }: IndexProps) => {
                 </Button>
               )}
             </div>
+          ) : viewMode === "table" ? (
+            <LinkTableView
+              links={filteredLinks}
+              onToggleFavorite={toggleFavorite}
+              onEdit={handleEdit}
+              onDelete={deleteLink}
+            />
+          ) : viewMode === "board" ? (
+            <LinkBoardView
+              links={filteredLinks}
+              categories={categories}
+              onToggleFavorite={toggleFavorite}
+              onEdit={handleEdit}
+              onDelete={deleteLink}
+            />
           ) : (
             <div
               className={

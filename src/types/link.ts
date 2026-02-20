@@ -22,6 +22,7 @@ export interface Category {
 
 export type SortOption = "manual" | "newest" | "oldest" | "alphabetical" | "favorites";
 export type DatePeriod = "all" | "week" | "month" | "3months" | "year";
+export type ViewMode = "grid" | "list" | "table" | "board";
 
 export interface SearchFilters {
   query: string;
