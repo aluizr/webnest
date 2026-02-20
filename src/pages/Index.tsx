@@ -1,5 +1,5 @@
-import { useState, useRef, useCallback } from "react";
-import { Plus, Download, Upload, LogOut, BarChart3 } from "lucide-react";
+import { useState, useRef, useCallback, useMemo } from "react";
+import { Plus, Download, Upload, LogOut, BarChart3, Clock, Command } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -15,8 +15,11 @@ import { DragDropOverlay } from "@/components/DragDropOverlay";
 import { StatsDashboard } from "@/components/StatsDashboard";
 import { ExportFormatDialog } from "@/components/ExportFormatDialog";
 import { ImportFormatDialog } from "@/components/ImportFormatDialog";
+import { ActivityPanel } from "@/components/ActivityPanel";
+import { CommandPalette, buildDefaultCommands } from "@/components/CommandPalette";
 import { Button } from "@/components/ui/button";
 import { useLinks } from "@/hooks/use-links";
+import { useActivityLog } from "@/hooks/use-activity-log";
 import { useDragDropManager } from "@/hooks/use-drag-drop-manager";
 import { toast } from "sonner";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
@@ -62,6 +65,8 @@ const Index = ({ user, onSignOut }: IndexProps) => {
     getCurrentLinks,
   } = useDragDropManager(links, categories);
 
+  const { entries: activityEntries, logActivity, clearLog } = useActivityLog();
+
   const [formOpen, setFormOpen] = useState(false);
   const [editingLink, setEditingLink] = useState<LinkItem | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -69,6 +74,8 @@ const Index = ({ user, onSignOut }: IndexProps) => {
   const [statsOpen, setStatsOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [commandOpen, setCommandOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const filteredLinks = getFilteredLinks();
@@ -85,13 +92,16 @@ const Index = ({ user, onSignOut }: IndexProps) => {
     onOpenStats: useCallback(() => setStatsOpen(true), []),
     onOpenExport: useCallback(() => setExportOpen(true), []),
     onOpenImport: useCallback(() => setImportOpen(true), []),
+    onOpenCommandPalette: useCallback(() => setCommandOpen(true), []),
   });
 
   const handleSubmit = (data: Omit<LinkItem, "id" | "createdAt" | "position">) => {
     if (editingLink) {
       updateLink(editingLink.id, data);
+      logActivity("link:updated", data.title || data.url, `URL: ${data.url}`);
     } else {
       addLink(data);
+      logActivity("link:created", data.title || data.url, `URL: ${data.url}`);
     }
     setEditingLink(null);
   };
@@ -100,6 +110,41 @@ const Index = ({ user, onSignOut }: IndexProps) => {
     setEditingLink(link);
     setFormOpen(true);
   };
+
+  const handleDelete = useCallback((id: string) => {
+    const link = links.find((l) => l.id === id);
+    deleteLink(id);
+    logActivity("link:deleted", link?.title || "Link removido", link?.url);
+  }, [links, deleteLink, logActivity]);
+
+  const handleToggleFavorite = useCallback((id: string) => {
+    const link = links.find((l) => l.id === id);
+    toggleFavorite(id);
+    if (link) {
+      logActivity(
+        link.isFavorite ? "link:unfavorited" : "link:favorited",
+        link.title || link.url
+      );
+    }
+  }, [links, toggleFavorite, logActivity]);
+
+  // Command palette commands
+  const commands = useMemo(() => buildDefaultCommands({
+    onNewLink: () => { setEditingLink(null); setFormOpen(true); },
+    onFocusSearch: () => searchInputRef.current?.focus(),
+    onSetView: setViewMode,
+    onOpenStats: () => setStatsOpen(true),
+    onOpenExport: () => setExportOpen(true),
+    onOpenImport: () => setImportOpen(true),
+    onOpenHistory: () => setHistoryOpen(true),
+    onToggleFavorites: () => setSearchFilters((prev) => ({
+      ...prev,
+      favoritesOnly: !prev.favoritesOnly,
+      category: null,
+      tags: [],
+    })),
+    onSignOut,
+  }), [onSignOut, setSearchFilters]);
 
   // ✅ Handlers para Drag & Drop com validação
   const handleDragStart = (e: React.DragEvent, link: LinkItem) => {
@@ -150,6 +195,7 @@ const Index = ({ user, onSignOut }: IndexProps) => {
     }));
 
     reorderLinks(reordered);
+    logActivity("link:reordered", "Links reordenados", `${reordered.length} links`);
     toast.success("Links reordenados!");
     dragEnd();
   };
@@ -171,6 +217,9 @@ const Index = ({ user, onSignOut }: IndexProps) => {
 
     if (errorCount > 0) {
       toast.warning(`⚠️ ${errorCount} link(s) falharam`);
+    }
+    if (successCount > 0) {
+      logActivity("import:completed", `${successCount} links importados`, errorCount > 0 ? `${errorCount} falharam` : undefined);
     }
   };
 
@@ -230,6 +279,8 @@ const Index = ({ user, onSignOut }: IndexProps) => {
           onRenameCategory={renameCategory}
           onDropLinkToCategory={(linkId, categoryName) => {
             updateLink(linkId, { category: categoryName });
+            const link = links.find((l) => l.id === linkId);
+            logActivity("link:updated", link?.title || "Link", `Movido para "${categoryName}"`);
             toast.success(`Link movido para "${categoryName}"`);
             dragEnd();
           }}
@@ -245,6 +296,12 @@ const Index = ({ user, onSignOut }: IndexProps) => {
             <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
               <ThemeToggle />
               <ViewSwitcher viewMode={viewMode} onViewModeChange={setViewMode} gridColumns={gridColumns} onGridColumnsChange={setGridColumns} />
+              <Button variant="outline" size="icon" onClick={() => setCommandOpen(true)} title="Comandos (/ ou Ctrl+K)">
+                <Command className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon" onClick={() => setHistoryOpen(true)} title="Histórico">
+                <Clock className="h-4 w-4" />
+              </Button>
               <Button variant="outline" size="icon" onClick={() => setStatsOpen(true)} title="Estatísticas (S)">
                 <BarChart3 className="h-4 w-4" />
               </Button>
@@ -296,17 +353,17 @@ const Index = ({ user, onSignOut }: IndexProps) => {
           ) : viewMode === "table" ? (
             <LinkTableView
               links={filteredLinks}
-              onToggleFavorite={toggleFavorite}
+              onToggleFavorite={handleToggleFavorite}
               onEdit={handleEdit}
-              onDelete={deleteLink}
+              onDelete={handleDelete}
             />
           ) : viewMode === "board" ? (
             <LinkBoardView
               links={filteredLinks}
               categories={categories}
-              onToggleFavorite={toggleFavorite}
+              onToggleFavorite={handleToggleFavorite}
               onEdit={handleEdit}
-              onDelete={deleteLink}
+              onDelete={handleDelete}
             />
           ) : (
             <div
@@ -325,9 +382,9 @@ const Index = ({ user, onSignOut }: IndexProps) => {
                 <LinkCard
                   key={link.id}
                   link={link}
-                  onToggleFavorite={toggleFavorite}
+                  onToggleFavorite={handleToggleFavorite}
                   onEdit={handleEdit}
-                  onDelete={deleteLink}
+                  onDelete={handleDelete}
                   onDragStart={searchFilters.sort === "manual" ? handleDragStart : undefined}
                   onDragOver={searchFilters.sort === "manual" ? handleDragOver : undefined}
                   onDragLeave={searchFilters.sort === "manual" ? dragLeave : undefined}
@@ -374,6 +431,10 @@ const Index = ({ user, onSignOut }: IndexProps) => {
       <ExportFormatDialog isOpen={exportOpen} onClose={() => setExportOpen(false)} links={links} categories={categories} />
 
       <ImportFormatDialog isOpen={importOpen} onClose={() => setImportOpen(false)} onImport={handleImportLinks} />
+
+      <ActivityPanel isOpen={historyOpen} onClose={() => setHistoryOpen(false)} entries={activityEntries} onClear={clearLog} />
+
+      <CommandPalette isOpen={commandOpen} onOpenChange={setCommandOpen} actions={commands} />
     </SidebarProvider>
   );
 };

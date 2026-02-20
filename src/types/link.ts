@@ -24,6 +24,28 @@ export type SortOption = "manual" | "newest" | "oldest" | "alphabetical" | "favo
 export type DatePeriod = "all" | "week" | "month" | "3months" | "year";
 export type ViewMode = "grid" | "list" | "table" | "board";
 
+// Histórico de alterações
+export type ActivityAction =
+  | "link:created"
+  | "link:updated"
+  | "link:deleted"
+  | "link:favorited"
+  | "link:unfavorited"
+  | "link:reordered"
+  | "category:created"
+  | "category:deleted"
+  | "category:renamed"
+  | "import:completed"
+  | "export:completed";
+
+export interface ActivityLogEntry {
+  id: string;
+  action: ActivityAction;
+  title: string;
+  details?: string;
+  timestamp: string;
+}
+
 export interface SearchFilters {
   query: string;
   category: string | null;

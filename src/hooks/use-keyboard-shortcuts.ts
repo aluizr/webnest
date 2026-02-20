@@ -14,6 +14,8 @@ export interface KeyboardShortcutActions {
   onOpenExport: () => void;
   /** Open import dialog */
   onOpenImport: () => void;
+  /** Open command palette */
+  onOpenCommandPalette?: () => void;
 }
 
 /**
@@ -22,7 +24,7 @@ export interface KeyboardShortcutActions {
  * | Key           | Action                |
  * |---------------|-----------------------|
  * | N             | New link              |
- * | / or Ctrl+K   | Focus search          |
+ * | / or Ctrl+K   | Focus search / Command palette |
  * | G             | Toggle grid/list      |
  * | D             | Toggle dark/light     |
  * | S             | Open stats            |
@@ -46,10 +48,14 @@ export function useKeyboardShortcuts(actions: KeyboardShortcutActions) {
         tagName === "select" ||
         target.isContentEditable;
 
-      // Ctrl+K — always works (focus search), even inside inputs
+      // Ctrl+K — open command palette if available, otherwise focus search
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
         e.preventDefault();
-        actions.onFocusSearch();
+        if (actions.onOpenCommandPalette) {
+          actions.onOpenCommandPalette();
+        } else {
+          actions.onFocusSearch();
+        }
         return;
       }
 
@@ -74,7 +80,11 @@ export function useKeyboardShortcuts(actions: KeyboardShortcutActions) {
           break;
         case "/":
           e.preventDefault();
-          actions.onFocusSearch();
+          if (actions.onOpenCommandPalette) {
+            actions.onOpenCommandPalette();
+          } else {
+            actions.onFocusSearch();
+          }
           break;
         case "g":
           e.preventDefault();
