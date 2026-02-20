@@ -6,6 +6,7 @@ import { ThemeProvider } from "next-themes";
 import { useAuth } from "@/hooks/use-auth";
 import { StrictMode, lazy, Suspense, useMemo } from "react";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { usePWA } from "@/hooks/use-pwa";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -54,19 +55,23 @@ function AppRoutes() {
 
 const App = () => (
   <StrictMode>
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="light"
-      enableSystem={false}
-      themes={["light", "dark", "ocean", "sunset", "forest", "rose", "lavender", "midnight"]}
-    >
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <OfflineIndicator />
-        <AppRoutes />
-      </TooltipProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="light"
+        enableSystem={false}
+        themes={["light", "dark", "ocean", "sunset", "forest", "rose", "lavender", "midnight"]}
+      >
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <OfflineIndicator />
+          <ErrorBoundary>
+            <AppRoutes />
+          </ErrorBoundary>
+        </TooltipProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   </StrictMode>
 );
 

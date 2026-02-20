@@ -4,6 +4,7 @@ import { linkSchema, categorySchema } from "@/lib/validation";
 import { filterAndSortLinks } from "@/lib/utils";
 import { toast } from "sonner";
 import { enforceRateLimit, RateLimitError } from "@/lib/rate-limiter";
+import { logger } from "@/lib/logger";
 import {
   cacheLinks,
   cacheCategories,
@@ -132,6 +133,9 @@ export function useLinks(userId: string | undefined) {
       })
       .select()
       .single();
+    if (error) {
+      logger.error("Erro ao adicionar link", error, { url: v.url });
+    }
     if (data && !error) {
       const newLink: LinkItem = {
         id: data.id,
@@ -181,7 +185,9 @@ export function useLinks(userId: string | undefined) {
     if (data.notes !== undefined) partial.notes = data.notes;
 
     const { error } = await supabase.from("links").update(partial).eq("id", id);
-    if (!error) {
+    if (error) {
+      logger.error("Erro ao atualizar link", error, { linkId: id });
+    } else {
       setLinks((prev) => prev.map((l) => (l.id === id ? { ...l, ...data } : l)));
     }
     }); // withRateLimit
@@ -190,7 +196,9 @@ export function useLinks(userId: string | undefined) {
   const deleteLink = useCallback(async (id: string) => {
     return withRateLimit("link:delete", async () => {
     const { error } = await supabase.from("links").delete().eq("id", id);
-    if (!error) {
+    if (error) {
+      logger.error("Erro ao deletar link", error, { linkId: id });
+    } else {
       setLinks((prev) => prev.filter((l) => l.id !== id));
     }
     }); // withRateLimit
@@ -240,7 +248,7 @@ export function useLinks(userId: string | undefined) {
       .select()
       .single();
     if (error) {
-      console.error("Erro ao criar categoria:", error);
+      logger.error("Erro ao criar categoria", error, { name: parsed.data.name });
       toast.error(error.message || "Erro ao criar categoria");
       return;
     }
@@ -344,7 +352,7 @@ export function useLinks(userId: string | undefined) {
         )
       );
     } catch (error) {
-      console.error("Erro ao reordenar links:", error);
+      logger.error("Erro ao reordenar links", error instanceof Error ? error : new Error(String(error)));
       toast.error("Erro ao reordenar links");
     }
     }); // withRateLimit

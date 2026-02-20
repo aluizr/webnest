@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { enforceRateLimit, RateLimitError } from "@/lib/rate-limiter";
+import { logger } from "@/lib/logger";
 import type { User, Session } from "@supabase/supabase-js";
 
 export function useAuth() {
@@ -19,6 +20,13 @@ export function useAuth() {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+
+      // Identificar/limpar usuário no logger
+      if (session?.user) {
+        logger.identifyUser(session.user.id, session.user.email);
+      } else {
+        logger.clearUserIdentity();
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -35,6 +43,9 @@ export function useAuth() {
       throw e;
     }
     const { error } = await supabase.auth.signUp({ email, password });
+    if (error) {
+      logger.warn("Falha no cadastro", { email, reason: error.message });
+    }
     return { error };
   };
 
@@ -49,6 +60,9 @@ export function useAuth() {
       throw e;
     }
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      logger.warn("Falha no login", { email, reason: error.message });
+    }
     return { error };
   };
 
