@@ -1,73 +1,50 @@
-# Welcome to your Lovable project
+# WebNest — Gerenciador de Links
 
-## Project info
+Organize seus links favoritos com estilo e segurança.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Tecnologias
 
-## How can I edit this code?
+- **Framework:** React 18 + TypeScript 5
+- **Build:** Vite 7 (SWC)
+- **UI:** Shadcn/UI + Radix UI + Tailwind CSS
+- **Banco de Dados:** Supabase (PostgreSQL)
+- **Validação:** Zod + React Hook Form
+- **Testes:** Vitest + React Testing Library
 
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+## Como rodar
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# Clonar o repositório
 git clone <YOUR_GIT_URL>
+cd webnest
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Instalar dependências
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Configurar variáveis de ambiente
+cp .env.example .env
+# Edite .env com suas credenciais Supabase
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Iniciar servidor de desenvolvimento
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Scripts disponíveis
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+| Comando | Descrição |
+|---------|----------|
+| `npm run dev` | Servidor de desenvolvimento (porta 8080) |
+| `npm run build` | Build de produção |
+| `npm run preview` | Preview do build |
+| `npm run lint` | Linting com ESLint |
+| `npm test` | Testes com Vitest |
 
-**Use GitHub Codespaces**
+## Deploy
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+O projeto suporta deploy via Docker ou qualquer provedor de hospedagem estática (Vercel, Netlify, etc.).
 
-## What technologies are used for this project?
+Consulte [DOCKER.md](DOCKER.md) para instruções de deploy com Docker.
 
-This project is built with:
+## Domínio customizado
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Configure o domínio no seu provedor de hospedagem apontando para o build estático gerado em `dist/`.

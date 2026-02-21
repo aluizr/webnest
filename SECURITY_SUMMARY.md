@@ -237,5 +237,5 @@ Depois de implementar tudo:
 ---
 
 **Gerado em:** 15 de Fevereiro de 2026  
-**Plataforma:** Lovable  
+**Plataforma:** WebNest  
 **Tech Stack:** React + TypeScript + Supabase

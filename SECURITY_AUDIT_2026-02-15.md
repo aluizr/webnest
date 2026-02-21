@@ -35,7 +35,7 @@ This project has **RESOLVED CRITICAL ISSUES** identified in the initial audit (F
 
 #### Issue: Credentials in Git History
 - **Previous Commits Found:**
-  - 61cabb40 (Feb 14): Initial `.env` with Lovable Supabase credentials (ALL EXPOSED)
+  - 61cabb40 (Feb 14): Initial `.env` with Supabase credentials (ALL EXPOSED)
   - a8434ea8 (Feb 15): `.env` updated with new Supabase URL + keys
   - 6f9de950 (Feb 15): `.env` deleted from repo
 - **Exposed Credentials:**
@@ -50,7 +50,7 @@ This project has **RESOLVED CRITICAL ISSUES** identified in the initial audit (F
 4. ✅ **User rotated Supabase credentials** (migrated to new project)
 
 #### Remaining Recommendations:
-- **URGENT:** In Supabase dashboard → Settings → API → rotate the old Lovable project keys (if accessible)
+- **URGENT:** In Supabase dashboard → Settings → API → rotate the old project keys (if accessible)
 - **MONITOR:** Check application logs for unauthorized access to old credentials (Feb 14-15)
 - **PROCESS:** Add pre-commit hook to scan for secrets:
   ```bash
@@ -190,7 +190,7 @@ cors: {
 
 ### Immediate (This Week)
 1. **Supabase Key Rotation:**
-   - [ ] Log into old Lovable Supabase project (if accessible)
+   - [ ] Log into old Supabase project (if accessible)
    - [ ] Settings → API → Rotate anon key
    - [ ] Verify new app uses only new credentials
    
@@ -266,7 +266,7 @@ cors: {
 **Overall Security Posture: GOOD** 🟢
 
 The project has addressed all critical vulnerabilities. The main outstanding item is:
-- **Rotate old Supabase keys** if the original Lovable project is still accessible
+- **Rotate old Supabase keys** if the original project is still accessible
 - **Add pre-commit hooks** to prevent future secret leaks
 - **Before production:** Harden CSP, move headers to server, upgrade auth storage
 

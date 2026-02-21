@@ -8,7 +8,7 @@
 
 ## 📋 Sumário Executivo
 
-O projeto foi desenvolvido na plataforma Lovable e implementa um gerenciador de links com autenticação Supabase. Durante a auditoria, foram identificadas **5 vulnerabilidades críticas**, **3 de alto risco** e **4 de médio risco** que precisam ser corrigidas imediatamente antes do deployment em produção.
+O projeto WebNest implementa um gerenciador de links com autenticação Supabase. Durante a auditoria, foram identificadas **5 vulnerabilidades críticas**, **3 de alto risco** e **4 de médio risco** que precisam ser corrigidas imediatamente antes do deployment em produção.
 
 ---
 
@@ -484,7 +484,7 @@ Uso de TypeScript adiciona uma camada de type safety que previne certas classes 
 
 ## 📝 Notas Finais
 
-Este é um projeto interessante desenvolvido com Lovable. A segunda migração mostra esforço em melhorar a segurança, mas as vulnerabilidades críticas relacionadas a credenciais precisam de ação imediata.
+Este é um projeto interessante. A segunda migração mostra esforço em melhorar a segurança, mas as vulnerabilidades críticas relacionadas a credenciais precisam de ação imediata.
 
 **Recomendação:** Não fazer deploy em produção sem resolver os itens da Fase 1.
 
