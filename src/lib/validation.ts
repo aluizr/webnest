@@ -94,7 +94,7 @@ export const linkSchema = z.object({
 });
 
 // ✅ Validação dinâmica de ícones usando a lista real do Lucide
-import { ICON_NAMES } from "@/lib/icons";
+import { ICON_NAMES, isCustomIcon, MAX_CUSTOM_ICON_SIZE } from "@/lib/icons";
 
 // ✅ Cores predefinidas para categorias
 const HEX_COLOR_REGEX = /^#[0-9A-Fa-f]{6}$/;
@@ -111,10 +111,10 @@ export const categorySchema = z.object({
     ),
   icon: z
     .string()
-    .max(50, "Nome do ícone muito longo")
+    .max(MAX_CUSTOM_ICON_SIZE * 2, "Ícone muito grande") // base64 pode dobrar de tamanho
     .default("Folder")
     .refine(
-      icon => ICON_NAMES.includes(icon),
+      icon => ICON_NAMES.includes(icon) || isCustomIcon(icon),
       "Ícone inválido"
     ),
   parentId: z.string().uuid().optional().nullable(),

@@ -14,7 +14,7 @@ import {
   GripVertical,
   Palette,
 } from "lucide-react";
-import { getCategoryIcon, CATEGORY_COLORS } from "@/lib/icons";
+import { getCategoryIcon, isCustomIcon, CATEGORY_COLORS } from "@/lib/icons";
 import {
   Sidebar,
   SidebarContent,
@@ -272,7 +272,8 @@ export function AppSidebar({
 
   // ✅ Recursive category renderer
   const renderCategory = (cat: Category, depth: number = 0) => {
-    const IconComponent = getCategoryIcon(cat.icon);
+    const catIsCustomIcon = isCustomIcon(cat.icon);
+    const IconComponent = !catIsCustomIcon ? getCategoryIcon(cat.icon) : null;
     const children = getChildren(cat.id);
     const hasChildren = children.length > 0;
     const isExpanded = expandedIds.has(cat.id);
@@ -382,7 +383,11 @@ export function AppSidebar({
                 <span className="w-3.5 shrink-0" />
               )}
 
-              <IconComponent className="h-4 w-4 shrink-0" />
+              {catIsCustomIcon ? (
+                <img src={cat.icon} alt="" className="h-4 w-4 shrink-0 object-contain" />
+              ) : IconComponent ? (
+                <IconComponent className="h-4 w-4 shrink-0" />
+              ) : null}
               <span className="flex-1 truncate">{cat.name}</span>
 
               {/* Actions */}

@@ -54,3 +54,14 @@ export const CATEGORY_COLORS = [
 export function getCategoryIcon(iconName: string): LucideIcon {
   return ICON_MAP[iconName] || ICON_MAP.Folder;
 }
+
+// ✅ Verificar se é ícone customizado (data URL ou URL externa)
+export function isCustomIcon(icon: string): boolean {
+  return icon.startsWith("data:") || icon.startsWith("http://") || icon.startsWith("https://");
+}
+
+// ✅ Tamanho máximo do ícone customizado (32KB)
+export const MAX_CUSTOM_ICON_SIZE = 32 * 1024;
+
+// ✅ Tipos de arquivo aceitos para ícones customizados
+export const ACCEPTED_ICON_TYPES = ["image/svg+xml", "image/png", "image/jpeg", "image/webp", "image/gif"];
