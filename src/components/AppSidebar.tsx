@@ -227,6 +227,7 @@ export function AppSidebar({
   const [newSubcatColor, setNewSubcatColor] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
+  const [editIcon, setEditIcon] = useState("Folder");
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string; hasChildren: boolean } | null>(null);
 
@@ -284,6 +285,7 @@ export function AppSidebar({
         <SidebarMenuItem>
           {editingId === cat.id ? (
             <div className="flex items-center gap-1 px-2" style={{ paddingLeft: `${depth * 16 + 8}px` }}>
+              <IconPicker value={editIcon} onSelect={setEditIcon} />
               <Input
                 autoFocus
                 id={`edit-category-${cat.id}`}
@@ -294,6 +296,9 @@ export function AppSidebar({
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && editName.trim()) {
                     onRenameCategory(cat.id, editName.trim());
+                    if (onUpdateCategoryIcon && editIcon !== cat.icon) {
+                      onUpdateCategoryIcon(cat.id, editIcon);
+                    }
                     setEditingId(null);
                   }
                   if (e.key === "Escape") setEditingId(null);
@@ -301,6 +306,9 @@ export function AppSidebar({
               />
               <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => {
                 if (editName.trim()) onRenameCategory(cat.id, editName.trim());
+                if (onUpdateCategoryIcon && editIcon !== cat.icon) {
+                  onUpdateCategoryIcon(cat.id, editIcon);
+                }
                 setEditingId(null);
               }}>
                 <Check className="h-3 w-3" />
@@ -421,8 +429,8 @@ export function AppSidebar({
                   role="button"
                   tabIndex={0}
                   className="cursor-pointer p-1 hover:bg-muted rounded transition-colors"
-                  onClick={(e) => { e.stopPropagation(); setEditingId(cat.id); setEditName(cat.name); }}
-                  onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); setEditingId(cat.id); setEditName(cat.name); } }}
+                  onClick={(e) => { e.stopPropagation(); setEditingId(cat.id); setEditName(cat.name); setEditIcon(cat.icon); }}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); setEditingId(cat.id); setEditName(cat.name); setEditIcon(cat.icon); } }}
                 >
                   <Pencil className="h-3 w-3" />
                 </div>
