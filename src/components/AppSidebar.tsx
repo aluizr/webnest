@@ -83,10 +83,10 @@ function ColorPicker({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-6 w-6"
+        <div
+          role="button"
+          tabIndex={0}
+          className="inline-flex items-center justify-center h-6 w-6 rounded-md hover:bg-muted cursor-pointer transition-colors"
           title="Escolher cor"
         >
           {value ? (
@@ -97,7 +97,7 @@ function ColorPicker({
           ) : (
             <Palette className="h-3 w-3" />
           )}
-        </Button>
+        </div>
       </PopoverTrigger>
       <PopoverContent className="w-48 p-3" align="start">
         <div className="space-y-2">
@@ -358,19 +358,22 @@ export function AppSidebar({
 
               {/* Expand/collapse chevron */}
               {hasChildren ? (
-                <button
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={(e) => {
                     e.stopPropagation();
                     toggleExpanded(cat.id);
                   }}
-                  className="shrink-0"
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); toggleExpanded(cat.id); } }}
+                  className="shrink-0 cursor-pointer"
                 >
                   {isExpanded ? (
                     <ChevronDown className="h-3.5 w-3.5" />
                   ) : (
                     <ChevronRight className="h-3.5 w-3.5" />
                   )}
-                </button>
+                </div>
               ) : (
                 <span className="w-3.5 shrink-0" />
               )}
