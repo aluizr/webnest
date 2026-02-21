@@ -259,18 +259,14 @@ export function AppSidebar({
     [categories]
   );
 
-  // ✅ Handle delete with cascade confirmation
+  // ✅ Handle delete with confirmation
   const handleDeleteClick = (cat: Category) => {
     const children = hasDescendants(cat.id);
-    if (children) {
-      setDeleteConfirm({
-        id: cat.id,
-        name: cat.name,
-        hasChildren: true,
-      });
-    } else {
-      onDeleteCategory(cat.id, false);
-    }
+    setDeleteConfirm({
+      id: cat.id,
+      name: cat.name,
+      hasChildren: !!children,
+    });
   };
 
   // ✅ Recursive category renderer
@@ -624,7 +620,9 @@ export function AppSidebar({
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir categoria &quot;{deleteConfirm?.name}&quot;?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta categoria possui subcategorias. Todos os links associados serão movidos para &quot;Sem categoria&quot;.
+              {deleteConfirm?.hasChildren
+                ? "Esta categoria possui subcategorias. Todas as subcategorias e links associados serão movidos para \"Sem categoria\"."
+                : "Os links associados a esta categoria serão movidos para \"Sem categoria\". Esta ação não pode ser desfeita."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -633,12 +631,12 @@ export function AppSidebar({
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => {
                 if (deleteConfirm) {
-                  onDeleteCategory(deleteConfirm.id, true);
+                  onDeleteCategory(deleteConfirm.id, deleteConfirm.hasChildren);
                   setDeleteConfirm(null);
                 }
               }}
             >
-              Excluir tudo
+              {deleteConfirm?.hasChildren ? "Excluir tudo" : "Excluir"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
