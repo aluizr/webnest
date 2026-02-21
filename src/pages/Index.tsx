@@ -361,6 +361,14 @@ const Index = ({ user, onSignOut }: IndexProps) => {
               onToggleFavorite={handleToggleFavorite}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onDragStart={searchFilters.sort === "manual" ? handleDragStart : undefined}
+              onDragOver={searchFilters.sort === "manual" ? handleDragOver : undefined}
+              onDragLeave={searchFilters.sort === "manual" ? dragLeave : undefined}
+              onDragEnd={searchFilters.sort === "manual" ? dragEnd : undefined}
+              onDrop={searchFilters.sort === "manual" ? handleDrop : undefined}
+              draggedLinkId={dragState.draggedLink?.id ?? null}
+              dropZoneId={dragState.dropZoneId}
+              dragDirection={dragState.dragDirection}
             />
           ) : viewMode === "table" ? (
             <LinkTableView

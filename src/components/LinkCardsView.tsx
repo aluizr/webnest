@@ -1,4 +1,4 @@
-import { Star, ExternalLink, Pencil, Trash2, StickyNote } from "lucide-react";
+import { Star, ExternalLink, Pencil, Trash2, StickyNote, GripVertical } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FaviconWithFallback } from "@/components/FaviconWithFallback";
@@ -55,6 +55,11 @@ const actionIconSize: Record<CardSize, string> = {
   lg: "h-3.5 w-3.5",
 };
 const maxTags: Record<CardSize, number> = { sm: 1, md: 2, lg: 3 };
+const gripSize: Record<CardSize, string> = {
+  sm: "h-3 w-3",
+  md: "h-4 w-4",
+  lg: "h-5 w-5",
+};
 
 interface LinkCardsViewProps {
   links: LinkItem[];
@@ -62,19 +67,84 @@ interface LinkCardsViewProps {
   onToggleFavorite: (id: string) => void;
   onEdit: (link: LinkItem) => void;
   onDelete: (id: string) => void;
+  onDragStart?: (e: React.DragEvent, link: LinkItem) => void;
+  onDragOver?: (e: React.DragEvent, linkId: string) => void;
+  onDragLeave?: (e: React.DragEvent) => void;
+  onDragEnd?: (e: React.DragEvent) => void;
+  onDrop?: (e: React.DragEvent, link: LinkItem) => void;
+  draggedLinkId?: string | null;
+  dropZoneId?: string | null;
+  dragDirection?: "above" | "below";
 }
 
-export function LinkCardsView({ links, cardSize, onToggleFavorite, onEdit, onDelete }: LinkCardsViewProps) {
+export function LinkCardsView({
+  links,
+  cardSize,
+  onToggleFavorite,
+  onEdit,
+  onDelete,
+  onDragStart,
+  onDragOver,
+  onDragLeave,
+  onDragEnd,
+  onDrop,
+  draggedLinkId,
+  dropZoneId,
+  dragDirection,
+}: LinkCardsViewProps) {
   const visibleTags = maxTags[cardSize];
+  const dragEnabled = Boolean(onDragStart);
 
   return (
     <div className={`grid ${gridClasses[cardSize]}`}>
-      {links.map((link) => (
+      {links.map((link) => {
+        const isDragging = draggedLinkId === link.id;
+        const isDropZone = dropZoneId === link.id && draggedLinkId !== null && !isDragging;
+
+        return (
         <div
           key={link.id}
-          className={`group relative border bg-card ${cardClasses[cardSize]} hover:shadow-md hover:border-primary/30 transition-all duration-200 flex flex-col gap-1.5`}
+          draggable={dragEnabled}
+          onDragStart={(e) => onDragStart?.(e, link)}
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onDragOver?.(e, link.id);
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onDrop?.(e, link);
+          }}
+          onDragLeave={(e) => {
+            const relatedTarget = e.relatedTarget as HTMLElement;
+            if (!e.currentTarget.contains(relatedTarget)) {
+              onDragLeave?.(e);
+            }
+          }}
+          onDragEnd={(e) => onDragEnd?.(e)}
+          data-card-id={link.id}
+          className={`group relative border bg-card ${cardClasses[cardSize]} hover:shadow-md transition-all duration-200 flex flex-col gap-1.5 ${
+            isDragging
+              ? "opacity-25 scale-[0.97] shadow-none border-dashed border-primary/40 bg-primary/5"
+              : ""
+          } ${
+            isDropZone
+              ? "border-primary/50 bg-primary/10 shadow-lg shadow-primary/10 scale-[1.02] ring-1 ring-primary/30"
+              : !isDragging ? "hover:border-primary/30" : ""
+          } ${
+            dragEnabled ? "cursor-grab active:cursor-grabbing" : ""
+          }`}
         >
-          {/* Top row: favicon + favorite */}
+          {/* Drop zone indicators */}
+          {isDropZone && dragDirection === "above" && (
+            <div className="absolute top-0 left-1 right-1 h-[3px] bg-primary rounded-full animate-pulse shadow-[0_0_8px_hsl(var(--primary)/0.6)] z-10" />
+          )}
+          {isDropZone && dragDirection === "below" && (
+            <div className="absolute bottom-0 left-1 right-1 h-[3px] bg-primary rounded-full animate-pulse shadow-[0_0_8px_hsl(var(--primary)/0.6)] z-10" />
+          )}
+
+          {/* Top row: grip + favicon + favorite */}
           <div className="flex items-center justify-between gap-2">
             <a
               href={link.url}
@@ -82,6 +152,9 @@ export function LinkCardsView({ links, cardSize, onToggleFavorite, onEdit, onDel
               rel="noopener noreferrer"
               className="flex items-center gap-2 min-w-0 flex-1"
             >
+              {dragEnabled && (
+                <GripVertical className={`${gripSize[cardSize]} text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0`} />
+              )}
               <FaviconWithFallback url={link.url} favicon={link.favicon} size={faviconSizes[cardSize]} className="shrink-0" />
               <span className={`${titleClasses[cardSize]} font-medium truncate text-foreground group-hover:text-primary transition-colors`}>
                 {link.title || new URL(link.url).hostname}
@@ -167,7 +240,8 @@ export function LinkCardsView({ links, cardSize, onToggleFavorite, onEdit, onDel
             </AlertDialog>
           </div>
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
