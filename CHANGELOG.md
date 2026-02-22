@@ -15,6 +15,9 @@ Todas as mudanças relevantes deste projeto estão documentadas neste arquivo.
 - **Toast de feedback**: Todas as operações em lote (excluir, favoritar, mover, adicionar/remover tag) agora mostram feedback visual via toast
 - **Destaque visual**: Linhas/cards selecionados com ring e background em todas as views
 
+### Correções (0.14.0)
+- **`useEffect` não importado**: `ReferenceError: useEffect is not defined` em `Index.tsx` — adicionado `useEffect` ao import do React (necessário para o listener de Escape adicionado nesta versão)
+
 ---
 
 ## [0.13.0] — 2026-02-21
@@ -32,6 +35,7 @@ Todas as mudanças relevantes deste projeto estão documentadas neste arquivo.
 
 ---
 
+## [0.12.0] — 2026-02-21
 
 ### Galeria com Covers
 - Nova view **Galeria** (masonry layout) usando imagens OG como capas grandes
@@ -84,6 +88,10 @@ Todas as mudanças relevantes deste projeto estão documentadas neste arquivo.
 - Renderização de Markdown nos cards de link
 - Suporte: títulos, **negrito**, *itálico*, `código`, blocos de código, links, imagens, listas, blockquotes, ~~tachado~~, linhas horizontais
 - Componente `MarkdownPreview` reutilizável (sem dependências externas)
+- ⚠️ Substituído pelo editor Tiptap na v0.13.0
+
+### Correções (0.12.0)
+- **`Progress` component missing**: `Failed to fetch dynamically imported module` — `LinkCheckerPanel` importava `@/components/ui/progress` que não existia. Criado componente `Progress` usando `@radix-ui/react-progress` (dep já instalada)
 
 ### Melhorias Técnicas
 - `LinkItem.deletedAt` adicionado ao tipo TypeScript

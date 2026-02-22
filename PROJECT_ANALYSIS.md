@@ -1,10 +1,11 @@
 # Análise Geral do Projeto — WebNest
 
-**Data:** 21 de Fevereiro, 2026  
-**Versão:** 0.11.0  
+**Data:** 22 de Fevereiro, 2026  
+**Versão:** 0.14.0  
 **Framework:** React 18.3 + Vite 7.3 + TypeScript 5.8  
 **Banco de Dados:** Supabase (PostgreSQL)  
 **Componentes UI:** Shadcn/UI + Radix UI  
+**Rich Text:** Tiptap (ProseMirror)  
 **Status Geral:** 🟢 **BOM** (bem estruturado, pronto para produção com otimizações)
 
 ---
@@ -14,60 +15,95 @@
 ```
 webnest/
 ├── src/
-│   ├── components/          # Componentes React
-│   │   ├── ui/              # Componentes Shadcn/UI (gerado)
-│   │   ├── AppSidebar.tsx   # Sidebar com categorias, tags, filtros
-│   │   ├── IconPicker.tsx   # Novo: seletor visual de ícones
-│   │   ├── LinkCard.tsx     # Card de link individual (com drag&drop)
-│   │   ├── LinkForm.tsx     # Formulário de criar/editar link
-│   │   ├── NavLink.tsx      # Wrapper de link de navegação
-│   │   └── ThemeToggle.tsx  # Toggle de tema claro/escuro
-│   ├── hooks/
-│   │   ├── use-auth.ts      # Autenticação (Supabase)
-│   │   ├── use-links.ts     # CRUD de links + categorias (principal)
-│   │   ├── use-mobile.tsx   # Detecta viewport mobile
-│   │   └── use-toast.ts     # Gerenciador de notificações
+│   ├── components/                  # Componentes React (~33 arquivos)
+│   │   ├── ui/                      # Componentes Shadcn/UI (gerado)
+│   │   ├── AppSidebar.tsx           # Sidebar com categorias, tags, filtros
+│   │   ├── ActivityPanel.tsx        # Painel lateral de histórico de atividades
+│   │   ├── BatchActionBar.tsx       # Barra flutuante de ações em lote
+│   │   ├── BreadcrumbNav.tsx        # Navegação por migalhas de categoria
+│   │   ├── CommandPalette.tsx       # Command palette (Ctrl+K)
+│   │   ├── DragDropOverlay.tsx      # Overlay de drag & drop com undo/redo
+│   │   ├── ErrorBoundary.tsx        # Error boundary com fallback visual
+│   │   ├── ExportFormatDialog.tsx   # Dialog de exportação (4 formatos)
+│   │   ├── FaviconWithFallback.tsx  # Favicon com avatar colorido fallback
+│   │   ├── IconPicker.tsx           # Seletor de ícones (1541 Lucide + upload)
+│   │   ├── ImportFormatDialog.tsx   # Dialog de importação (4 formatos)
+│   │   ├── LinkBoardView.tsx        # Visualização Board/Kanban
+│   │   ├── LinkCard.tsx             # Card de link individual
+│   │   ├── LinkCardsView.tsx        # Visualização Cartões com covers
+│   │   ├── LinkCheckerPanel.tsx     # Painel de verificação de links
+│   │   ├── LinkForm.tsx             # Formulário de criar/editar link
+│   │   ├── LinkGalleryView.tsx      # Visualização Galeria (masonry)
+│   │   ├── LinkPreview.tsx          # Preview de metadados OG
+│   │   ├── LinkTableView.tsx        # Visualização Tabela
+│   │   ├── MarkdownPreview.tsx      # Preview Markdown (legado, mantido)
+│   │   ├── OfflineIndicator.tsx     # Banner de modo offline
+│   │   ├── RichTextEditor.tsx       # Editor WYSIWYG Tiptap + RichTextDisplay
+│   │   ├── SearchBar.tsx            # Busca com filtros avançados
+│   │   ├── StatsCharts.tsx          # Gráficos de estatísticas (Recharts)
+│   │   ├── StatsDashboard.tsx       # Dashboard de estatísticas
+│   │   ├── StatsOverview.tsx        # Visão geral de estatísticas
+│   │   ├── ThemeToggle.tsx          # Toggle de 8 temas visuais
+│   │   ├── TrashView.tsx            # Painel lateral da lixeira
+│   │   └── ViewSwitcher.tsx         # Seletor de 6 visualizações
+│   ├── hooks/                       # 13 hooks customizados
+│   │   ├── use-activity-log.ts      # Histórico de atividades (localStorage)
+│   │   ├── use-auth.ts              # Autenticação (Supabase PKCE)
+│   │   ├── use-drag-drop-manager.ts # Drag & drop com undo/redo
+│   │   ├── use-duplicate-detector.ts # Detecção de URLs duplicadas
+│   │   ├── use-keyboard-shortcuts.ts # 10+ atalhos de teclado
+│   │   ├── use-link-checker.ts      # Verificação de links (HEAD + no-cors)
+│   │   ├── use-link-draft.ts        # Auto-save de rascunho
+│   │   ├── use-links.ts             # CRUD de links + categorias (principal)
+│   │   ├── use-metadata.ts          # Auto-fetch de metadados (Microlink)
+│   │   ├── use-mobile.tsx           # Detecta viewport mobile
+│   │   ├── use-offline-status.ts    # Status online/offline reativo
+│   │   ├── use-pwa.ts              # Service Worker + atualizações
+│   │   ├── use-stats.ts            # Cálculos de estatísticas
+│   │   └── use-toast.ts            # Gerenciador de notificações
 │   ├── integrations/
-│   │   └── supabase/        # Configuração + tipos do Supabase
-│   │       ├── client.ts    # Cliente Supabase com PKCE + custom storage
-│   │       └── types.ts     # Types gerados (Database schema)
-│   ├── lib/
-│   │   ├── utils.ts         # Utilitários (cn, etc.)
-│   │   └── validation.ts    # Schemas Zod (links, categorias, icons)
+│   │   └── supabase/                # Configuração + tipos do Supabase
+│   │       ├── client.ts            # Cliente Supabase com PKCE + key rotation
+│   │       └── types.ts             # Types gerados (Database schema)
+│   ├── lib/                         # 10 módulos utilitários
+│   │   ├── api-key-rotation.ts      # Rotação segura de API keys
+│   │   ├── bookmarks-parser.ts      # Parser de bookmarks Netscape
+│   │   ├── export.ts                # Exportação (JSON, CSV, HTML, Bookmarks)
+│   │   ├── icons.ts                 # Mapa de 1541 ícones Lucide
+│   │   ├── import.ts                # Importação (4 formatos)
+│   │   ├── logger.ts                # Logging centralizado (5 níveis)
+│   │   ├── offline-cache.ts         # Cache offline + fila de sync
+│   │   ├── rate-limiter.ts          # Rate limiting sliding window
+│   │   ├── utils.ts                 # Utilitários (cn, filtros, ordenação)
+│   │   └── validation.ts            # Schemas Zod
 │   ├── pages/
-│   │   ├── Auth.tsx         # Página de login/signup
-│   │   ├── Index.tsx        # Página principal (grid de links)
-│   │   └── NotFound.tsx     # 404
+│   │   ├── Auth.tsx                 # Página de login/signup
+│   │   ├── Index.tsx                # Página principal (~690 linhas)
+│   │   └── NotFound.tsx             # 404
 │   ├── types/
-│   │   └── link.ts          # Interfaces (LinkItem, Category)
-│   ├── test/
-│   │   ├── example.test.ts  # Teste exemplo
-│   │   └── setup.ts         # Setup Vitest
-│   ├── App.tsx              # Root component c/ routing
-│   ├── main.tsx             # Entry point React
-│   ├── index.css            # Estilos globais
-│   └── App.css              # Estilos app
+│   │   ├── link.ts                  # LinkItem, Category, ViewMode, etc.
+│   │   └── stats.ts                 # Tipos de estatísticas
+│   ├── test/                        # 10 arquivos de teste (91+ testes)
+│   │   ├── export.test.ts           # 8 testes — exportação CSV
+│   │   ├── rate-limiter.test.ts     # 14 testes — sliding window
+│   │   ├── use-drag-drop-manager.test.ts # 9 testes — reordenação
+│   │   ├── use-duplicate-detector.test.ts # 9 testes — normalização URL
+│   │   ├── use-mobile.test.ts       # 3 testes — viewport
+│   │   ├── use-stats.test.ts        # 15 testes — estatísticas
+│   │   ├── utils.test.ts            # 13 testes — filtros e ordenação
+│   │   └── validation.test.ts       # 20 testes — schemas Zod
+│   ├── App.tsx                      # Root component c/ routing
+│   ├── main.tsx                     # Entry point React
+│   ├── index.css                    # Estilos globais + 8 temas + Tiptap CSS
+│   └── App.css                      # Estilos app
 ├── supabase/
-│   ├── migrations/          # SQL migrations (RLS, schemas)
-│   │   ├── 20260214...      # Initial setup (users, links, categories)
-│   │   ├── 20260215...      # RLS policies (user-scoped access)
-│   │   ├── 20260215...      # Add position field (drag&drop)
-│   │   └── 20260215...      # Add icon to categories
-│   └── config.toml          # Supabase config local
-├── public/
-│   └── robots.txt           # SEO
-├── .env                     # Variáveis de env (gitignored)
-├── .env.example             # Template .env
-├── .gitignore               # Excludes .env, node_modules, etc.
-├── package.json             # ~50 deps (prod + dev)
-├── vite.config.ts           # Build + dev server config
-├── tsconfig.*.json          # TypeScript configs
-├── tailwind.config.ts       # Tailwind CSS config
-├── postcss.config.js        # PostCSS plugins
-├── vitest.config.ts         # Testing config
-├── eslint.config.js         # Linting rules
-├── components.json          # Shadcn config
-└── README.md                # Project docs
+│   ├── migrations/                  # SQL migrations (10+ arquivos)
+│   └── config.toml                  # Supabase config local
+├── SECURITY_FIXES/                  # Arquivos de referência de segurança
+├── package.json                     # v0.14.0, ~60 deps
+├── vite.config.ts                   # Build config + manual chunks
+├── vitest.config.ts                 # Testing config
+└── CHANGELOG.md                     # Histórico completo v0.1.0–v0.14.0
 ```
 
 ### Análise da Estrutura
@@ -79,12 +115,15 @@ webnest/
 - Hooks isolados facilitam testes e composição
 - Integrations folder organiza conectores (Supabase)
 - Sistema de ícones centralizado em `lib/icons.ts` (DRY ✅)
-- 14+ arquivos de teste com cobertura de hooks e utilitários
+- 10 arquivos de teste com 91+ testes unitários
+- Editor Rich Text (Tiptap) isolado em componente reutilizável
+- 6 visualizações com seleção em lote consistente
 
 ⚠️ **Pontos de Melhoria:**
 1. **Cobertura de testes**: Componentes React sem testes unitários (hooks e utilitários cobertos)
 2. **Não há structure por feature**: Todos os links, categorias, etc. espalhados em diferentes pastas
 3. **Pasta security**: `SECURITY_FIXES/` e múltiplos `SECURITY_*.md` bagunçam raiz; mover para docs/
+4. **`MarkdownPreview.tsx` legado**: Mantido mas não mais referenciado; candidato a remoção
 
 ---
 
@@ -99,16 +138,17 @@ Dependências críticas (prod):
 ├── @supabase/supabase-js     ~180 KB (gzipped: ~55 KB)
 ├── lucide-react              ~580 KB (gzipped: ~140 KB) ⚠️ BIG!
 ├── @radix-ui/* (29 packages) ~800 KB (gzipped: ~200 KB)
+├── @tiptap/* (9 packages)    ~350 KB (gzipped: ~90 KB) ⚠️ NEW
 ├── tailwindcss               ~60 KB (vem via CSS purged)
 ├── zod                       ~140 KB (gzipped: ~35 KB)
-├── react-hook-form          ~30 KB (gzipped: ~10 KB)
+├── recharts                  ~400 KB (gzipped: ~113 KB)
 ├── sonner (toasts)           ~30 KB (gzipped: ~8 KB)
 └── Outros (~20 libs menores) ~300 KB (gzipped: ~80 KB)
 
-Estimado (antes de tree-shake):  ~2.5 MB
-Após minificação + gzip:         ~600-700 KB (main bundle)
+Estimado (antes de tree-shake):  ~3.2 MB
+Após minificação + gzip:         ~750-850 KB (main bundle)
 
-Ideal: < 500 KB (sem lucide), 400 KB (core)
+Nota: Tiptap adicionou ~90 KB gzip (ProseMirror core + extensões)
 ```
 
 ### Problemas Identificados
@@ -376,8 +416,8 @@ Testes existentes:
 ---
 
 **Análise por:** GitHub Copilot (Automated Code Review)  
-**Data:** 21 de Fevereiro, 2026  
-**Versão do Projeto:** 0.11.0
+**Data:** 22 de Fevereiro, 2026  
+**Versão do Projeto:** 0.14.0
 
 ---
 
@@ -394,14 +434,19 @@ Testes existentes:
 
 ### Features de produto novas
 
-| Categoria | Feature | Descrição | Complexidade |
-|-----------|---------|-----------|-------------|
-| Colaboração | Compartilhar coleções | Link público de coleção (read-only) para compartilhar com amigos | Média |
-| Produtividade | Extensão do browser | Salvar links com 1 clique direto do Chrome/Firefox/Edge | Alta |
-| Organização | Tags automáticas | Sugerir tags com base no conteúdo/URL do link | Média |
-| Social | Perfil público | Página pública com links curados do usuário | Média |
-| Busca | Full-text search no Supabase | `tsvector` para busca mais rápida e relevante no banco | Baixa |
-| UX | Onboarding tour | Guia interativo para novos usuários (primeiro acesso) | Baixa |
-| Dados | Link health checker | Verificar periodicamente se URLs ainda estão ativas (404 detection) | Alta |
-| Integração | API REST pública | Endpoints para integrar com outros apps/automações | Alta |
-| Segurança | 2FA / Magic Link | Login sem senha ou segundo fator de autenticação | Média |
+| Categoria | Feature | Descrição | Complexidade | Status |
+|-----------|---------|-----------|-------------|--------|
+| Colaboração | Compartilhar coleções | Link público de coleção (read-only) para compartilhar com amigos | Média | Pendente |
+| Produtividade | Extensão do browser | Salvar links com 1 clique direto do Chrome/Firefox/Edge | Alta | Pendente |
+| Organização | Tags automáticas | Sugerir tags com base no conteúdo/URL do link | Média | Pendente |
+| Social | Perfil público | Página pública com links curados do usuário | Média | Pendente |
+| Busca | Full-text search no Supabase | `tsvector` para busca mais rápida e relevante no banco | Baixa | Pendente |
+| UX | Onboarding tour | Guia interativo para novos usuários (primeiro acesso) | Baixa | Pendente |
+| Dados | Link health checker | Verificar periodicamente se URLs ainda estão ativas (404 detection) | Alta | ✅ v0.12.0 |
+| Integração | API REST pública | Endpoints para integrar com outros apps/automações | Alta | Pendente |
+| Segurança | 2FA / Magic Link | Login sem senha ou segundo fator de autenticação | Média | Pendente |
+| Organização | Galeria com Covers | Visualização masonry com imagens OG | Média | ✅ v0.12.0 |
+| UX | Breadcrumb Navigation | Navegação hierárquica por categorias | Baixa | ✅ v0.12.0 |
+| Dados | Lixeira / Soft Delete | Links deletados ficam 30 dias na lixeira | Média | ✅ v0.12.0 |
+| Produtividade | Operações em Lote | Seleção múltipla com ações batch | Média | ✅ v0.14.0 |
+| Edição | Rich Text Notes | Editor WYSIWYG com Tiptap | Alta | ✅ v0.13.0 |

@@ -4,27 +4,51 @@ Organize seus links favoritos com estilo e segurança.
 
 ## Funcionalidades
 
+### Core
 - **CRUD completo** de links com favicon, preview OG, tags e notas
 - **Categorias hierárquicas** (3 níveis) com cores, ícones personalizados e drag & drop
 - **1541 ícones** do Lucide + upload de ícones customizados (SVG, PNG, JPG)
-- **5 modos de visualização**: Grid, Lista, Cartões, Tabela, Board (Kanban)
-- **Drag & Drop** para reordenar links com Undo/Redo (Ctrl+Z/Y)
 - **Busca avançada** com filtros por categoria, tags, período e favoritos
+- **Auto-fetch de metadados** (título, descrição, OG image) ao inserir URL
+- **Detecção de URLs duplicadas** com normalização inteligente
+- **Auto-save de rascunho** no formulário de criação
+
+### Visualização
+- **6 modos de visualização**: Grid, Lista, Cartões, Tabela, Board (Kanban), Galeria
+- **Galeria com Covers** — Layout masonry com imagens OG como capas grandes
+- **Tamanho dinâmico** nos cartões (P/M/G)
+- **Colunas ajustáveis** no grid (2-5 colunas)
+- **Breadcrumb Navigation** — Navegação por migalhas na hierarquia de categorias
+
+### Organização
+- **Drag & Drop** para reordenar links com Undo/Redo (Ctrl+Z/Y)
+- **Operações em Lote (Batch)** — Seleção com checkboxes em todas as views, Shift+Click para intervalo, ações: favoritar, mover, tag (+/-), excluir
+- **Lixeira / Soft Delete** — Links deletados ficam na lixeira por 30 dias
+- **Notas em Rich Text (Tiptap)** — Editor WYSIWYG com toolbar completa: formatação, listas, task lists, links, blocos de código, citações
 - **8 temas** visuais (Light, Dark, Ocean, Sunset, Forest, Rose, Lavender, Midnight)
+
+### Ferramentas
+- **Broken Link Checker** — Verificador de links com status HTTP e cache 24h
+- **Dashboard de estatísticas** com gráficos interativos (Recharts)
 - **Importar/Exportar** em 4 formatos: JSON, CSV, HTML, Bookmarks
-- **PWA + Offline** com cache local e fila de sincronização
-- **Command Palette** (Ctrl+K) e 10+ atalhos de teclado
-- **Dashboard de estatísticas** com gráficos interativos
 - **Histórico de atividades** com log completo de ações
+- **Command Palette** (Ctrl+K) e 10+ atalhos de teclado
+
+### Infraestrutura
+- **PWA + Offline** com cache local e fila de sincronização
 - **Segurança**: RLS, PKCE auth, rate limiting, API key rotation, CSP headers
+- **Error Boundary** + logging centralizado (com Sentry/LogRocket opcionais)
+- **Docker** multi-stage com variantes dev, prod e nginx
 
 ## Tecnologias
 
 - **Framework:** React 18 + TypeScript 5
 - **Build:** Vite 7 (SWC)
 - **UI:** Shadcn/UI + Radix UI + Tailwind CSS
+- **Rich Text:** Tiptap (ProseMirror)
 - **Banco de Dados:** Supabase (PostgreSQL)
-- **Validação:** Zod + React Hook Form
+- **Gráficos:** Recharts
+- **Validação:** Zod
 - **Testes:** Vitest + React Testing Library
 
 ## Como rodar
