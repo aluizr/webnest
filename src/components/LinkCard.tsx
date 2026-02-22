@@ -32,7 +32,7 @@ interface LinkCardProps {
   isDropZone?: boolean;
   dragDirection?: "above" | "below";
   isSelected?: boolean;
-  onToggleSelect?: (id: string) => void;
+  onToggleSelect?: (id: string, shiftKey?: boolean) => void;
   linkStatus?: "unknown" | "checking" | "ok" | "broken" | "error";
 }
 
@@ -94,7 +94,7 @@ export function LinkCard({
       {/* Selection checkbox */}
       {onToggleSelect && (
         <button
-          onClick={(e) => { e.stopPropagation(); onToggleSelect(link.id); }}
+          onClick={(e) => { e.stopPropagation(); onToggleSelect(link.id, e.shiftKey); }}
           className={`absolute top-2 left-2 z-20 h-5 w-5 rounded border-2 flex items-center justify-center transition-all ${
             isSelected
               ? "bg-primary border-primary text-primary-foreground"

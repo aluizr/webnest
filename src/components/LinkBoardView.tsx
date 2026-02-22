@@ -23,9 +23,11 @@ interface LinkBoardViewProps {
   onToggleFavorite: (id: string) => void;
   onEdit: (link: LinkItem) => void;
   onDelete: (id: string) => void;
+  selectedIds?: Set<string>;
+  onToggleSelect?: (id: string, shiftKey?: boolean) => void;
 }
 
-export function LinkBoardView({ links, categories, onToggleFavorite, onEdit, onDelete }: LinkBoardViewProps) {
+export function LinkBoardView({ links, categories, onToggleFavorite, onEdit, onDelete, selectedIds, onToggleSelect }: LinkBoardViewProps) {
   // Agrupar links por categoria (top-level), com subcategorias como seções
   const columns = useMemo(() => {
     const grouped = new Map<string, { subcategories: Map<string, LinkItem[]> }>();
@@ -116,7 +118,9 @@ export function LinkBoardView({ links, categories, onToggleFavorite, onEdit, onD
                   </div>
                 )}
                 {section.links.map((link) => (
-              <Card key={link.id} className="group relative overflow-hidden border hover:shadow-md transition-shadow">
+              <Card key={link.id} className={`group relative overflow-hidden border hover:shadow-md transition-shadow ${
+                selectedIds?.has(link.id) ? "ring-2 ring-primary border-primary" : ""
+              }`}>
                 {/* OG Image mini cover */}
                 {link.ogImage && (
                   <div className="w-full h-24 overflow-hidden bg-muted">
@@ -133,6 +137,23 @@ export function LinkBoardView({ links, categories, onToggleFavorite, onEdit, onD
                 )}
 
                 <CardContent className="p-3">
+                  {/* Selection checkbox */}
+                  {onToggleSelect && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onToggleSelect(link.id, e.shiftKey); }}
+                      className={`absolute top-2 left-2 z-20 h-5 w-5 rounded border-2 flex items-center justify-center transition-all ${
+                        selectedIds?.has(link.id)
+                          ? "bg-primary border-primary text-primary-foreground"
+                          : "bg-background/80 border-muted-foreground/40 opacity-0 group-hover:opacity-100"
+                      }`}
+                    >
+                      {selectedIds?.has(link.id) && (
+                        <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none">
+                          <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                    </button>
+                  )}
                   <div className="flex items-start gap-2">
                     <FaviconWithFallback url={link.url} favicon={link.favicon} size={18} className="mt-0.5" />
                     <div className="min-w-0 flex-1">

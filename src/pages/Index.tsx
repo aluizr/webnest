@@ -149,57 +149,115 @@ const Index = ({ user, onSignOut }: IndexProps) => {
   }, [links, toggleFavorite, logActivity]);
 
   // ✅ Batch operations
-  const handleToggleSelect = useCallback((id: string) => {
+  const lastSelectedRef = useRef<string | null>(null);
+
+  const handleToggleSelect = useCallback((id: string, shiftKey?: boolean) => {
+    if (shiftKey && lastSelectedRef.current && lastSelectedRef.current !== id) {
+      // Shift+Click range selection
+      const startIdx = filteredLinks.findIndex((l) => l.id === lastSelectedRef.current);
+      const endIdx = filteredLinks.findIndex((l) => l.id === id);
+      if (startIdx !== -1 && endIdx !== -1) {
+        const [from, to] = startIdx < endIdx ? [startIdx, endIdx] : [endIdx, startIdx];
+        setSelectedIds((prev) => {
+          const next = new Set(prev);
+          for (let i = from; i <= to; i++) next.add(filteredLinks[i].id);
+          return next;
+        });
+        lastSelectedRef.current = id;
+        return;
+      }
+    }
+
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
     });
-  }, []);
+    lastSelectedRef.current = id;
+  }, [filteredLinks]);
 
-  const handleClearSelection = useCallback(() => setSelectedIds(new Set()), []);
+  const handleClearSelection = useCallback(() => {
+    setSelectedIds(new Set());
+    lastSelectedRef.current = null;
+  }, []);
 
   const handleSelectAll = useCallback(() => {
     setSelectedIds(new Set(filteredLinks.map((l) => l.id)));
   }, [filteredLinks]);
 
+  // Escape key clears selection
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && selectedIds.size > 0) {
+        e.preventDefault();
+        handleClearSelection();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedIds.size, handleClearSelection]);
+
   const handleBatchDelete = useCallback(() => {
+    const count = selectedIds.size;
     selectedIds.forEach((id) => deleteLink(id));
-    logActivity("link:trashed", `${selectedIds.size} links movidos para lixeira`);
+    logActivity("link:trashed", `${count} links movidos para lixeira`);
     setSelectedIds(new Set());
+    toast.success(`${count} link(s) movido(s) para a lixeira`);
   }, [selectedIds, deleteLink, logActivity]);
 
   const handleBatchFavorite = useCallback(() => {
+    let count = 0;
     selectedIds.forEach((id) => {
       const link = links.find((l) => l.id === id);
-      if (link && !link.isFavorite) toggleFavorite(id);
+      if (link && !link.isFavorite) { toggleFavorite(id); count++; }
     });
     setSelectedIds(new Set());
+    toast.success(`${count} link(s) favoritado(s)`);
   }, [selectedIds, links, toggleFavorite]);
 
   const handleBatchUnfavorite = useCallback(() => {
+    let count = 0;
     selectedIds.forEach((id) => {
       const link = links.find((l) => l.id === id);
-      if (link && link.isFavorite) toggleFavorite(id);
+      if (link && link.isFavorite) { toggleFavorite(id); count++; }
     });
     setSelectedIds(new Set());
+    toast.success(`${count} link(s) desfavoritado(s)`);
   }, [selectedIds, links, toggleFavorite]);
 
   const handleBatchMove = useCallback((categoryName: string) => {
+    const count = selectedIds.size;
     selectedIds.forEach((id) => updateLink(id, { category: categoryName }));
-    logActivity("link:updated", `${selectedIds.size} links movidos`, `Para: ${categoryName || "Sem categoria"}`);
+    logActivity("link:updated", `${count} links movidos`, `Para: ${categoryName || "Sem categoria"}`);
     setSelectedIds(new Set());
+    toast.success(`${count} link(s) movido(s) para "${categoryName || "Sem categoria"}"`);
   }, [selectedIds, updateLink, logActivity]);
 
   const handleBatchTag = useCallback((tag: string) => {
+    let count = 0;
     selectedIds.forEach((id) => {
       const link = links.find((l) => l.id === id);
       if (link && !link.tags.includes(tag)) {
         updateLink(id, { tags: [...link.tags, tag] });
+        count++;
       }
     });
-    logActivity("link:updated", `Tag "${tag}" adicionada a ${selectedIds.size} links`);
+    logActivity("link:updated", `Tag "${tag}" adicionada a ${count} links`);
+    toast.success(`Tag "${tag}" adicionada a ${count} link(s)`);
+  }, [selectedIds, links, updateLink, logActivity]);
+
+  const handleBatchRemoveTag = useCallback((tag: string) => {
+    let count = 0;
+    selectedIds.forEach((id) => {
+      const link = links.find((l) => l.id === id);
+      if (link && link.tags.includes(tag)) {
+        updateLink(id, { tags: link.tags.filter((t) => t !== tag) });
+        count++;
+      }
+    });
+    logActivity("link:updated", `Tag "${tag}" removida de ${count} links`);
+    toast.success(`Tag "${tag}" removida de ${count} link(s)`);
   }, [selectedIds, links, updateLink, logActivity]);
 
   // Command palette commands
@@ -464,6 +522,8 @@ const Index = ({ user, onSignOut }: IndexProps) => {
               draggedLinkId={dragState.draggedLink?.id ?? null}
               dropZoneId={dragState.dropZoneId}
               dragDirection={dragState.dragDirection}
+              selectedIds={selectedIds}
+              onToggleSelect={handleToggleSelect}
             />
           ) : viewMode === "table" ? (
             <LinkTableView
@@ -471,6 +531,9 @@ const Index = ({ user, onSignOut }: IndexProps) => {
               onToggleFavorite={handleToggleFavorite}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              selectedIds={selectedIds}
+              onToggleSelect={handleToggleSelect}
+              onSelectAll={handleSelectAll}
             />
           ) : viewMode === "board" ? (
             <LinkBoardView
@@ -479,6 +542,8 @@ const Index = ({ user, onSignOut }: IndexProps) => {
               onToggleFavorite={handleToggleFavorite}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              selectedIds={selectedIds}
+              onToggleSelect={handleToggleSelect}
             />
           ) : viewMode === "gallery" ? (
             <LinkGalleryView
@@ -594,7 +659,16 @@ const Index = ({ user, onSignOut }: IndexProps) => {
         onBatchUnfavorite={handleBatchUnfavorite}
         onBatchMove={handleBatchMove}
         onBatchTag={handleBatchTag}
+        onBatchRemoveTag={handleBatchRemoveTag}
         onSelectAll={handleSelectAll}
+        selectedTags={(() => {
+          const tagSet = new Set<string>();
+          selectedIds.forEach((id) => {
+            const link = links.find((l) => l.id === id);
+            link?.tags.forEach((t) => tagSet.add(t));
+          });
+          return Array.from(tagSet).sort();
+        })()}
       />
 
       <LinkCheckerPanel

@@ -100,6 +100,8 @@ interface LinkCardsViewProps {
   draggedLinkId?: string | null;
   dropZoneId?: string | null;
   dragDirection?: "above" | "below";
+  selectedIds?: Set<string>;
+  onToggleSelect?: (id: string, shiftKey?: boolean) => void;
 }
 
 export function LinkCardsView({
@@ -116,6 +118,8 @@ export function LinkCardsView({
   draggedLinkId,
   dropZoneId,
   dragDirection,
+  selectedIds,
+  onToggleSelect,
 }: LinkCardsViewProps) {
   const visibleTags = maxTags[cardSize];
   const dragEnabled = Boolean(onDragStart);
@@ -125,6 +129,7 @@ export function LinkCardsView({
       {links.map((link) => {
         const isDragging = draggedLinkId === link.id;
         const isDropZone = dropZoneId === link.id && draggedLinkId !== null && !isDragging;
+        const isSelected = selectedIds?.has(link.id);
         const hostname = getHostname(link.url);
 
         return (
@@ -161,6 +166,8 @@ export function LinkCardsView({
                   ? "hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-black/20 border-border/60 hover:border-border"
                   : ""
             } ${
+              isSelected ? "ring-2 ring-primary border-primary" : ""
+            } ${
               dragEnabled ? "cursor-grab active:cursor-grabbing" : ""
             }`}
           >
@@ -174,6 +181,23 @@ export function LinkCardsView({
 
             {/* Cover image area */}
             <div className={`relative ${coverHeight[cardSize]} bg-muted/40 overflow-hidden`}>
+              {/* Selection checkbox */}
+              {onToggleSelect && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); e.preventDefault(); onToggleSelect(link.id, e.shiftKey); }}
+                  className={`absolute top-1.5 left-1.5 z-20 h-5 w-5 rounded border-2 flex items-center justify-center transition-all ${
+                    isSelected
+                      ? "bg-primary border-primary text-primary-foreground"
+                      : "bg-black/30 backdrop-blur-sm border-white/50 opacity-0 group-hover:opacity-100"
+                  }`}
+                >
+                  {isSelected && (
+                    <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none">
+                      <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </button>
+              )}
               {link.ogImage ? (
                 <img
                   src={link.ogImage}

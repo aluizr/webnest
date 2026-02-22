@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Trash2, Star, FolderInput, Tag, X, CheckSquare } from "lucide-react";
+import { Trash2, Star, FolderInput, Tag, Tags, X, CheckSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -29,7 +29,9 @@ interface BatchActionBarProps {
   onBatchUnfavorite: () => void;
   onBatchMove: (categoryFullName: string) => void;
   onBatchTag: (tag: string) => void;
+  onBatchRemoveTag: (tag: string) => void;
   onSelectAll: () => void;
+  selectedTags: string[];
 }
 
 function buildFullName(cat: Category, categories: Category[]): string {
@@ -53,7 +55,9 @@ export function BatchActionBar({
   onBatchUnfavorite,
   onBatchMove,
   onBatchTag,
+  onBatchRemoveTag,
   onSelectAll,
+  selectedTags,
 }: BatchActionBarProps) {
   const [tagInput, setTagInput] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -142,7 +146,7 @@ export function BatchActionBar({
           <PopoverTrigger asChild>
             <Button variant="ghost" size="sm" title="Adicionar tag">
               <Tag className="h-4 w-4 mr-1" />
-              Tag
+              +Tag
             </Button>
           </PopoverTrigger>
           <PopoverContent align="center" className="w-56 p-3">
@@ -174,6 +178,30 @@ export function BatchActionBar({
             </div>
           </PopoverContent>
         </Popover>
+
+        {/* Remove tag */}
+        {selectedTags.length > 0 && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="sm" title="Remover tag">
+                <Tags className="h-4 w-4 mr-1" />
+                -Tag
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="center" className="w-56 p-1 max-h-48 overflow-y-auto">
+              {selectedTags.map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => onBatchRemoveTag(tag)}
+                  className="flex items-center w-full px-3 py-2 rounded-md text-sm hover:bg-destructive/10 hover:text-destructive text-left gap-2"
+                >
+                  <X className="h-3.5 w-3.5 shrink-0" />
+                  {tag}
+                </button>
+              ))}
+            </PopoverContent>
+          </Popover>
+        )}
 
         {/* Delete */}
         <Button

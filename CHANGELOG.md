@@ -4,6 +4,19 @@ Todas as mudanças relevantes deste projeto estão documentadas neste arquivo.
 
 ---
 
+## [0.14.0] — 2026-02-22
+
+### Operações em Lote (Batch) — Aprimoradas
+- **Seleção em todas as views**: Checkboxes agora disponíveis em Grade, Lista, Cartões, Tabela, Board e Galeria
+- **Checkbox no header da Tabela**: Selecionar/desmarcar todos com indicador de seleção parcial (traço)
+- **Shift+Click para seleção em intervalo**: Selecione um item, segure Shift e clique em outro para selecionar todos entre eles
+- **Escape para limpar seleção**: Tecla Escape desfaz toda seleção ativa
+- **Remover tag em lote**: Novo botão "-Tag" na barra de ações mostrando todas as tags dos itens selecionados para remoção rápida
+- **Toast de feedback**: Todas as operações em lote (excluir, favoritar, mover, adicionar/remover tag) agora mostram feedback visual via toast
+- **Destaque visual**: Linhas/cards selecionados com ring e background em todas as views
+
+---
+
 ## [0.13.0] — 2026-02-21
 
 ### Notas em Rich Text (Tiptap)

@@ -1,4 +1,4 @@
-import { Star, ExternalLink, Pencil, Trash2, StickyNote } from "lucide-react";
+import { Star, ExternalLink, Pencil, Trash2, StickyNote, Check, Minus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FaviconWithFallback } from "@/components/FaviconWithFallback";
@@ -20,15 +20,44 @@ interface LinkTableViewProps {
   onToggleFavorite: (id: string) => void;
   onEdit: (link: LinkItem) => void;
   onDelete: (id: string) => void;
+  selectedIds?: Set<string>;
+  onToggleSelect?: (id: string, shiftKey?: boolean) => void;
+  onSelectAll?: () => void;
 }
 
-export function LinkTableView({ links, onToggleFavorite, onEdit, onDelete }: LinkTableViewProps) {
+export function LinkTableView({ links, onToggleFavorite, onEdit, onDelete, selectedIds, onToggleSelect, onSelectAll }: LinkTableViewProps) {
+  const allSelected = selectedIds && links.length > 0 && links.every((l) => selectedIds.has(l.id));
+  const someSelected = selectedIds && links.some((l) => selectedIds.has(l.id)) && !allSelected;
   return (
     <div className="rounded-lg border overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/50">
+              {onToggleSelect && (
+                <th className="px-4 py-3 w-10">
+                  <button
+                    onClick={() => {
+                      if (allSelected) {
+                        // Deselect all by toggling each
+                        links.forEach((l) => { if (selectedIds?.has(l.id)) onToggleSelect(l.id); });
+                      } else {
+                        onSelectAll?.();
+                      }
+                    }}
+                    className={`h-5 w-5 rounded border-2 flex items-center justify-center transition-all ${
+                      allSelected
+                        ? "bg-primary border-primary text-primary-foreground"
+                        : someSelected
+                          ? "bg-primary/20 border-primary text-primary"
+                          : "bg-background border-muted-foreground/40 hover:border-muted-foreground/60"
+                    }`}
+                  >
+                    {allSelected && <Check className="h-3 w-3" />}
+                    {someSelected && !allSelected && <Minus className="h-3 w-3" />}
+                  </button>
+                </th>
+              )}
               <th className="text-left font-medium px-4 py-3 w-8"></th>
               <th className="text-left font-medium px-4 py-3">Título</th>
               <th className="text-left font-medium px-4 py-3 hidden md:table-cell">Descrição</th>
@@ -42,8 +71,29 @@ export function LinkTableView({ links, onToggleFavorite, onEdit, onDelete }: Lin
             {links.map((link) => (
               <tr
                 key={link.id}
-                className="border-b last:border-b-0 hover:bg-muted/30 transition-colors group"
+                className={`border-b last:border-b-0 hover:bg-muted/30 transition-colors group ${
+                  selectedIds?.has(link.id) ? "bg-primary/5" : ""
+                }`}
               >
+                {/* Selection checkbox */}
+                {onToggleSelect && (
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onToggleSelect(link.id, e.shiftKey); }}
+                      className={`h-5 w-5 rounded border-2 flex items-center justify-center transition-all ${
+                        selectedIds?.has(link.id)
+                          ? "bg-primary border-primary text-primary-foreground"
+                          : "bg-background border-muted-foreground/40 opacity-0 group-hover:opacity-100"
+                      }`}
+                    >
+                      {selectedIds?.has(link.id) && (
+                        <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none">
+                          <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                    </button>
+                  </td>
+                )}
                 {/* Favicon */}
                 <td className="px-4 py-3">
                   <FaviconWithFallback url={link.url} favicon={link.favicon} size={20} />
