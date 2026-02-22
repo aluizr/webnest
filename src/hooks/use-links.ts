@@ -79,6 +79,7 @@ export function useLinks(userId: string | undefined) {
           notes: r.notes || "",
           createdAt: r.created_at,
           position: r.position || 0, // ✅ Adicionar position
+          deletedAt: r.deleted_at ?? null, // ✅ Soft delete
         }));
         setLinks(mappedLinks);
         cacheLinks(mappedLinks); // ✅ Salvar no cache offline
@@ -199,16 +200,56 @@ export function useLinks(userId: string | undefined) {
     }); // withRateLimit
   }, []);
 
+  // ✅ Soft delete — move para lixeira
   const deleteLink = useCallback(async (id: string) => {
     return withRateLimit("link:delete", async () => {
-    const { error } = await supabase.from("links").delete().eq("id", id);
+    const now = new Date().toISOString();
+    const { error } = await supabase.from("links").update({ deleted_at: now }).eq("id", id);
     if (error) {
-      logger.error("Erro ao deletar link", error, { linkId: id });
+      logger.error("Erro ao mover link para lixeira", error, { linkId: id });
     } else {
-      setLinks((prev) => prev.filter((l) => l.id !== id));
+      setLinks((prev) => prev.map((l) => (l.id === id ? { ...l, deletedAt: now } : l)));
     }
     }); // withRateLimit
   }, []);
+
+  // ✅ Restaurar link da lixeira
+  const restoreLink = useCallback(async (id: string) => {
+    return withRateLimit("link:update", async () => {
+      const { error } = await supabase.from("links").update({ deleted_at: null }).eq("id", id);
+      if (error) {
+        logger.error("Erro ao restaurar link", error, { linkId: id });
+      } else {
+        setLinks((prev) => prev.map((l) => (l.id === id ? { ...l, deletedAt: null } : l)));
+      }
+    });
+  }, []);
+
+  // ✅ Deletar permanentemente
+  const permanentDeleteLink = useCallback(async (id: string) => {
+    return withRateLimit("link:delete", async () => {
+      const { error } = await supabase.from("links").delete().eq("id", id);
+      if (error) {
+        logger.error("Erro ao deletar link permanentemente", error, { linkId: id });
+      } else {
+        setLinks((prev) => prev.filter((l) => l.id !== id));
+      }
+    });
+  }, []);
+
+  // ✅ Esvaziar lixeira
+  const emptyTrash = useCallback(async () => {
+    return withRateLimit("link:delete", async () => {
+      const trashIds = links.filter((l) => l.deletedAt).map((l) => l.id);
+      if (trashIds.length === 0) return;
+      const { error } = await supabase.from("links").delete().in("id", trashIds);
+      if (error) {
+        logger.error("Erro ao esvaziar lixeira", error);
+      } else {
+        setLinks((prev) => prev.filter((l) => !l.deletedAt));
+      }
+    });
+  }, [links]);
 
   const toggleFavorite = useCallback(async (id: string) => {
     return withRateLimit("link:favorite", async () => {
@@ -532,22 +573,28 @@ export function useLinks(userId: string | undefined) {
     };
   }, [searchFilters.query, searchLinksOnServer]);
 
+  // ✅ Links ativos (não deletados)
+  const activeLinks = links.filter((l) => !l.deletedAt);
+  // ✅ Links na lixeira
+  const trashedLinks = links.filter((l) => !!l.deletedAt);
+
   // ✅ Função híbrida: usa resultado do servidor se disponível, senão client-side
   const getFilteredLinks = useCallback(() => {
     // Se tem resultados do full-text search, aplica filtros adicionais sobre eles
     const baseLinks = serverSearchResults && searchFilters.query.trim()
-      ? serverSearchResults
-      : links;
+      ? serverSearchResults.filter((l) => !l.deletedAt)
+      : activeLinks;
 
     return filterAndSortLinks(baseLinks, {
       ...searchFilters,
       // Se já veio do servidor, não filtrar por query de novo
       query: serverSearchResults && searchFilters.query.trim() ? "" : searchFilters.query,
     });
-  }, [links, searchFilters, serverSearchResults]);
+  }, [activeLinks, searchFilters, serverSearchResults]);
 
   return {
-    links,
+    links: activeLinks,
+    trashedLinks,
     categories,
     allTags,
     loading,
@@ -558,6 +605,9 @@ export function useLinks(userId: string | undefined) {
     addLink,
     updateLink,
     deleteLink,
+    restoreLink,
+    permanentDeleteLink,
+    emptyTrash,
     toggleFavorite,
     addCategory,
     deleteCategory,

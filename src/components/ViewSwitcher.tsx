@@ -1,4 +1,4 @@
-import { LayoutGrid, List, Table2, Columns3, SquareStack, Check, Minus, Plus } from "lucide-react";
+import { LayoutGrid, List, Table2, Columns3, SquareStack, GalleryHorizontalEnd, Check, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { ViewMode } from "@/types/link";
@@ -21,6 +21,7 @@ const views: { mode: ViewMode; label: string; icon: React.ElementType; descripti
   { mode: "cards", label: "Cartões", icon: SquareStack, description: "Tiles compactos" },
   { mode: "table", label: "Tabela", icon: Table2, description: "Linhas compactas" },
   { mode: "board", label: "Board", icon: Columns3, description: "Kanban por categoria" },
+  { mode: "gallery", label: "Galeria", icon: GalleryHorizontalEnd, description: "Masonry com covers" },
 ];
 
 const activeIcons: Record<ViewMode, React.ElementType> = {
@@ -29,6 +30,7 @@ const activeIcons: Record<ViewMode, React.ElementType> = {
   cards: SquareStack,
   table: Table2,
   board: Columns3,
+  gallery: GalleryHorizontalEnd,
 };
 
 const columnOptions: GridColumns[] = [2, 3, 4, 5];

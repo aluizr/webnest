@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useMemo } from "react";
-import { Plus, Download, Upload, LogOut, BarChart3, Clock, Command } from "lucide-react";
+import { Plus, Download, Upload, LogOut, BarChart3, Clock, Command, Trash2, ShieldCheck } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -8,16 +8,22 @@ import { LinkCard } from "@/components/LinkCard";
 import { LinkTableView } from "@/components/LinkTableView";
 import { LinkBoardView } from "@/components/LinkBoardView";
 import { LinkCardsView } from "@/components/LinkCardsView";
+import { LinkGalleryView } from "@/components/LinkGalleryView";
 import { ViewSwitcher } from "@/components/ViewSwitcher";
 import type { GridColumns, CardSize } from "@/components/ViewSwitcher";
 import { LinkForm } from "@/components/LinkForm";
 import { SearchBar } from "@/components/SearchBar";
 import { DragDropOverlay } from "@/components/DragDropOverlay";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import { StatsDashboard } from "@/components/StatsDashboard";
 import { ExportFormatDialog } from "@/components/ExportFormatDialog";
 import { ImportFormatDialog } from "@/components/ImportFormatDialog";
 import { ActivityPanel } from "@/components/ActivityPanel";
+import { TrashView } from "@/components/TrashView";
+import { LinkCheckerPanel } from "@/components/LinkCheckerPanel";
+import { useLinkChecker } from "@/hooks/use-link-checker";
 import { CommandPalette, buildDefaultCommands } from "@/components/CommandPalette";
+import { BatchActionBar } from "@/components/BatchActionBar";
 import { Button } from "@/components/ui/button";
 import { useLinks } from "@/hooks/use-links";
 import { useActivityLog } from "@/hooks/use-activity-log";
@@ -45,6 +51,10 @@ const Index = ({ user, onSignOut }: IndexProps) => {
     addLink,
     updateLink,
     deleteLink,
+    restoreLink,
+    permanentDeleteLink,
+    emptyTrash,
+    trashedLinks,
     toggleFavorite,
     addCategory,
     deleteCategory,
@@ -71,6 +81,7 @@ const Index = ({ user, onSignOut }: IndexProps) => {
   } = useDragDropManager(links, categories);
 
   const { entries: activityEntries, logActivity, clearLog } = useActivityLog();
+  const { results: linkCheckResults, checking: linkChecking, progress: linkCheckProgress, checkLinks, cancelCheck: cancelLinkCheck, clearResults: clearLinkCheckResults } = useLinkChecker();
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingLink, setEditingLink] = useState<LinkItem | null>(null);
@@ -82,6 +93,9 @@ const Index = ({ user, onSignOut }: IndexProps) => {
   const [importOpen, setImportOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
+  const [trashOpen, setTrashOpen] = useState(false);
+  const [linkCheckerOpen, setLinkCheckerOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const filteredLinks = getFilteredLinks();
@@ -91,7 +105,7 @@ const Index = ({ user, onSignOut }: IndexProps) => {
     onNewLink: useCallback(() => { setEditingLink(null); setFormOpen(true); }, []),
     onFocusSearch: useCallback(() => searchInputRef.current?.focus(), []),
     onToggleView: useCallback(() => setViewMode((v) => {
-      const modes: ViewMode[] = ["grid", "list", "cards", "table", "board"];
+      const modes: ViewMode[] = ["grid", "list", "cards", "table", "board", "gallery"];
       const i = modes.indexOf(v);
       return modes[(i + 1) % modes.length];
     }), []),
@@ -120,7 +134,7 @@ const Index = ({ user, onSignOut }: IndexProps) => {
   const handleDelete = useCallback((id: string) => {
     const link = links.find((l) => l.id === id);
     deleteLink(id);
-    logActivity("link:deleted", link?.title || "Link removido", link?.url);
+    logActivity("link:trashed", link?.title || "Link removido", link?.url);
   }, [links, deleteLink, logActivity]);
 
   const handleToggleFavorite = useCallback((id: string) => {
@@ -133,6 +147,60 @@ const Index = ({ user, onSignOut }: IndexProps) => {
       );
     }
   }, [links, toggleFavorite, logActivity]);
+
+  // ✅ Batch operations
+  const handleToggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const handleClearSelection = useCallback(() => setSelectedIds(new Set()), []);
+
+  const handleSelectAll = useCallback(() => {
+    setSelectedIds(new Set(filteredLinks.map((l) => l.id)));
+  }, [filteredLinks]);
+
+  const handleBatchDelete = useCallback(() => {
+    selectedIds.forEach((id) => deleteLink(id));
+    logActivity("link:trashed", `${selectedIds.size} links movidos para lixeira`);
+    setSelectedIds(new Set());
+  }, [selectedIds, deleteLink, logActivity]);
+
+  const handleBatchFavorite = useCallback(() => {
+    selectedIds.forEach((id) => {
+      const link = links.find((l) => l.id === id);
+      if (link && !link.isFavorite) toggleFavorite(id);
+    });
+    setSelectedIds(new Set());
+  }, [selectedIds, links, toggleFavorite]);
+
+  const handleBatchUnfavorite = useCallback(() => {
+    selectedIds.forEach((id) => {
+      const link = links.find((l) => l.id === id);
+      if (link && link.isFavorite) toggleFavorite(id);
+    });
+    setSelectedIds(new Set());
+  }, [selectedIds, links, toggleFavorite]);
+
+  const handleBatchMove = useCallback((categoryName: string) => {
+    selectedIds.forEach((id) => updateLink(id, { category: categoryName }));
+    logActivity("link:updated", `${selectedIds.size} links movidos`, `Para: ${categoryName || "Sem categoria"}`);
+    setSelectedIds(new Set());
+  }, [selectedIds, updateLink, logActivity]);
+
+  const handleBatchTag = useCallback((tag: string) => {
+    selectedIds.forEach((id) => {
+      const link = links.find((l) => l.id === id);
+      if (link && !link.tags.includes(tag)) {
+        updateLink(id, { tags: [...link.tags, tag] });
+      }
+    });
+    logActivity("link:updated", `Tag "${tag}" adicionada a ${selectedIds.size} links`);
+  }, [selectedIds, links, updateLink, logActivity]);
 
   // Command palette commands
   const commands = useMemo(() => buildDefaultCommands({
@@ -317,6 +385,17 @@ const Index = ({ user, onSignOut }: IndexProps) => {
               <Button variant="outline" size="icon" onClick={() => setStatsOpen(true)} title="Estatísticas (S)">
                 <BarChart3 className="h-4 w-4" />
               </Button>
+              <Button variant="outline" size="icon" onClick={() => setTrashOpen(true)} title="Lixeira" className="relative">
+                <Trash2 className="h-4 w-4" />
+                {trashedLinks.length > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
+                    {trashedLinks.length}
+                  </span>
+                )}
+              </Button>
+              <Button variant="outline" size="icon" onClick={() => setLinkCheckerOpen(true)} title="Verificar links">
+                <ShieldCheck className="h-4 w-4" />
+              </Button>
               {!isMobile && (
                 <>
                   <Button variant="outline" size="icon" onClick={() => setExportOpen(true)} title="Exportar (E)">
@@ -345,6 +424,13 @@ const Index = ({ user, onSignOut }: IndexProps) => {
             categories={categories}
             allTags={allTags}
             searching={searching}
+          />
+
+          {/* Breadcrumb Navigation */}
+          <BreadcrumbNav
+            categoryFilter={searchFilters.category}
+            categories={categories}
+            onNavigate={(cat) => handleSidebarFilter({ type: cat ? "category" : "all", value: cat ?? undefined })}
           />
 
           {/* Links Grid/List */}
@@ -394,6 +480,16 @@ const Index = ({ user, onSignOut }: IndexProps) => {
               onEdit={handleEdit}
               onDelete={handleDelete}
             />
+          ) : viewMode === "gallery" ? (
+            <LinkGalleryView
+              links={filteredLinks}
+              categories={categories}
+              onToggleFavorite={handleToggleFavorite}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              selectedIds={selectedIds}
+              onToggleSelect={handleToggleSelect}
+            />
           ) : (
             <div
               className={
@@ -423,6 +519,9 @@ const Index = ({ user, onSignOut }: IndexProps) => {
                   isDragging={dragState.draggedLink?.id === link.id}
                   isDropZone={dragState.dropZoneId === link.id && dragState.draggedLink !== null}
                   dragDirection={dragState.dragDirection}
+                  isSelected={selectedIds.has(link.id)}
+                  onToggleSelect={handleToggleSelect}
+                  linkStatus={linkCheckResults[link.id]?.status}
                 />
               ))}
             </div>
@@ -464,7 +563,51 @@ const Index = ({ user, onSignOut }: IndexProps) => {
 
       <ActivityPanel isOpen={historyOpen} onClose={() => setHistoryOpen(false)} entries={activityEntries} onClear={clearLog} />
 
+      <TrashView
+        isOpen={trashOpen}
+        onClose={() => setTrashOpen(false)}
+        trashedLinks={trashedLinks}
+        onRestore={(id) => {
+          const link = links.find((l) => l.id === id) ?? trashedLinks.find((l) => l.id === id);
+          restoreLink(id);
+          logActivity("link:restored", link?.title || "Link restaurado", link?.url);
+        }}
+        onPermanentDelete={(id) => {
+          const link = trashedLinks.find((l) => l.id === id);
+          permanentDeleteLink(id);
+          logActivity("link:deleted", link?.title || "Link excluído", link?.url);
+        }}
+        onEmptyTrash={() => {
+          emptyTrash();
+          logActivity("link:deleted", `${trashedLinks.length} links excluídos permanentemente`);
+        }}
+      />
+
       <CommandPalette isOpen={commandOpen} onOpenChange={setCommandOpen} actions={commands} />
+
+      <BatchActionBar
+        selectedCount={selectedIds.size}
+        categories={categories}
+        onClearSelection={handleClearSelection}
+        onBatchDelete={handleBatchDelete}
+        onBatchFavorite={handleBatchFavorite}
+        onBatchUnfavorite={handleBatchUnfavorite}
+        onBatchMove={handleBatchMove}
+        onBatchTag={handleBatchTag}
+        onSelectAll={handleSelectAll}
+      />
+
+      <LinkCheckerPanel
+        isOpen={linkCheckerOpen}
+        onClose={() => setLinkCheckerOpen(false)}
+        links={links}
+        results={linkCheckResults}
+        checking={linkChecking}
+        progress={linkCheckProgress}
+        onCheckAll={() => checkLinks(links.map((l) => ({ id: l.id, url: l.url })))}
+        onCancel={cancelLinkCheck}
+        onClear={clearLinkCheckResults}
+      />
     </SidebarProvider>
   );
 };

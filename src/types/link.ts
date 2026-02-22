@@ -11,6 +11,7 @@ export interface LinkItem {
   notes: string;
   createdAt: string;
   position: number; // ✅ Para drag & drop ordering
+  deletedAt?: string | null; // ✅ Soft delete — null = ativo, ISO date = na lixeira
 }
 
 export interface Category {
@@ -24,13 +25,15 @@ export interface Category {
 
 export type SortOption = "manual" | "newest" | "oldest" | "alphabetical" | "favorites";
 export type DatePeriod = "all" | "week" | "month" | "3months" | "year";
-export type ViewMode = "grid" | "list" | "table" | "board" | "cards";
+export type ViewMode = "grid" | "list" | "table" | "board" | "cards" | "gallery";
 
 // Histórico de alterações
 export type ActivityAction =
   | "link:created"
   | "link:updated"
   | "link:deleted"
+  | "link:trashed"
+  | "link:restored"
   | "link:favorited"
   | "link:unfavorited"
   | "link:reordered"

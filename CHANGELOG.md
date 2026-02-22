@@ -4,6 +4,72 @@ Todas as mudanças relevantes deste projeto estão documentadas neste arquivo.
 
 ---
 
+## [0.12.0] — 2026-02-21
+
+### Galeria com Covers
+- Nova view **Galeria** (masonry layout) usando imagens OG como capas grandes
+- Layout em colunas CSS (`columns`) com transição de hover e zoom suave
+- Fallback visual com favicon para links sem imagem OG
+- Suporte a seleção em lote na galeria
+- Atalho **G** agora cicla entre 6 views: Grade → Lista → Cartões → Tabela → Board → Galeria
+
+### Breadcrumb Navigation
+- Navegação por migalhas ao filtrar por categoria
+- Exibe hierarquia completa: Todos > Pai > Filho > Neto
+- Clique em qualquer nível para navegar diretamente
+- Botão "Todos" com ícone Home para voltar à raiz
+
+### Lixeira / Soft Delete
+- Links deletados vão para **lixeira** em vez de exclusão permanente
+- Coluna `deleted_at` (TIMESTAMPTZ) na tabela `links`
+- Painel lateral da lixeira com contagem de itens
+- **Restaurar** links individuais da lixeira
+- **Excluir permanentemente** links individuais
+- **Esvaziar lixeira** com confirmação
+- Contador de dias restantes antes da exclusão automática (30 dias)
+- Badge com contagem na barra de ferramentas
+- Função `purge_old_deleted_links()` no banco para limpeza automática
+- Migration: `20260221_soft_delete.sql`
+
+### Operações em Lote (Batch)
+- **Seleção múltipla** de links via checkboxes (visível no hover)
+- Barra de ações flutuante (bottom bar) quando há seleção:
+  - **Selecionar todos** os links visíveis
+  - **Favoritar** / **Desfavoritar** em lote
+  - **Mover** para categoria (popover com seletor hierárquico)
+  - **Adicionar tag** em lote
+  - **Excluir** em lote (com confirmação)
+- Suporte a seleção nas views Grade, Lista e Galeria
+
+### Broken Link Checker
+- Verificador de links com painel lateral dedicado
+- Verificação em lotes de 5 (HEAD request + fallback no-cors)
+- Barra de progresso durante verificação
+- Estatísticas: total, ativos, quebrados
+- Lista detalhada de links quebrados com HTTP status
+- Cache em `localStorage` (TTL 24h)
+- Indicador visual (🛡️) em links quebrados no card
+- Botão na barra de ferramentas
+
+### Rich Text Notes (Markdown)
+- Notas pessoais agora suportam **Markdown**
+- Botão **Preview** no formulário para visualizar Markdown renderizado
+- Renderização de Markdown nos cards de link
+- Suporte: títulos, **negrito**, *itálico*, `código`, blocos de código, links, imagens, listas, blockquotes, ~~tachado~~, linhas horizontais
+- Componente `MarkdownPreview` reutilizável (sem dependências externas)
+
+### Melhorias Técnicas
+- `LinkItem.deletedAt` adicionado ao tipo TypeScript
+- `ActivityAction` ampliado: `link:trashed`, `link:restored`
+- `ViewMode` ampliado: `"gallery"`
+- Hook `useLinkChecker` com cache, batching e abort controller
+- Componente `BatchActionBar` com popover de categorias e tags
+- Componente `TrashView` com restauração e exclusão permanente
+- Componente `BreadcrumbNav` para navegação hierárquica
+- Componente `LinkGalleryView` com layout masonry
+
+---
+
 ## [0.11.0] — 2026-02-21
 
 ### Sistema de Categorias Aprimorado

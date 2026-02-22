@@ -1,8 +1,9 @@
-import { Star, ExternalLink, Pencil, Trash2, GripVertical, StickyNote } from "lucide-react";
+import { Star, ExternalLink, Pencil, Trash2, GripVertical, StickyNote, ShieldAlert } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FaviconWithFallback } from "@/components/FaviconWithFallback";
+import { MarkdownPreview } from "@/components/MarkdownPreview";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,6 +31,9 @@ interface LinkCardProps {
   isDragging?: boolean;
   isDropZone?: boolean;
   dragDirection?: "above" | "below";
+  isSelected?: boolean;
+  onToggleSelect?: (id: string) => void;
+  linkStatus?: "unknown" | "checking" | "ok" | "broken" | "error";
 }
 
 export function LinkCard({
@@ -46,6 +50,9 @@ export function LinkCard({
   isDragging,
   isDropZone,
   dragDirection,
+  isSelected,
+  onToggleSelect,
+  linkStatus,
 }: LinkCardProps) {
   const dragEnabled = Boolean(onDragStart);
 
@@ -79,9 +86,28 @@ export function LinkCard({
           ? "border-primary/50 bg-primary/10 shadow-lg shadow-primary/10 scale-[1.02] ring-1 ring-primary/30"
           : !isDragging ? "border-transparent" : ""
       } ${
+        isSelected ? "ring-2 ring-primary border-primary" : ""
+      } ${
         dragEnabled ? "cursor-grab active:cursor-grabbing" : ""
       }`}
     >
+      {/* Selection checkbox */}
+      {onToggleSelect && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleSelect(link.id); }}
+          className={`absolute top-2 left-2 z-20 h-5 w-5 rounded border-2 flex items-center justify-center transition-all ${
+            isSelected
+              ? "bg-primary border-primary text-primary-foreground"
+              : "bg-background/80 border-muted-foreground/40 opacity-0 group-hover:opacity-100"
+          }`}
+        >
+          {isSelected && (
+            <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none">
+              <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </button>
+      )}
       {/* Drop zone indicator above - inside Card, absolutely positioned */}
       {isDropZone && !isDragging && dragDirection === "above" && (
         <div className="absolute top-0 left-2 right-2 h-[3px] bg-primary rounded-full animate-pulse shadow-[0_0_8px_hsl(var(--primary)/0.6)] z-10" />
@@ -127,6 +153,9 @@ export function LinkCard({
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 font-semibold text-foreground hover:text-primary transition-colors truncate"
               >
+                {linkStatus === "broken" && (
+                  <ShieldAlert className="h-3.5 w-3.5 shrink-0 text-destructive" title="Link quebrado" />
+                )}
                 {link.title || link.url}
                 <ExternalLink className="h-3.5 w-3.5 shrink-0 opacity-50" />
               </a>
@@ -192,8 +221,8 @@ export function LinkCard({
             </div>
 
             {link.notes && (
-              <div className="mt-2 rounded-md bg-muted/50 px-2.5 py-1.5 text-xs text-muted-foreground leading-relaxed whitespace-pre-line line-clamp-3">
-                {link.notes}
+              <div className="mt-2 rounded-md bg-muted/50 px-2.5 py-1.5 text-xs leading-relaxed line-clamp-3">
+                <MarkdownPreview content={link.notes} className="text-xs" />
               </div>
             )}
           </div>

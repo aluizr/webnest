@@ -12,11 +12,12 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { X, AlertCircle, Link2, StickyNote } from "lucide-react";
+import { X, AlertCircle, Link2, StickyNote, Eye, Edit3 } from "lucide-react";
 import { useMetadata } from "@/hooks/use-metadata";
 import { useLinkDraft } from "@/hooks/use-link-draft";
 import { useDuplicateDetector } from "@/hooks/use-duplicate-detector";
 import { LinkPreview } from "@/components/LinkPreview";
+import { MarkdownPreview } from "@/components/MarkdownPreview";
 import type { LinkItem, Category } from "@/types/link";
 
 interface LinkFormProps {
@@ -40,6 +41,7 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
   const [ogImage, setOgImage] = useState("");
   const [showDraftRecovery, setShowDraftRecovery] = useState(false);
   const [forceAllowDuplicate, setForceAllowDuplicate] = useState(false);
+  const [notesPreview, setNotesPreview] = useState(false);
   const { metadata, fetchMetadata } = useMetadata();
   const [autoFilledTitle, setAutoFilledTitle] = useState(false);
   const { hasDraft, draftData, saveDraft, restoreDraft, clearDraft, discardDraft } = useLinkDraft();
@@ -402,18 +404,40 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="notes" className="flex items-center gap-1.5">
-              <StickyNote className="h-3.5 w-3.5" />
-              Notas pessoais
-            </Label>
-            <Textarea
-              id="notes"
-              placeholder="Anotações, lembretes, observações..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-              className="text-sm"
-            />
+            <div className="flex items-center justify-between">
+              <Label htmlFor="notes" className="flex items-center gap-1.5">
+                <StickyNote className="h-3.5 w-3.5" />
+                Notas pessoais
+              </Label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs gap-1"
+                onClick={() => setNotesPreview(!notesPreview)}
+              >
+                {notesPreview ? <Edit3 className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                {notesPreview ? "Editar" : "Preview"}
+              </Button>
+            </div>
+            {notesPreview ? (
+              <div className="rounded-md border bg-muted/30 px-3 py-2 min-h-[76px]">
+                {notes.trim() ? (
+                  <MarkdownPreview content={notes} className="text-xs" />
+                ) : (
+                  <p className="text-xs text-muted-foreground italic">Nada para visualizar</p>
+                )}
+              </div>
+            ) : (
+              <Textarea
+                id="notes"
+                placeholder="Suporta **Markdown**: **negrito**, *itálico*, `código`, listas, links..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={3}
+                className="text-sm font-mono"
+              />
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="category-select">Categoria</Label>
