@@ -10,6 +10,14 @@
 // Adicione esta função ao arquivo:
 
 /**
+ * Define o tipo LinkItem para uso na função getFaviconUrl
+ */
+interface LinkItem {
+  url: string;
+  favicon?: string;
+}
+
+/**
  * Obtém URL do favicon com prioridade para privacidade
  * 1. Se temos favicon customizado, usa
  * 2. Tenta usar serviço privado (self-hosted seria ideal)
