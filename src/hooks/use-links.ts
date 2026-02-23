@@ -214,7 +214,7 @@ export function useLinks(userId: string | undefined) {
   const deleteLink = useCallback(async (id: string) => {
     return withRateLimit("link:delete", async () => {
     const now = new Date().toISOString();
-    const { error } = await supabase.from("links").update({ deleted_at: now }).eq("id", id);
+    const { error } = await (supabase.from("links") as any).update({ deleted_at: now }).eq("id", id);
     if (error) {
       logger.error("Erro ao mover link para lixeira", error, { linkId: id });
     } else {
@@ -226,7 +226,7 @@ export function useLinks(userId: string | undefined) {
   // ✅ Restaurar link da lixeira
   const restoreLink = useCallback(async (id: string) => {
     return withRateLimit("link:update", async () => {
-      const { error } = await supabase.from("links").update({ deleted_at: null }).eq("id", id);
+      const { error } = await (supabase.from("links") as any).update({ deleted_at: null }).eq("id", id);
       if (error) {
         logger.error("Erro ao restaurar link", error, { linkId: id });
       } else {
@@ -449,7 +449,7 @@ export function useLinks(userId: string | undefined) {
       // Executar updates em paralelo
       await Promise.all(
         updates.map(({ id, position }) =>
-          supabase.from("links").update({ position }).eq("id", id)
+          (supabase.from("links") as any).update({ position }).eq("id", id)
         )
       );
     } catch (error) {
@@ -470,7 +470,7 @@ export function useLinks(userId: string | undefined) {
       }));
       await Promise.all(
         updates.map(({ id, position }) =>
-          supabase.from("categories").update({ position }).eq("id", id)
+          (supabase.from("categories") as any).update({ position }).eq("id", id)
         )
       );
     } catch (error) {
@@ -483,7 +483,7 @@ export function useLinks(userId: string | undefined) {
   // ✅ Função para atualizar a cor de uma categoria
   const updateCategoryColor = useCallback(async (id: string, color: string | null) => {
     return withRateLimit("category:update", async () => {
-      const { error } = await supabase.from("categories").update({ color }).eq("id", id);
+      const { error } = await (supabase.from("categories") as any).update({ color }).eq("id", id);
       if (error) {
         logger.error("Erro ao atualizar cor da categoria", error, { categoryId: id });
       } else {
@@ -520,16 +520,14 @@ export function useLinks(userId: string | undefined) {
 
     setSearching(true);
     try {
-      const { data, error } = await supabase.rpc("search_links", {
+      const { data, error } = await (supabase.rpc as any)("search_links", {
         search_query: query.trim(),
         user_id_param: userId,
       });
 
       if (error) {
         // Se a função RPC não existir (migration não rodou), desativa para a sessão
-        logger.warn("Full-text search RPC indisponível, usando busca client-side", {
-          reason: error.message,
-        });
+        logger.warn("Full-text search RPC indisponível, usando busca client-side: " + error.message);
         ftsAvailableRef.current = false;
         setServerSearchResults(null);
         return;
