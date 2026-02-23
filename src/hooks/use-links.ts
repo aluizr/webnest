@@ -62,7 +62,7 @@ export function useLinks(userId: string | undefined) {
       }
 
       const [linksRes, catsRes] = await Promise.all([
-        supabase.from("links").select("*").order("position", { ascending: true }), // ✅ Ordenar por position
+        supabase.from("links").select("id, url, title, description, category, tags, is_favorite, favicon, og_image, notes, created_at, position, deleted_at, user_id").order("position", { ascending: true }), // ✅ Ordenar por position
         supabase.from("categories").select("*").order("position", { ascending: true }), // ✅ Ordenar categorias por position
       ]);
       if (linksRes.data) {
@@ -303,7 +303,7 @@ export function useLinks(userId: string | undefined) {
         position: maxPos + 1,
         color: parsed.data.color ?? null,
       })
-      .select()
+      .select("id, name, icon, parent_id, position, color")
       .single();
     if (error) {
       logger.error("Erro ao criar categoria", error, { name: parsed.data.name });
@@ -510,7 +510,7 @@ export function useLinks(userId: string | undefined) {
 
     setSearching(true);
     try {
-      const { data, error } = await supabase.rpc("search_links" as any, {
+      const { data, error } = await supabase.rpc("search_links", {
         search_query: query.trim(),
         user_id_param: userId,
       });
@@ -543,7 +543,7 @@ export function useLinks(userId: string | undefined) {
         setServerSearchResults(mapped);
       }
     } catch (err) {
-      logger.warn("Erro no full-text search", { error: err });
+      logger.warn("Erro no full-text search", err as Error);
       setServerSearchResults(null);
     } finally {
       setSearching(false);

@@ -44,7 +44,7 @@ export function useAuth() {
     }
     const { error } = await supabase.auth.signUp({ email, password });
     if (error) {
-      logger.warn("Falha no cadastro", { email, reason: error.message });
+      logger.warn(`Falha no cadastro para o email ${email}: ${error.message}`);
     }
     return { error };
   };
@@ -61,7 +61,7 @@ export function useAuth() {
     }
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      logger.warn("Falha no login", { email, reason: error.message });
+      logger.warn(`Falha no login para o email ${email}: ${error.message}`);
     }
     return { error };
   };

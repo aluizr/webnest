@@ -123,6 +123,8 @@ export function bookmarksToLinks(bookmarks: (BookmarkFolder | BookmarkLink)[]): 
             ? new Date(item.addDate * 1000).toISOString()
             : new Date().toISOString(),
           position: position++,
+          ogImage: "",
+          notes: "",
         };
         links.push(link);
       } else {

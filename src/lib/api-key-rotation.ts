@@ -106,27 +106,22 @@ export async function resolveWorkingKey(
     return { key: primaryKey, source: "primary" };
   }
 
-  logger.warn("Chave primária Supabase rejeitada (401/403)", {
-    action: "api-key-rotation",
-    hint: "Verifique se a chave em VITE_SUPABASE_PUBLISHABLE_KEY ainda é válida",
-  });
+  logger.warn("Chave primária Supabase rejeitada (401/403)");
 
   // Tenta fallback
   if (fallbackKey) {
     const fallbackValid = await validateApiKey(supabaseUrl, fallbackKey);
 
     if (fallbackValid) {
-      logger.warn("Usando chave fallback do Supabase — rotação em progresso", {
-        action: "api-key-rotation",
-        hint: "Mova a chave válida para VITE_SUPABASE_PUBLISHABLE_KEY e remova VITE_SUPABASE_FALLBACK_KEY",
-      });
+      logger.warn(
+        "Usando chave fallback do Supabase — rotação em progresso. " +
+        "Ação sugerida: Mova a chave válida para VITE_SUPABASE_PUBLISHABLE_KEY e remova VITE_SUPABASE_FALLBACK_KEY."
+      );
       cacheActiveKey("fallback");
       return { key: fallbackKey, source: "fallback" };
     }
 
-    logger.error("Ambas as chaves Supabase foram rejeitadas!", {
-      action: "api-key-rotation",
-    });
+    logger.error("Ambas as chaves Supabase foram rejeitadas!");
   }
 
   // Nenhuma funciona — retorna primária e deixa o erro acontecer naturalmente
@@ -160,11 +155,15 @@ export function createRotationAwareFetch(
     }
 
     // Chave primária rejeitada — tenta com fallback
-    logger.warn("Request rejeitada — tentando chave fallback", {
-      action: "api-key-rotation",
-      url: typeof input === "string" ? input : input instanceof URL ? input.href : (input as Request).url,
-      status: response.status,
-    });
+    logger.warn(
+      `Request rejeitada — tentando chave fallback. URL: ${
+        typeof input === "string"
+          ? input
+          : input instanceof URL
+          ? input.href
+          : (input as Request).url
+      }, status: ${response.status}`
+    );
 
     // Refaz a request com a chave fallback nos headers
     const newHeaders = new Headers(init?.headers);
@@ -180,9 +179,7 @@ export function createRotationAwareFetch(
       // Fallback funcionou — cache e loga
       usingFallback = true;
       cacheActiveKey("fallback");
-      logger.warn("Fallback key ativa — atualize VITE_SUPABASE_PUBLISHABLE_KEY", {
-        action: "api-key-rotation",
-      });
+      logger.warn("Fallback key ativa — atualize VITE_SUPABASE_PUBLISHABLE_KEY");
     }
 
     return retryResponse;
