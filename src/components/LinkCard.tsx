@@ -78,18 +78,18 @@ export function LinkCard({
       }}
       onDragEnd={(e) => onDragEnd?.(e)}
       data-card-id={link.id}
-      className={`group relative overflow-hidden transition-all duration-200 border-2 ${
-        isDragging
-          ? "opacity-25 scale-[0.97] shadow-none border-dashed border-primary/40 bg-primary/5"
+      className={`group relative overflow-hidden transition-all duration-200 border-2
+        ${isDragging
+          ? "z-30 scale-105 -translate-y-2 shadow-2xl shadow-primary/30 opacity-100 border-primary/60 bg-primary/10"
           : ""
-      } ${isDropZone && !isDragging
+        }
+        ${isDropZone && !isDragging
           ? "border-primary/50 bg-primary/10 shadow-lg shadow-primary/10 scale-[1.02] ring-1 ring-primary/30"
           : !isDragging ? "border-transparent" : ""
-      } ${
-        isSelected ? "ring-2 ring-primary border-primary" : ""
-      } ${
-        dragEnabled ? "cursor-grab active:cursor-grabbing" : ""
-      }`}
+        }
+        ${isSelected ? "ring-2 ring-primary border-primary" : ""}
+        ${dragEnabled ? "cursor-grab active:cursor-grabbing" : ""}
+      `}
     >
       {/* Selection checkbox */}
       {onToggleSelect && (
