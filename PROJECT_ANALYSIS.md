@@ -109,6 +109,7 @@ webnest/
 ### Análise da Estrutura
 
 ✅ **Pontos Positivos:**
+
 - Route clara separação de concerns (components, hooks, types, utils, pages)
 - `@` alias bem configurado para imports limpos
 - Componentes reutilizáveis isolados em `ui/`
@@ -120,6 +121,7 @@ webnest/
 - 6 visualizações com seleção em lote consistente
 
 ⚠️ **Pontos de Melhoria:**
+
 1. **Cobertura de testes**: Componentes React sem testes unitários (hooks e utilitários cobertos)
 2. **Não há structure por feature**: Todos os links, categorias, etc. espalhados em diferentes pastas
 3. **Pasta security**: `SECURITY_FIXES/` e múltiplos `SECURITY_*.md` bagunçam raiz; mover para docs/
@@ -154,7 +156,7 @@ Nota: Tiptap adicionou ~90 KB gzip (ProseMirror core + extensões)
 ### Problemas Identificados
 
 | Problema | Impacto | Severidade | Solução |
-|----------|--------|-----------|--------|
+| ---------- | -------- | ----------- | -------- |
 | **lucide-react completo importado** | Todos os 1541 ícones disponíveis dinamicamente | 🟡 Médio | Tree-shake via bundler; considerar sprites para produção |
 | **Todas as radix-ui importadas** | +200 KB gzip (não usado 40%) | 🟡 Médio | Remover componentes não-usados (collapse, drawer, carousel, etc.) |
 | **No code-splitting** | Carrega tudo na primeira carga | 🟡 Médio | Lazy-load pages + componentes modais |
@@ -204,17 +206,20 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 ### 2. Ícones Otimizados (🔴 CRÍTICO)
 
 **Status Atual:**
+
 ```typescript
 // IconPicker.tsx + AppSidebar.tsx
 import { Folder, BookOpen, Code, ... } // +26 icons, ALL bundled
 ```
 
-**Solução A: Icon sprite (recomendado para produção)**
+#### Solução A: Icon sprite (recomendado para produção)
+
 - Gerar SVG sprite com apenas ícones usados (~20 ícones)
 - Trocar Lucide por `<use href="#icon-name" />`
 - Economia: ~120 KB gzip
 
 **Solução B: Selective imports**
+
 ```typescript
 // icon-map.ts (centralizado)
 import { Folder } from 'lucide-react';
@@ -228,6 +233,7 @@ export const ICONS = {
 ```
 
 **Solução C: Remover Lucide + usar sistema de ícones custom (mais agressivo)**
+
 - Criar pasta `src/assets/icons/` com SVGs minificados
 - Componente `<Icon name="folder" />`
 - Economia: ~140 KB gzip
@@ -237,6 +243,7 @@ export const ICONS = {
 ### 3. Remover Componentes Radix-UI Não-Usados (🟡 MÉDIO)
 
 **Componentes DO projeto:**
+
 - ✅ Accordion (sidebar)
 - ✅ Dialog
 - ✅ Popover (icon picker, color picker)
@@ -265,10 +272,12 @@ export const LinkFormModal = lazy(() => import('./LinkForm'));
 ### 5. Tree-shake Supabase & Zod (🟡 MÉDIO)
 
 **Status:**
+
 - Supabase: já tree-shakeable (imports seletivos ✅)
 - Zod: apenas `.safeParse()` + `.object()` usados; resto bundle-ado
 
 **Ação (Zod):**
+
 ```typescript
 // Usar apenas o necessário
 import { z } from 'zod'; // OK, ESM suporta tree-shake
@@ -285,10 +294,12 @@ import { z } from 'zod'; // OK, ESM suporta tree-shake
 ### 6. Image Optimization (🟢 BAIXO)
 
 **Status:**
+
 - Favicon carregado dynamicamente via `icon.horse` (bom!)
 - Não há imagens grandes no app
 
 **Recomendação:**
+
 - Mantenha favicon external (evita bloat)
 - Se adicionar imagens: use WebP + lazy-load
 
@@ -297,12 +308,14 @@ import { z } from 'zod'; // OK, ESM suporta tree-shake
 ### 7. React Query Optimization (🟢 BAIXO)
 
 **Já está bem:**
+
 ```typescript
 // use-links.ts
 const queryClient = new QueryClient(); // Dev OK, prod pode tunar
 ```
 
 **Sugestão de produção:**
+
 ```typescript
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -319,6 +332,7 @@ const queryClient = new QueryClient({
 ## 🧪 Testing & Quality
 
 ### Cobertura Atual
+
 ```
 Unit tests:     ~40% (hooks e utilitários cobertos, componentes pendentes)
 Integration:    0% (Supabase real)
@@ -340,11 +354,13 @@ Testes existentes:
 ### Recomendações
 
 1. **Adicionar Vitest + React Testing Library:**
+
    ```bash
    npm test  # já configurado
    ```
 
 2. **Testar componentes críticos:**
+
    ```
    - LinkCard (drag, favorite toggle, delete)
    - LinkForm (validation, submit)
@@ -357,6 +373,7 @@ Testes existentes:
 ## 🔒 Segurança (já melhorado)
 
 ✅ **Implementado:**
+
 - RLS policies (user-scoped access)
 - CSP headers
 - PKCE auth flow
@@ -364,6 +381,7 @@ Testes existentes:
 - `.env` não commitado
 
 ⚠️ **Pendente (produção):**
+
 - HTTP-only cookies (replace localStorage)
 - ~~Rate limiting no Supabase~~ ✅ Implementado (v0.6.0)
 - ~~API key rotation policy~~ ✅ Implementado (v0.9.0)
@@ -373,6 +391,7 @@ Testes existentes:
 ## 🚢 Recomendações Finais por Prioridade
 
 ### P0 (Antes de Produção)
+
 1. ✅ Security audit (feito)
 2. ✅ **Code-split routes** (implementado v0.2.0)
 3. ✅ **Bundle optimization** (manual chunks v0.7.0)
@@ -380,12 +399,14 @@ Testes existentes:
 5. Testar no Lighthouse (target: 80+ Perf)
 
 ### P1 (Primeira Sprint Pós-Lançamento)
+
 1. ✅ Unit tests (91+ testes implementados)
 2. ✅ Error boundary (implementado v0.7.0)
 3. ✅ Server-side logging (Sentry/LogRocket lazy v0.7.0)
 4. Add analytics (Plausible/Mixpanel)
 
 ### P2 (Nice-to-Have)
+
 1. ✅ Dark mode improvement (8 temas v0.4.0)
 2. ✅ PWA support (offline + install v0.5.0)
 3. Accessibility audit (a11y)
@@ -426,7 +447,7 @@ Testes existentes:
 ### Da lista original — Pendentes
 
 | Prioridade | Item | Status |
-|------------|------|--------|
+| ------------ | ------ | -------- |
 | P0 | Lighthouse test | Requer deploy em ambiente real |
 | P1 | Analytics (Plausible/Mixpanel) | Tracking de uso e métricas de produto |
 | P2 | Accessibility audit (a11y) | ARIA labels, navegação por teclado, contraste WCAG |
@@ -435,7 +456,7 @@ Testes existentes:
 ### Features de produto novas
 
 | Categoria | Feature | Descrição | Complexidade | Status |
-|-----------|---------|-----------|-------------|--------|
+| ----------- | --------- | ----------- | ------------- | -------- |
 | Colaboração | Compartilhar coleções | Link público de coleção (read-only) para compartilhar com amigos | Média | Pendente |
 | Produtividade | Extensão do browser | Salvar links com 1 clique direto do Chrome/Firefox/Edge | Alta | Pendente |
 | Organização | Tags automáticas | Sugerir tags com base no conteúdo/URL do link | Média | Pendente |
