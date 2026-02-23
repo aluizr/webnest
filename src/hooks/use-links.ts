@@ -62,7 +62,7 @@ export function useLinks(userId: string | undefined) {
       }
 
       const [linksRes, catsRes] = await Promise.all([
-        supabase.from("links").select("id, url, title, description, category, tags, is_favorite, favicon, og_image, notes, created_at, position, deleted_at, user_id").order("position", { ascending: true }), // ✅ Ordenar por position
+        supabase.from("links").select("id, url, title, description, category, tags, is_favorite, favicon, notes, created_at, position, deleted_at, user_id").order("position", { ascending: true }), // ✅ Ordenar por position
         supabase.from("categories").select("*").order("position", { ascending: true }), // ✅ Ordenar categorias por position
       ]);
       if (linksRes.data) {
@@ -121,7 +121,7 @@ export function useLinks(userId: string | undefined) {
     const v = parsed.data;
     // ✅ Calcular position (novo link vai para o topo)
     const maxPosition = Math.max(...links.map(l => l.position || 0), -1);
-    const { data, error } = await supabase
+    const { data, error }: { data: any; error: any } = await supabase
       .from("links")
       .insert({
         url: v.url,
@@ -136,12 +136,22 @@ export function useLinks(userId: string | undefined) {
         user_id: userId,
         position: maxPosition + 1, // ✅ Adicionar position
       })
-      .select()
+      .select("id, url, title, description, category, tags, is_favorite, favicon, notes, created_at, position, deleted_at, user_id")
       .single();
     if (error) {
       logger.error("Erro ao adicionar link", error, { url: v.url });
     }
-    if (data && !error) {
+    if (error) {
+      logger.error("Erro ao adicionar link", error, { url: v.url });
+      toast.error(error.message || "Erro ao adicionar link");
+      return;
+    }
+    if (error) {
+      logger.error("Erro ao adicionar link", error, { url: v.url });
+      toast.error(error.message || "Erro ao adicionar link");
+      return;
+    }
+    if (data) {
       const newLink: LinkItem = {
         id: data.id,
         url: data.url,
@@ -317,7 +327,7 @@ export function useLinks(userId: string | undefined) {
     if (data) {
       setCategories((prev) => [
         ...prev,
-        { id: data.id, name: data.name, icon: data.icon, parentId: data.parent_id ?? null, position: data.position ?? 0, color: data.color ?? null },
+        
       ]);
     }
     }); // withRateLimit
