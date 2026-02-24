@@ -3,7 +3,8 @@
 ## 🚨 PRIORIDADE IMEDIATA (HOJE - 24h)
 
 ### Passo 1: Revogar Chaves Comprometidas
-1. Abra https://app.supabase.com e entre na sua conta
+
+1. Abra <https://app.supabase.com> e entre na sua conta
 2. Vá para seu projeto `slzspaijayxtyjmrogcm`
 3. Settings → API → Anon Public Key
 4. **REVOKE** (revogar) a chave atual
@@ -11,6 +12,7 @@
 6. Copie a nova chave
 
 ### Passo 2: Remover .env do Histórico Git
+
 ```bash
 # Se você ainda NÃO fez push para um repositório remoto:
 git rm --cached .env
@@ -28,6 +30,7 @@ git filter-branch --force --index-filter "git rm --cached --ignore-unmatch .env"
 ```
 
 ### Passo 3: Atualizar Arquivos de Configuração
+
 ```bash
 # 1. Substituir .gitignore
 cp .gitignore.corrected .gitignore
@@ -43,6 +46,7 @@ VITE_SUPABASE_URL="https://slzspaijayxtyjmrogcm.supabase.co"
 ```
 
 ### Passo 4: Verificar RLS no Banco de Dados
+
 ```bash
 # 1. Abra Supabase Dashboard → SQL Editor
 # 2. Execute esta query para verificar políticas:
@@ -60,6 +64,7 @@ SELECT * FROM pg_policies WHERE schemaname = 'public';
 ## ✅ FASE 1: SEGURANÇA BÁSICA (Próximos 3 dias)
 
 ### Implementação 1: Validação de URLs Seguras
+
 ```bash
 # 1. Copie o novo validation.ts
 cp SECURITY_FIXES/validation-segura.ts src/lib/validation.ts
@@ -69,6 +74,7 @@ npm run test
 ```
 
 **Mudanças no código:**
+
 - ✅ Whitelist de protocolos (http, https, ftp, mailto)
 - ✅ Blacklist de padrões maliciosos (javascript:, data:, etc)
 - ✅ Validação de estrutura com refine
@@ -76,6 +82,7 @@ npm run test
 ---
 
 ### Implementação 2: Client Supabase Seguro
+
 ```bash
 # 1. Copie o novo client.ts
 cp SECURITY_FIXES/supabase-client-seguro.ts src/integrations/supabase/client.ts
@@ -85,6 +92,7 @@ npm run dev
 ```
 
 **Mudanças:**
+
 - ✅ PKCE flow (mais seguro)
 - ✅ SSR-safe storage
 - ✅ Error handling
@@ -92,6 +100,7 @@ npm run dev
 ---
 
 ### Implementação 3: Content Security Policy
+
 ```bash
 # Opção A: META tag (rápida, em desenvolvimento)
 # Edite index.html com SECURITY_FIXES/index-securo.html
@@ -119,6 +128,7 @@ npm run dev
 ---
 
 ### Implementação 4: Import Handler Seguro
+
 ```bash
 # Edite src/pages/Index.tsx
 # Substitua a função handleImport pela versão de SECURITY_FIXES/import-handler-seguro.tsx
@@ -133,6 +143,7 @@ npm run dev
 ---
 
 ### Implementação 5: Vite Config com Headers
+
 ```bash
 # Copie a versão segura
 cp SECURITY_FIXES/vite-config-seguro.ts vite.config.ts
@@ -147,6 +158,7 @@ VITE_APP_URL=http://localhost:8080
 ## 🔒 FASE 2: SEGURANÇA AVANÇADA (Próxima semana)
 
 ### Implementação 6: Favicon Seguro
+
 ```bash
 # Edite src/components/LinkCard.tsx
 # Substitua as linhas de favicon pela versão em SECURITY_FIXES/favicon-seguro.tsx
@@ -160,6 +172,7 @@ const faviconUrl = `https://icon.horse/icon/${hostname}?size=32`;
 ---
 
 ### Implementação 7: Melhorias de Banco de Dados
+
 ```bash
 # 1. Abra Supabase Dashboard → SQL Editor
 # 2. Copie todo o conteúdo de:
@@ -179,6 +192,7 @@ const faviconUrl = `https://icon.horse/icon/${hostname}?size=32`;
 ## 🧪 TESTES DE SEGURANÇA
 
 ### Teste 1: XSS - URL Maliciosa
+
 ```typescript
 // Tente adicionar este link:
 URL: javascript:alert('XSS')
@@ -187,6 +201,7 @@ URL: javascript:alert('XSS')
 ```
 
 ### Teste 2: Arquivo Grande
+
 ```typescript
 // Tente importar um arquivo > 5MB
 // Resultado esperado: ❌ REJEITADO
@@ -194,6 +209,7 @@ URL: javascript:alert('XSS')
 ```
 
 ### Teste 3: RLS - Isolamento de Dados
+
 ```typescript
 // 1. Faça login com Usuário A
 // 2. Adicione um link
@@ -203,6 +219,7 @@ URL: javascript:alert('XSS')
 ```
 
 ### Teste 4: CSP
+
 ```typescript
 // DevTools → Console
 // Se aparecer erro: "Refused to load the script..."
@@ -213,7 +230,7 @@ URL: javascript:alert('XSS')
 
 ## 📦 Deploy Seguro
 
-### Antes de Deploy:
+### Antes de Deploy
 
 ```bash
 # 1. Certificar que .env não está no repo
@@ -237,7 +254,7 @@ ls -lh dist/
 # Ideal < 500KB gzipped
 ```
 
-### Deploy em Vercel/Netlify:
+### Deploy em Vercel/Netlify
 
 ```bash
 # 1. Adicionar environment variables:
@@ -291,24 +308,28 @@ curl -I https://seu-app.vercel.app
 
 **P: Por que revogr chaves se o código é open source?**  
 R: Mesmo em open source, você deve:
+
 - Usar chaves separadas para dev/prod
 - Rotacionar chaves regularmente
 - Monitorar acessos anormais
 
 **P: Posso manter localStorage para sessões?**  
 R: É uma prática comum, mas:
+
 - Use httpOnly cookies se possível
 - Implemente proteção XSS robusta
 - Monitore alterações de tokens
 
 **P: CSP vai quebrar minha app?**  
 R: Pode. Por isso:
+
 - Comece com `Content-Security-Policy-Report-Only`
 - Veja os erros no console
 - Ajuste a política gradualmente
 
 **P: Quanto tempo leva para implementar tudo?**  
-R: 
+R:
+
 - Fase 1 (crítica): 2-4 horas
 - Fase 2 (avançada): 4-8 horas
 - Testes: 2-4 horas

