@@ -71,6 +71,7 @@ Este é um resumo rápido dos problemas encontrados e como corrigi-los.
 **Status Atual:** 🟡 Quase pronto para produção
 
 **Próximos passos:**
+
 - Revogar chave Supabase (se ainda não feito)
 - Testes finais e auditoria
 - Monitoramento e backup
