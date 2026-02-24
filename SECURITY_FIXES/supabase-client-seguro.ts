@@ -4,6 +4,17 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
+// Corrige tipagem de import.meta.env para Vite
+declare global {
+  interface ImportMeta {
+    env: {
+      VITE_SUPABASE_URL: string;
+      VITE_SUPABASE_PUBLISHABLE_KEY: string;
+      [key: string]: string;
+    };
+  }
+}
+
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
@@ -14,15 +25,15 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
 // Criar storage customizado com suporte a SSR
 const createBrowserStorage = () => ({
   getItem: (key: string) => {
-    if (typeof window === 'undefined') return null;
+    if (typeof window === 'undefined' || !window.localStorage) return null;
     return window.localStorage.getItem(key);
   },
   setItem: (key: string, value: string) => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !window.localStorage) return;
     window.localStorage.setItem(key, value);
   },
   removeItem: (key: string) => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !window.localStorage) return;
     window.localStorage.removeItem(key);
   },
 });
@@ -55,7 +66,9 @@ supabase.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
     // Limpar dados sensíveis se necessário
     if (event === 'SIGNED_OUT') {
-      localStorage.removeItem('sensitive_data');
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.removeItem('sensitive_data');
+      }
     }
   }
 });
