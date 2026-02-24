@@ -7,7 +7,7 @@ Este é um resumo rápido dos problemas encontrados e como corrigi-los.
 ## 📊 Resultados Gerais
 
 | Métrica | Resultado |
-|---------|-----------|
+| --------- | ----------- |
 | **Status Geral** | 🔴 CRÍTICO |
 | **Vulnerabilidades Críticas** | 3 |
 | **Vulnerabilidades Alto Risco** | 3 |
@@ -19,9 +19,11 @@ Este é um resumo rápido dos problemas encontrados e como corrigi-los.
 ## 🚨 Os 3 Problemas CRÍTICOS
 
 ### 1. 🔴 Credenciais no Repositório
+
 **Arquivo:** `.env`  
 **Risco:** Sua chave Supabase está pública  
 **Ação AGORA:**
+
 ```bash
 # 1. Ir para: https://app.supabase.com
 # 2. Revogar chave atual
@@ -33,10 +35,12 @@ git commit -m "Remove exposed .env"
 ```
 
 ### 2. 🔴 Banco de Dados Aberto Para Todos
+
 **Arquivo:** `supabase/migrations/20260214162247...sql`  
 **Risco:** Se alguém tiver sua chave comprometida, acessa TODOS os dados  
 **Status:** ⚠️ Parcialmente corrigido pela segunda migração  
 **Verificar:**
+
 ```sql
 -- Execute no Supabase SQL Editor:
 SELECT * FROM pg_policies WHERE schemaname = 'public';
@@ -44,7 +48,17 @@ SELECT * FROM pg_policies WHERE schemaname = 'public';
 ```
 
 ### 3. 🔴 .env Não No Gitignore
+
 **Ação:** Adicionar ao `.gitignore`:
+
+1. Abrir app
+2. Adicionar link com URL: javascript:alert('XSS')
+3. Esperado: ❌ Rejeitar
+
+4. Abrir app
+5. Adicionar link com URL: javascript:alert('XSS')
+6. Esperado: ❌ Rejeitar
+
 ```
 .env
 .env.local
@@ -56,16 +70,19 @@ SELECT * FROM pg_policies WHERE schemaname = 'public';
 ## 🟠 3 Problemas de ALTO RISCO
 
 ### 4. localStorage - Vulnerável a XSS
+
 **Problema:** Se seu site for hackeado com JavaScript, o token é roubado  
 **Solução:** Usar PKCE flow (já tem arquivo pronto)  
 **Arquivo:** `SECURITY_FIXES/supabase-client-seguro.ts`
 
 ### 5. URLs Maliciosas Permitidas
+
 **Problema:** Usuário pode salvar `javascript:alert('XSS')`  
 **Solução:** Whitelist de protocolos + blacklist maliciosos  
 **Arquivo:** `SECURITY_FIXES/validation-segura.ts`
 
 ### 6. Sem Content Security Policy
+
 **Problema:** Navegador permite carregar qualquer script  
 **Solução:** Adicionar headers CSP  
 **Arquivo:** `SECURITY_FIXES/index-securo.html`
@@ -75,14 +92,17 @@ SELECT * FROM pg_policies WHERE schemaname = 'public';
 ## 🟡 3 Problemas de MÉDIO RISCO
 
 ### 7. Sem CSRF Protection
+
 **Impacto:** Médio  
 **Arquivo:** `vite.config.ts` (já tem correção)
 
 ### 8. Favicon Rastreia Usuários
+
 **Impacto:** Privacidade  
 **Arquivo:** `SECURITY_FIXES/favicon-seguro.tsx`
 
 ### 9. Import Sem Limites
+
 **Problema:** Usuário pode enviar arquivo gigante  
 **Solução:** Limitar tamanho + quantidade  
 **Arquivo:** `SECURITY_FIXES/import-handler-seguro.tsx`
@@ -92,6 +112,7 @@ SELECT * FROM pg_policies WHERE schemaname = 'public';
 ## 📋 O QUE FAZER AGORA (Ordem Importante)
 
 ### ❌ HOJE - Próximas 2 Horas
+
 1. Revogar chave Supabase (crítico!)
 2. Gerar nova chave
 3. Remover .env do git history
@@ -101,6 +122,7 @@ SELECT * FROM pg_policies WHERE schemaname = 'public';
 **Tempo:** ~30 minutos
 
 ### ⚠️ HOJE/AMANHÃ - Próximas 24 Horas
+
 1. Copiar arquivos de `SECURITY_FIXES/`
 2. Atualizar 5 arquivos principais
 3. Testes básicos
@@ -109,6 +131,7 @@ SELECT * FROM pg_policies WHERE schemaname = 'public';
 **Tempo:** ~2-3 horas
 
 ### 🟢 PRÓXIMA SEMANA
+
 1. Implementar melhorias avançadas
 2. Auditoria de banco de dados
 3. Testes de penetração
@@ -123,7 +146,7 @@ SELECT * FROM pg_policies WHERE schemaname = 'public';
 Estão na pasta `SECURITY_FIXES/`:
 
 | Arquivo | Para | Como Usar |
-|---------|------|-----------|
+| --------- | ------ | ----------- |
 | `supabase-client-seguro.ts` | `src/integrations/supabase/client.ts` | Copiar e substituir |
 | `validation-segura.ts` | `src/lib/validation.ts` | Copiar e substituir |
 | `vite-config-seguro.ts` | `vite.config.ts` | Copiar e substituir |
@@ -151,6 +174,7 @@ Estas coisas o projeto JÁ faz bem:
 Faça estes 3 testes para verificar se as implementações funcionaram:
 
 ### Teste 1: XSS
+
 ```
 1. Abrir app
 2. Adicionar link com URL: javascript:alert('XSS')
@@ -158,6 +182,7 @@ Faça estes 3 testes para verificar se as implementações funcionaram:
 ```
 
 ### Teste 2: Import Gigante
+
 ```
 1. Criar arquivo JSON com 2000 links
 2. Tentar importar
@@ -165,6 +190,7 @@ Faça estes 3 testes para verificar se as implementações funcionaram:
 ```
 
 ### Teste 3: CSP
+
 ```
 1. Abrir DevTools (F12)
 2. Console
@@ -177,7 +203,7 @@ Faça estes 3 testes para verificar se as implementações funcionaram:
 ## 💰 Custo de Segurança
 
 | Tarefa | Tempo | Dificuldade |
-|--------|-------|------------|
+| -------- | ------- | ------------ |
 | Revogr chaves | 15 min | 🟢 Fácil |
 | Remover do git | 20 min | 🟡 Médio |
 | Atualizar 5 arquivos | 1 hora | 🟡 Médio |
@@ -220,6 +246,7 @@ Faça estes 3 testes para verificar se as implementações funcionaram:
 ## ✨ Resultado Final
 
 Depois de implementar tudo:
+
 - ✅ Dados dos usuários protegidos
 - ✅ URLs maliciosas bloqueadas
 - ✅ XSS prevenido

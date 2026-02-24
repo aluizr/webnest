@@ -2,7 +2,7 @@
 // Use este arquivo para substituir o atual
 
 import { createClient } from '@supabase/supabase-js';
-import type { Database } from './types';
+import type { Database } from '../src/integrations/supabase/types';
 
 // Corrige tipagem de import.meta.env para Vite
 declare global {
