@@ -5,7 +5,7 @@ import { linkSchema } from "../schemas/linkSchema";
 import { toast } from "react-toastify";
 // import { addLink } from "../addLink";
 // import { addLink } from "../utils/addLink";
-import { addLink } from "../addLink";
+import { addLink } from "../src/addLink";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const MAX_LINKS_PER_IMPORT = 1000;
