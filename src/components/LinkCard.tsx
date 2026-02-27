@@ -69,6 +69,7 @@ export function LinkCard({
 }: LinkCardProps) {
   const dragEnabled = Boolean(onDragStart);
 
+  console.log('LinkCard ogImage:', link.ogImage);
   return (
     <Card
       draggable={dragEnabled}

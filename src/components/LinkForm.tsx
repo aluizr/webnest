@@ -216,6 +216,7 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
 
     const selectedOption = categoryOptions.find((opt) => opt.id === selectedCategoryId);
     const categoryValue = selectedOption?.fullName ?? "";
+    console.log('LinkForm submit ogImage:', ogImage);
     onSubmit({
       url: url.trim(),
       title: title.trim() || url.trim(),
