@@ -1,6 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Removed @tailwind directives because build tool does not support Tailwind CSS. */
+/* If you want to use Tailwind, ensure your build tool is configured properly. */
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
