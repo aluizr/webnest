@@ -15,15 +15,7 @@ export default defineConfig({
     },
     headers: {
       'Content-Security-Policy': "default-src * 'unsafe-inline' 'unsafe-eval' blob: data:; script-src * 'unsafe-inline' 'unsafe-eval' blob:; worker-src * blob:;",
-    },
-    headers: {
-      'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests",
-      'X-Frame-Options': 'DENY',
-      'X-Content-Type-Options': 'nosniff',
-      'X-XSS-Protection': '1; mode=block',
-      'Strict-Transport-Security': 'max-age=63072000; includeSubDomains',
-      'Referrer-Policy': 'strict-origin-when-cross-origin',
-      'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
+      // Adicione outros headers necessários para dev abaixo, se quiser
     },
   },
   plugins: [react()],
