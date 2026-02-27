@@ -136,7 +136,7 @@ export function useLinks(userId: string | undefined) {
         user_id: userId,
         position: maxPosition + 1, // ✅ Adicionar position
       })
-      .select("id, url, title, description, category, tags, is_favorite, favicon, notes, created_at, position, deleted_at, user_id")
+      .select("id, url, title, description, category, tags, is_favorite, favicon, og_image, notes, created_at, position, deleted_at, user_id")
       .single();
     if (error) {
       logger.error("Erro ao adicionar link", error, { url: v.url });
