@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { ExternalLink, GripVertical, Pencil, ShieldAlert, Star, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FaviconWithFallback } from "@/components/FaviconWithFallback";
@@ -41,6 +42,14 @@ function safeDomain(url: string): string {
   }
 }
 
+const THUMB_MIN_WIDTH = 112;
+const THUMB_MAX_WIDTH = 220;
+const THUMB_DEFAULT_WIDTH = 140;
+
+function clampThumbWidth(value: number): number {
+  return Math.min(THUMB_MAX_WIDTH, Math.max(THUMB_MIN_WIDTH, value));
+}
+
 export function LinkNotionView({
   links,
   onToggleFavorite,
@@ -58,10 +67,48 @@ export function LinkNotionView({
   onToggleSelect,
   linkStatusById,
 }: LinkNotionViewProps) {
-  const dragEnabled = Boolean(onDragStart);
+  const [thumbWidth, setThumbWidth] = useState<number>(() => {
+    if (typeof window === "undefined") return THUMB_DEFAULT_WIDTH;
+    const saved = Number(window.localStorage.getItem("notion-thumb-width"));
+    return Number.isFinite(saved) ? clampThumbWidth(saved) : THUMB_DEFAULT_WIDTH;
+  });
+  const [isResizingThumb, setIsResizingThumb] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const dragEnabled = Boolean(onDragStart) && !isResizingThumb;
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("notion-thumb-width", String(thumbWidth));
+  }, [thumbWidth]);
+
+  useEffect(() => {
+    if (!isResizingThumb) return;
+
+    const onMouseMove = (event: MouseEvent) => {
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const nextWidth = clampThumbWidth(Math.round(rect.right - event.clientX));
+      setThumbWidth(nextWidth);
+    };
+
+    const onMouseUp = () => {
+      setIsResizingThumb(false);
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp, { once: true });
+
+    return () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+  }, [isResizingThumb]);
+
+  const thumbFrameWidth = Math.max(96, thumbWidth - 16);
+  const thumbFrameHeight = Math.max(62, Math.round(thumbFrameWidth * 0.63));
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border/60 bg-background">
+    <div ref={containerRef} className="overflow-hidden rounded-lg border border-border/60 bg-background">
       {links.map((link) => {
         const isDragging = draggedLinkId === link.id;
         const isDropZone = dropZoneId === link.id && draggedLinkId !== null && !isDragging;
@@ -190,10 +237,30 @@ export function LinkNotionView({
               </div>
             </div>
 
-            <div className="relative flex w-[140px] shrink-0 items-start justify-center border-l bg-muted/5 p-2 pt-3">
+            <div
+              className="relative flex shrink-0 items-start justify-center border-l bg-muted/5 p-2 pt-3"
+              style={{ width: `${thumbWidth}px` }}
+            >
+              <button
+                type="button"
+                aria-label="Redimensionar thumbnail"
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setIsResizingThumb(true);
+                }}
+                onDoubleClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setThumbWidth(THUMB_DEFAULT_WIDTH);
+                }}
+                className="absolute -left-1 top-0 h-full w-2 cursor-col-resize bg-transparent"
+              >
+                <span className="absolute left-1/2 top-1/2 h-8 w-[2px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-border/70 transition-colors group-hover:bg-border" />
+              </button>
               <div
                 className="overflow-hidden rounded-md border border-border/35 bg-muted/10"
-                style={{ width: "124px", height: "78px" }}
+                style={{ width: `${thumbFrameWidth}px`, height: `${thumbFrameHeight}px` }}
               >
                 {link.ogImage ? (
                   <img
@@ -201,13 +268,13 @@ export function LinkNotionView({
                     alt=""
                     loading="lazy"
                     className="h-full w-full object-cover"
-                    style={{ width: "124px", height: "78px", objectFit: "cover" }}
+                    style={{ width: `${thumbFrameWidth}px`, height: `${thumbFrameHeight}px`, objectFit: "cover" }}
                     onError={(e) => {
                       e.currentTarget.style.display = "none";
                     }}
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center" style={{ width: "124px", height: "78px" }}>
+                  <div className="flex h-full w-full items-center justify-center" style={{ width: `${thumbFrameWidth}px`, height: `${thumbFrameHeight}px` }}>
                     <div className="flex flex-col items-center gap-1.5 px-1 text-muted-foreground">
                       <FaviconWithFallback url={link.url} favicon={link.favicon} size={16} />
                       <span className={`max-w-full truncate ${TEXT_XS_CLASS}`}>{domain}</span>
