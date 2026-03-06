@@ -108,7 +108,7 @@ export function LinkNotionView({
             }}
             onDragEnd={(e) => onDragEnd?.(e)}
             data-card-id={link.id}
-            className={`group relative grid grid-cols-[1fr_120px] sm:grid-cols-[1fr_148px] md:grid-cols-[1fr_248px] overflow-hidden border-b border-border/60 bg-background transition-colors duration-150 last:border-b-0 ${
+            className={`group relative grid grid-cols-[1fr_112px] sm:grid-cols-[1fr_136px] md:grid-cols-[1fr_220px] overflow-hidden border-b border-border/60 bg-background transition-colors duration-150 last:border-b-0 ${
               dragEnabled ? "cursor-grab active:cursor-grabbing" : ""
             } ${
               isSelected ? "bg-primary/5" : ""
@@ -253,25 +253,27 @@ export function LinkNotionView({
               </div>
             </div>
 
-            <div className="relative min-h-[96px] border-l bg-muted/20 sm:min-h-[104px] md:min-h-[108px]">
-              {link.ogImage ? (
-                <img
-                  src={link.ogImage}
-                  alt=""
-                  loading="lazy"
-                  className="h-full w-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                  }}
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center">
-                  <div className="flex flex-col items-center gap-1.5 text-muted-foreground">
-                    <FaviconWithFallback url={link.url} favicon={link.favicon} size={22} />
-                    <span className={TEXT_XS_CLASS}>{domain}</span>
+            <div className="relative min-h-[92px] border-l bg-muted/10 p-1.5 sm:min-h-[98px] sm:p-2 md:min-h-[104px]">
+              <div className="h-full w-full overflow-hidden rounded-md border border-border/50 bg-muted/20">
+                {link.ogImage ? (
+                  <img
+                    src={link.ogImage}
+                    alt=""
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <div className="flex flex-col items-center gap-1.5 px-1 text-muted-foreground">
+                      <FaviconWithFallback url={link.url} favicon={link.favicon} size={20} />
+                      <span className={`max-w-full truncate ${TEXT_XS_CLASS}`}>{domain}</span>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </article>
         );
