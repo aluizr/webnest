@@ -9,6 +9,7 @@ import { LinkTableView } from "@/components/LinkTableView";
 import { LinkBoardView } from "@/components/LinkBoardView";
 import { LinkCardsView } from "@/components/LinkCardsView";
 import { LinkGalleryView } from "@/components/LinkGalleryView";
+import { LinkNotionView } from "@/components/LinkNotionView";
 import { ViewSwitcher } from "@/components/ViewSwitcher";
 import type { GridColumns, CardSize } from "@/components/ViewSwitcher";
 import { LinkForm } from "@/components/LinkForm";
@@ -610,6 +611,24 @@ const Index = ({ user, onSignOut }: IndexProps) => {
               selectedIds={selectedIds}
               onToggleSelect={handleToggleSelect}
               onSelectAll={handleSelectAll}
+            />
+          ) : viewMode === "list" ? (
+            <LinkNotionView
+              links={filteredLinks}
+              onToggleFavorite={handleToggleFavorite}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onDragStart={searchFilters.sort === "manual" ? handleDragStart : undefined}
+              onDragOver={searchFilters.sort === "manual" ? handleDragOver : undefined}
+              onDragLeave={searchFilters.sort === "manual" ? dragLeave : undefined}
+              onDragEnd={searchFilters.sort === "manual" ? dragEnd : undefined}
+              onDrop={searchFilters.sort === "manual" ? handleDrop : undefined}
+              draggedLinkId={dragState.draggedLink?.id ?? null}
+              dropZoneId={dragState.dropZoneId}
+              dragDirection={dragState.dragDirection}
+              selectedIds={selectedIds}
+              onToggleSelect={handleToggleSelect}
+              linkStatusById={linkCheckResults}
             />
           ) : viewMode === "board" ? (
             <LinkBoardView
