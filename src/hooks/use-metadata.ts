@@ -7,6 +7,7 @@ export interface LinkMetadata {
   favicon: string | null;
   loading: boolean;
   error: string | null;
+  source: "microlink" | "othermeta" | "noembed" | "local" | null;
 }
 
 // LRU cache with bounded size for metadata requests
@@ -81,6 +82,7 @@ function buildLocalFallback(url: string): LinkMetadata {
       favicon: `https://icon.horse/icon/${parsed.hostname}?size=32`,
       loading: false,
       error: null,
+      source: "local",
     };
   } catch {
     return {
@@ -90,6 +92,7 @@ function buildLocalFallback(url: string): LinkMetadata {
       favicon: null,
       loading: false,
       error: null,
+      source: null,
     };
   }
 }
@@ -131,6 +134,7 @@ async function fetchFromMicrolink(url: string): Promise<LinkMetadata | null> {
       favicon: data.data.logo?.url || null,
       loading: false,
       error: null,
+      source: "microlink",
     };
   } catch (err) {
     console.debug("Microlink error:", err);
@@ -170,6 +174,7 @@ async function fetchFromOtherMeta(url: string): Promise<LinkMetadata | null> {
       favicon: null,
       loading: false,
       error: null,
+      source: "othermeta",
     };
   } catch (err) {
     console.debug("OtherMeta error:", err);
@@ -217,6 +222,7 @@ async function fetchFromNoembed(url: string): Promise<LinkMetadata | null> {
       favicon: null,
       loading: false,
       error: null,
+      source: "noembed",
     };
   } catch (err) {
     console.debug("Noembed error:", err);
@@ -236,6 +242,7 @@ export function useMetadata() {
     favicon: null,
     loading: false,
     error: null,
+    source: null,
   });
 
   const fetchMetadata = useCallback(async (url: string): Promise<LinkMetadata> => {
@@ -247,6 +254,7 @@ export function useMetadata() {
         favicon: null,
         loading: false,
         error: null,
+        source: null,
       });
       return {
         title: null,
@@ -255,6 +263,7 @@ export function useMetadata() {
         favicon: null,
         loading: false,
         error: null,
+        source: null,
       };
     }
 
@@ -316,6 +325,7 @@ export function useMetadata() {
         favicon: null,
         loading: false,
         error: null, // Don't show error to user, just silently fail
+        source: null,
       };
       
       // Still cache the result

@@ -83,6 +83,11 @@ export function LinkPreview({ metadata, url }: LinkPreviewProps) {
 
       {metadata.title && (
         <div className="text-xs text-muted-foreground space-y-1">
+          {metadata.source === "local" ? (
+            <p>ℹ️ Metadados básicos (fallback local)</p>
+          ) : (
+            <p>🌐 Metadados carregados da web</p>
+          )}
           <p>✅ Título preenchido automaticamente</p>
           {metadata.description && <p>✅ Descrição carregada</p>}
           {metadata.image && <p>✅ Imagem detectada</p>}
