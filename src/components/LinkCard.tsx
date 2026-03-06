@@ -199,7 +199,7 @@ export function LinkCard({
               {link.category && (
                 <Badge
                   variant="secondary"
-                  className="text-xs"
+                  className="text-[10px] px-1.5 py-0 h-[18px]"
                   style={(() => {
                     // ✅ Find color from category hierarchy
                     if (!categories) return {};
@@ -227,7 +227,7 @@ export function LinkCard({
                 </Badge>
               )}
               {link.tags.map((tag) => (
-                <Badge key={tag} variant="outline" className="text-xs">
+                <Badge key={tag} variant="outline" className="text-[10px] px-1.5 py-0 h-[18px]">
                   {tag}
                 </Badge>
               ))}

@@ -102,7 +102,7 @@ export function LinkBoardView({ links, categories, onToggleFavorite, onEdit, onD
                 {column.name}
               </h3>
             </div>
-            <Badge variant="secondary" className="text-xs ml-2 shrink-0">
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-[18px] ml-2 shrink-0">
               {allLinks.length}
             </Badge>
           </div>
