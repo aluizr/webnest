@@ -12,6 +12,7 @@ import {
 import type { LinkItem } from "@/types/link";
 import type { LinkStatus } from "@/hooks/use-link-checker";
 import { FaviconWithFallback } from "@/components/FaviconWithFallback";
+import { COMPACT_BADGE_CLASS, TEXT_XS_CLASS } from "@/lib/utils";
 
 interface LinkCheckerPanelProps {
   isOpen: boolean;
@@ -66,15 +67,15 @@ export function LinkCheckerPanel({
           <div className="grid grid-cols-3 gap-2">
             <div className="rounded-lg border p-3 text-center">
               <p className="text-2xl font-bold">{links.length}</p>
-              <p className="text-xs text-muted-foreground">Total</p>
+              <p className={`${TEXT_XS_CLASS} text-muted-foreground`}>Total</p>
             </div>
             <div className="rounded-lg border p-3 text-center">
               <p className="text-2xl font-bold text-green-600">{okLinks.length}</p>
-              <p className="text-xs text-muted-foreground">Ativos</p>
+              <p className={`${TEXT_XS_CLASS} text-muted-foreground`}>Ativos</p>
             </div>
             <div className="rounded-lg border p-3 text-center">
               <p className="text-2xl font-bold text-destructive">{brokenLinks.length}</p>
-              <p className="text-xs text-muted-foreground">Quebrados</p>
+              <p className={`${TEXT_XS_CLASS} text-muted-foreground`}>Quebrados</p>
             </div>
           </div>
 
@@ -135,13 +136,13 @@ export function LinkCheckerPanel({
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-muted-foreground hover:text-primary truncate flex items-center gap-1"
+                        className={`${TEXT_XS_CLASS} text-muted-foreground hover:text-primary truncate flex items-center gap-1`}
                       >
                         {link.url}
                         <ExternalLink className="h-3 w-3 shrink-0" />
                       </a>
                       {result?.statusCode && (
-                        <Badge variant="outline" className="mt-1 text-[10px]">
+                        <Badge variant="outline" className={`${COMPACT_BADGE_CLASS} mt-1`}>
                           HTTP {result.statusCode}
                         </Badge>
                       )}
@@ -157,7 +158,7 @@ export function LinkCheckerPanel({
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <ShieldCheck className="h-10 w-10 text-green-600 mb-2" />
               <p className="text-sm font-medium text-green-600">Todos os links estão ativos!</p>
-              <p className="text-xs text-muted-foreground mt-1">{okLinks.length} links verificados</p>
+              <p className={`${TEXT_XS_CLASS} text-muted-foreground mt-1`}>{okLinks.length} links verificados</p>
             </div>
           )}
         </div>

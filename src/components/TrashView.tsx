@@ -20,6 +20,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { TEXT_XS_CLASS } from "@/lib/utils";
 import type { LinkItem } from "@/types/link";
 
 interface TrashViewProps {
@@ -120,8 +121,8 @@ export function TrashView({
                   <FaviconWithFallback url={link.url} favicon={link.favicon} size={20} className="mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{link.title || link.url}</p>
-                    <p className="text-xs text-muted-foreground truncate">{link.url}</p>
-                    <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                    <p className={`${TEXT_XS_CLASS} text-muted-foreground truncate`}>{link.url}</p>
+                    <div className={`mt-1 flex items-center gap-2 ${TEXT_XS_CLASS} text-muted-foreground`}>
                       <span>Excluído {timeAgo(link.deletedAt!)}</span>
                       <span className="text-destructive/70">
                         • {daysUntilPurge(link.deletedAt!)} dia(s) restantes

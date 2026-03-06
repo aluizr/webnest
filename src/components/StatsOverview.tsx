@@ -1,5 +1,6 @@
 import { TrendingUp, Star, Folder, Tag, Zap } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { TEXT_XS_CLASS } from "@/lib/utils";
 import type { LinkStats, TimelineStats } from "@/types/stats";
 
 interface StatsOverviewProps {
@@ -31,7 +32,7 @@ const StatCard = ({
     </CardHeader>
     <CardContent>
       <div className="text-3xl font-bold">{value}</div>
-      {trend && <p className="text-xs text-muted-foreground mt-1">{trend}</p>}
+      {trend && <p className={`${TEXT_XS_CLASS} text-muted-foreground mt-1`}>{trend}</p>}
     </CardContent>
   </Card>
 );
@@ -92,19 +93,19 @@ export function StatsOverview({ basicStats, timelineStats }: StatsOverviewProps)
         <CardContent>
           <div className="grid gap-4 md:grid-cols-4">
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">Última Semana</p>
+              <p className={`${TEXT_XS_CLASS} text-muted-foreground`}>Última Semana</p>
               <p className="text-2xl font-bold">{timelineStats.thisWeek}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">Último Mês</p>
+              <p className={`${TEXT_XS_CLASS} text-muted-foreground`}>Último Mês</p>
               <p className="text-2xl font-bold">{timelineStats.thisMonth}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">Último Ano</p>
+              <p className={`${TEXT_XS_CLASS} text-muted-foreground`}>Último Ano</p>
               <p className="text-2xl font-bold">{timelineStats.thisYear}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">Total</p>
+              <p className={`${TEXT_XS_CLASS} text-muted-foreground`}>Total</p>
               <p className="text-2xl font-bold">{timelineStats.allTime}</p>
             </div>
           </div>

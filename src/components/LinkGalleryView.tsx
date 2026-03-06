@@ -13,6 +13,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { ICON_BTN_MD_CLASS, TEXT_XS_CLASS } from "@/lib/utils";
 import type { LinkItem, Category } from "@/types/link";
 
 interface LinkGalleryViewProps {
@@ -116,7 +117,7 @@ export function LinkGalleryView({
               </a>
 
               {link.description && (
-                <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
+                <p className={`mt-1 ${TEXT_XS_CLASS} text-muted-foreground line-clamp-2`}>
                   {link.description}
                 </p>
               )}
@@ -148,12 +149,12 @@ export function LinkGalleryView({
 
               {/* Actions */}
               <div className="mt-2 flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEdit(link)}>
+                <Button variant="ghost" size="icon" className={ICON_BTN_MD_CLASS} onClick={() => onEdit(link)}>
                   <Pencil className="h-3.5 w-3.5" />
                 </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive">
+                    <Button variant="ghost" size="icon" className={`${ICON_BTN_MD_CLASS} text-destructive`}>
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </AlertDialogTrigger>

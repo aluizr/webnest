@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle2, Loader2, FileJson, FileText, Bookmark } from "lucide-react";
 import { parseCSV, parseHTML, parseJSON, parseBookmarks } from "@/lib/import";
 import { linkSchema } from "@/lib/validation";
+import { TEXT_XS_CLASS } from "@/lib/utils";
 import { toast } from "sonner";
 import type { LinkItem } from "@/types/link";
 
@@ -149,7 +150,7 @@ export function ImportFormatDialog({ isOpen, onClose, onImport }: ImportFormatDi
                 disabled={importing}
               >
                 <FileJson className="h-6 w-6" />
-                <span className="text-xs font-medium">JSON</span>
+                <span className={`${TEXT_XS_CLASS} font-medium`}>JSON</span>
               </Button>
 
               <Button
@@ -159,7 +160,7 @@ export function ImportFormatDialog({ isOpen, onClose, onImport }: ImportFormatDi
                 disabled={importing}
               >
                 <FileText className="h-6 w-6" />
-                <span className="text-xs font-medium">CSV</span>
+                <span className={`${TEXT_XS_CLASS} font-medium`}>CSV</span>
               </Button>
 
               <Button
@@ -169,7 +170,7 @@ export function ImportFormatDialog({ isOpen, onClose, onImport }: ImportFormatDi
                 disabled={importing}
               >
                 <FileText className="h-6 w-6" />
-                <span className="text-xs font-medium">HTML</span>
+                <span className={`${TEXT_XS_CLASS} font-medium`}>HTML</span>
               </Button>
 
               <Button
@@ -179,7 +180,7 @@ export function ImportFormatDialog({ isOpen, onClose, onImport }: ImportFormatDi
                 disabled={importing}
               >
                 <Bookmark className="h-6 w-6 text-blue-600" />
-                <span className="text-xs font-medium">Bookmarks</span>
+                <span className={`${TEXT_XS_CLASS} font-medium`}>Bookmarks</span>
               </Button>
             </div>
 
@@ -202,7 +203,7 @@ export function ImportFormatDialog({ isOpen, onClose, onImport }: ImportFormatDi
 
             <Alert>
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription className="text-xs">
+              <AlertDescription className={TEXT_XS_CLASS}>
                 <strong>Bookmarks:</strong> Exporte os bookmarks do seu navegador (Chrome, Firefox, Safari, Edge) e importe aqui.
                 Pastas de bookmarks se tornarão categorias.
               </AlertDescription>
@@ -240,7 +241,7 @@ export function ImportFormatDialog({ isOpen, onClose, onImport }: ImportFormatDi
                     <summary className="text-sm font-medium text-muted-foreground hover:text-foreground">
                       Ver detalhes dos erros
                     </summary>
-                    <div className="mt-2 text-xs space-y-1 bg-muted p-2 rounded overflow-auto max-h-48">
+                    <div className={`mt-2 ${TEXT_XS_CLASS} space-y-1 bg-muted p-2 rounded overflow-auto max-h-48`}>
                       {result.errors.slice(0, 10).map((err, i) => (
                         <p key={i} className="text-red-600">
                           Linha {err.row}: {err.error}

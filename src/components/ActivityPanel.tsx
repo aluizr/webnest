@@ -11,6 +11,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { TEXT_XS_CLASS } from "@/lib/utils";
 import type { ActivityLogEntry, ActivityAction } from "@/types/link";
 
 interface ActivityPanelProps {
@@ -105,7 +106,7 @@ export function ActivityPanel({ isOpen, onClose, entries, onClear }: ActivityPan
               Histórico
             </SheetTitle>
             {entries.length > 0 && (
-              <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={onClear}>
+              <Button variant="ghost" size="sm" className={`${TEXT_XS_CLASS} text-muted-foreground`} onClick={onClear}>
                 Limpar
               </Button>
             )}
@@ -120,7 +121,7 @@ export function ActivityPanel({ isOpen, onClose, entries, onClear }: ActivityPan
             <div className="flex flex-col items-center justify-center py-20 text-center px-6">
               <Clock className="h-10 w-10 text-muted-foreground/30 mb-3" />
               <p className="text-sm text-muted-foreground">Nenhuma atividade registrada</p>
-              <p className="text-xs text-muted-foreground/60 mt-1">
+              <p className={`${TEXT_XS_CLASS} text-muted-foreground/60 mt-1`}>
                 Ações como criar, editar e excluir links aparecerão aqui
               </p>
             </div>
@@ -128,7 +129,7 @@ export function ActivityPanel({ isOpen, onClose, entries, onClear }: ActivityPan
             <div className="px-4 py-3">
               {Array.from(grouped).map(([label, items]) => (
                 <div key={label} className="mb-4">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-2">
+                  <p className={`${TEXT_XS_CLASS} font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-2`}>
                     {label}
                   </p>
                   <div className="space-y-1">
@@ -146,7 +147,7 @@ export function ActivityPanel({ isOpen, onClose, entries, onClear }: ActivityPan
                           <div className="min-w-0 flex-1">
                             <p className="text-sm font-medium truncate">{entry.title}</p>
                             {entry.details && (
-                              <p className="text-xs text-muted-foreground truncate mt-0.5">
+                              <p className={`${TEXT_XS_CLASS} text-muted-foreground truncate mt-0.5`}>
                                 {entry.details}
                               </p>
                             )}
