@@ -81,6 +81,9 @@ export function LinkNotionView({
         const isSelected = selectedIds?.has(link.id);
         const domain = safeDomain(link.url);
         const health = linkStatusById?.[link.id];
+        const dueDateText = link.dueDate ? new Date(link.dueDate).toLocaleDateString("pt-BR") : "—";
+        const categoryText = link.category || "—";
+        const tagsText = link.tags.length > 0 ? link.tags.slice(0, 2).join(", ") : "—";
 
         return (
           <article
@@ -170,7 +173,7 @@ export function LinkNotionView({
                     <span className="truncate">{domain}</span>
                   </a>
 
-                  <div className="mt-2 flex flex-wrap items-center gap-1">
+                  <div className="mt-2 flex flex-wrap items-center gap-1 md:hidden">
                     <Badge variant={link.status === "done" ? "default" : link.status === "in_progress" ? "secondary" : "outline"} className={COMPACT_BADGE_CLASS}>
                       {statusLabel(link.status)}
                     </Badge>
@@ -197,6 +200,24 @@ export function LinkNotionView({
                         {new Date(link.dueDate).toLocaleDateString("pt-BR")}
                       </Badge>
                     )}
+                  </div>
+
+                  <div className="mt-2 hidden md:grid md:grid-cols-[88px_88px_minmax(0,124px)_90px_minmax(0,1fr)] md:items-center md:gap-2 md:text-xs">
+                    <div className="min-w-0 rounded-md bg-muted/40 px-2 py-1 text-muted-foreground">
+                      <span className="block truncate">{statusLabel(link.status)}</span>
+                    </div>
+                    <div className="min-w-0 rounded-md bg-muted/40 px-2 py-1 text-muted-foreground">
+                      <span className="block truncate">{priorityLabel(link.priority)}</span>
+                    </div>
+                    <div className="min-w-0 rounded-md bg-muted/30 px-2 py-1 text-muted-foreground">
+                      <span className="block truncate">{categoryText}</span>
+                    </div>
+                    <div className="min-w-0 rounded-md bg-muted/30 px-2 py-1 text-muted-foreground">
+                      <span className="block truncate">{dueDateText}</span>
+                    </div>
+                    <div className="min-w-0 rounded-md bg-muted/20 px-2 py-1 text-muted-foreground">
+                      <span className="block truncate">{tagsText}</span>
+                    </div>
                   </div>
                 </div>
               </div>
