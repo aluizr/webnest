@@ -4,6 +4,8 @@ Organize seus links favoritos com estilo e segurança.
 
 ## What's new — 0.14.1 (2026-03-06)
 
+Detalhes completos da release: [CHANGELOG 0.14.1](CHANGELOG.md#0141--2026-03-06)
+
 - **Metadados mais confiáveis** no cadastro de links com fallback em camadas (Microlink → OtherMeta → noembed → local)
 - **Fallback local automático** para preencher título/favicon quando APIs externas falham
 - **Submit mais robusto**: busca metadados faltantes no envio e normaliza URL com `https://` quando necessário
