@@ -2,17 +2,17 @@
 
 Organize seus links favoritos com estilo e segurança.
 
-## What's new — 0.14.1 (2026-03-06)
-
-Detalhes completos da release: [CHANGELOG 0.14.1](CHANGELOG.md#0141--2026-03-06)
-
-### Últimas versões
+## Últimas versões
 
 | Versão | Data | Link |
 | --- | --- | --- |
 | 0.14.1 | 2026-03-06 | [Ver changelog](CHANGELOG.md#0141--2026-03-06) |
 | 0.14.0 | 2026-02-22 | [Ver changelog](CHANGELOG.md#0140--2026-02-22) |
 | 0.13.0 | 2026-02-21 | [Ver changelog](CHANGELOG.md#0130--2026-02-21) |
+
+## What's new — 0.14.1 (2026-03-06)
+
+Detalhes completos da release: [CHANGELOG 0.14.1](CHANGELOG.md#0141--2026-03-06)
 
 - **Metadados mais confiáveis** no cadastro de links com fallback em camadas (Microlink → OtherMeta → noembed → local)
 - **Fallback local automático** para preencher título/favicon quando APIs externas falham
