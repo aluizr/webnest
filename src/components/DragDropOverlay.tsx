@@ -2,6 +2,7 @@ import { Undo2, Redo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useEffect, useState } from "react";
+import { TEXT_XS_CLASS } from "@/lib/utils";
 
 interface DragDropOverlayProps {
   canUndo: boolean;
@@ -124,7 +125,7 @@ export function DragDropOverlay({
         {/* Drag Status Indicator */}
         {isDragging && (
           <div className="ml-2 px-3 py-2 rounded-full bg-blue-50 border border-blue-200 animate-pulse">
-            <p className="text-xs font-medium text-blue-700">∿ Arrastando...</p>
+            <p className={`${TEXT_XS_CLASS} font-medium text-blue-700`}>∿ Arrastando...</p>
           </div>
         )}
       </TooltipProvider>

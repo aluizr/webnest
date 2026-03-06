@@ -102,7 +102,7 @@ function ColorPicker({
       </PopoverTrigger>
       <PopoverContent className="w-48 p-3" align="start">
         <div className="space-y-2">
-          <p className="text-xs font-medium">Cor da categoria</p>
+          <p className={`${TEXT_XS_CLASS} font-medium`}>Cor da categoria</p>
           <div className="grid grid-cols-4 gap-2">
             {CATEGORY_COLORS.map((color) => (
               <button
@@ -120,7 +120,7 @@ function ColorPicker({
             <Button
               variant="ghost"
               size="sm"
-              className="w-full text-xs h-7 mt-1"
+              className={`w-full ${TEXT_XS_CLASS} h-7 mt-1`}
               onClick={() => onChange(null)}
             >
               Remover cor

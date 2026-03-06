@@ -18,6 +18,7 @@ import { useLinkDraft } from "@/hooks/use-link-draft";
 import { useDuplicateDetector } from "@/hooks/use-duplicate-detector";
 import { LinkPreview } from "@/components/LinkPreview";
 import { RichTextEditor } from "@/components/RichTextEditor";
+import { TEXT_XS_CLASS } from "@/lib/utils";
 import type { LinkItem, Category } from "@/types/link";
 
 interface LinkFormProps {
@@ -328,8 +329,8 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
             {duplicateLink && (
               <div className="rounded-md bg-muted p-2 text-sm">
                 <p className="font-semibold truncate">{duplicateLink.title}</p>
-                <p className="text-xs text-muted-foreground truncate">{duplicateLink.url}</p>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className={`${TEXT_XS_CLASS} text-muted-foreground truncate`}>{duplicateLink.url}</p>
+                <p className={`${TEXT_XS_CLASS} text-muted-foreground mt-1`}>
                   Adicionado em {new Date(duplicateLink.createdAt).toLocaleDateString()}
                 </p>
               </div>
@@ -387,10 +388,10 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
                 <Link2 className="h-4 w-4" />
                 Link já existe
               </p>
-              <p className="text-blue-800 text-xs mb-2">
+              <p className={`text-blue-800 ${TEXT_XS_CLASS} mb-2`}>
                 Você já tem este link na sua coleção:
               </p>
-              <p className="text-blue-700 font-semibold text-xs truncate">{duplicateLink.title}</p>
+              <p className={`text-blue-700 font-semibold ${TEXT_XS_CLASS} truncate`}>{duplicateLink.title}</p>
               {onEditDuplicate && (
                 <Button
                   type="button"

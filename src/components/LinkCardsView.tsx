@@ -52,7 +52,7 @@ const descLines: Record<CardSize, string> = {
 const badgeClasses: Record<CardSize, string> = {
   sm: "text-[9px] px-1.5 py-0 h-4",
   md: COMPACT_BADGE_CLASS,
-  lg: "text-xs px-2 py-0.5 h-5",
+  lg: `${TEXT_XS_CLASS} px-2 py-0.5 h-5`,
 };
 
 const domainClasses: Record<CardSize, string> = {

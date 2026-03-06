@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { FileJson, FileText, FileSpreadsheet, Bookmark } from "lucide-react";
 import { downloadFile, exportAsJSON, exportAsCSV, exportAsHTML, exportAsBookmarks } from "@/lib/export";
+import { TEXT_XS_CLASS } from "@/lib/utils";
 import type { LinkItem, Category } from "@/types/link";
 
 interface ExportFormatDialogProps {
@@ -112,7 +113,7 @@ export function ExportFormatDialog({ isOpen, onClose, links, categories }: Expor
               <div className="flex-shrink-0 text-muted-foreground">{format.icon}</div>
               <div className="flex-1">
                 <p className="font-medium">{format.name}</p>
-                <p className="text-xs text-muted-foreground">{format.description}</p>
+                <p className={`${TEXT_XS_CLASS} text-muted-foreground`}>{format.description}</p>
               </div>
             </button>
           ))}

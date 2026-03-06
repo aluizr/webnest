@@ -33,6 +33,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import DOMPurify from "dompurify";
+import { TEXT_XS_CLASS } from "@/lib/utils";
 
 // -------- Toolbar Button --------
 function ToolbarButton({
@@ -102,7 +103,7 @@ function LinkPopover({ editor }: { editor: Editor }) {
         </span>
       </PopoverTrigger>
       <PopoverContent className="w-72 p-3" align="start">
-        <p className="text-xs font-medium mb-2">URL do link</p>
+        <p className={`${TEXT_XS_CLASS} font-medium mb-2`}>URL do link</p>
         <div className="flex gap-2">
           <Input
             value={url}
@@ -124,7 +125,7 @@ function LinkPopover({ editor }: { editor: Editor }) {
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 mt-1 text-xs text-destructive"
+            className={`h-6 mt-1 ${TEXT_XS_CLASS} text-destructive`}
             onClick={() => {
               editor.chain().focus().unsetLink().run();
               setOpen(false);
@@ -313,7 +314,7 @@ export function RichTextDisplay({ content, className = "" }: RichTextDisplayProp
   // Legacy plain text notes: render as-is with whitespace preserved
   if (!isHtml(content)) {
     return (
-      <div className={`text-xs text-muted-foreground whitespace-pre-line leading-relaxed ${className}`}>
+      <div className={`${TEXT_XS_CLASS} text-muted-foreground whitespace-pre-line leading-relaxed ${className}`}>
         {content}
       </div>
     );
@@ -321,7 +322,7 @@ export function RichTextDisplay({ content, className = "" }: RichTextDisplayProp
 
   return (
     <div
-      className={`prose prose-sm dark:prose-invert max-w-none text-xs leading-relaxed ${className}`}
+      className={`prose prose-sm dark:prose-invert max-w-none ${TEXT_XS_CLASS} leading-relaxed ${className}`}
       dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }}
     />
   );

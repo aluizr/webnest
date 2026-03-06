@@ -118,7 +118,7 @@ export function LinkTableView({ links, onToggleFavorite, onEdit, onDelete, selec
 
                 {/* Description */}
                 <td className="px-4 py-3 hidden md:table-cell max-w-[200px]">
-                  <p className="text-muted-foreground truncate text-xs">
+                  <p className={`text-muted-foreground truncate ${TEXT_XS_CLASS}`}>
                     {link.description || "—"}
                   </p>
                   {link.notes && (
@@ -135,7 +135,7 @@ export function LinkTableView({ links, onToggleFavorite, onEdit, onDelete, selec
                       {link.category}
                     </Badge>
                   ) : (
-                    <span className="text-xs text-muted-foreground">—</span>
+                    <span className={`${TEXT_XS_CLASS} text-muted-foreground`}>—</span>
                   )}
                 </td>
 
@@ -149,17 +149,17 @@ export function LinkTableView({ links, onToggleFavorite, onEdit, onDelete, selec
                         </Badge>
                       ))
                     ) : (
-                      <span className="text-xs text-muted-foreground">—</span>
+                      <span className={`${TEXT_XS_CLASS} text-muted-foreground`}>—</span>
                     )}
                     {link.tags.length > 3 && (
-                      <span className="text-xs text-muted-foreground">+{link.tags.length - 3}</span>
+                      <span className={`${TEXT_XS_CLASS} text-muted-foreground`}>+{link.tags.length - 3}</span>
                     )}
                   </div>
                 </td>
 
                 {/* Date */}
                 <td className="px-4 py-3 hidden lg:table-cell">
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                  <span className={`${TEXT_XS_CLASS} text-muted-foreground whitespace-nowrap`}>
                     {new Date(link.createdAt).toLocaleDateString("pt-BR", {
                       day: "2-digit",
                       month: "short",

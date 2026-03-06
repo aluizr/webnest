@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import DOMPurify from "dompurify";
+import { TEXT_XS_CLASS } from "@/lib/utils";
 
 /**
  * Simple Markdown → HTML renderer.
@@ -15,11 +16,11 @@ function markdownToHtml(md: string): string {
 
   // Code blocks (```)
   html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_match, _lang, code) => {
-    return `<pre class="rounded-md bg-muted p-2 text-xs overflow-x-auto my-1"><code>${code.trim()}</code></pre>`;
+    return `<pre class="rounded-md bg-muted p-2 ${TEXT_XS_CLASS} overflow-x-auto my-1"><code>${code.trim()}</code></pre>`;
   });
 
   // Inline code
-  html = html.replace(/`([^`]+)`/g, '<code class="rounded bg-muted px-1 py-0.5 text-xs font-mono">$1</code>');
+  html = html.replace(/`([^`]+)`/g, `<code class="rounded bg-muted px-1 py-0.5 ${TEXT_XS_CLASS} font-mono">$1</code>`);
 
   // Images before links (![alt](url))
   html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="max-w-full rounded my-1" loading="lazy" />');
