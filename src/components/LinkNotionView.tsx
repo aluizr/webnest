@@ -108,7 +108,7 @@ export function LinkNotionView({
             }}
             onDragEnd={(e) => onDragEnd?.(e)}
             data-card-id={link.id}
-            className={`group relative grid grid-cols-1 md:grid-cols-[1fr_248px] overflow-hidden border-b border-border/60 bg-background transition-colors duration-150 last:border-b-0 ${
+            className={`group relative grid grid-cols-[1fr_120px] sm:grid-cols-[1fr_148px] md:grid-cols-[1fr_248px] overflow-hidden border-b border-border/60 bg-background transition-colors duration-150 last:border-b-0 ${
               dragEnabled ? "cursor-grab active:cursor-grabbing" : ""
             } ${
               isSelected ? "bg-primary/5" : ""
@@ -253,7 +253,7 @@ export function LinkNotionView({
               </div>
             </div>
 
-            <div className="relative min-h-[104px] border-t bg-muted/20 md:min-h-[108px] md:border-l md:border-t-0">
+            <div className="relative min-h-[96px] border-l bg-muted/20 sm:min-h-[104px] md:min-h-[108px]">
               {link.ogImage ? (
                 <img
                   src={link.ogImage}
