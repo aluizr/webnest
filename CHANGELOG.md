@@ -4,6 +4,36 @@ Todas as mudanças relevantes deste projeto estão documentadas neste arquivo.
 
 ---
 
+## [0.14.1] — 2026-03-06
+
+### Correções de Metadados (Adicionar Link)
+
+- **Resiliência no carregamento de metadados**: fluxo do `useMetadata` com cadeia de fallback `Microlink -> OtherMeta -> noembed -> local`
+- **Fallback local garantido**: quando APIs externas não retornam dados, título básico e favicon são derivados da URL
+- **Timeout de requisições**: fetch de metadados com timeout para evitar travamentos em provedores lentos/instáveis
+- **Submit mais robusto**: ao salvar novo link, o formulário tenta buscar metadados faltantes no envio (não apenas durante digitação)
+- **URL normalizada no submit**: URLs sem protocolo passam a ser normalizadas com `https://` para reduzir falhas de coleta
+- **Preview resiliente**: parsing de hostname no preview não quebra quando a URL ainda está incompleta
+- **Origem dos metadados exposta**: campo `source` em `LinkMetadata` (`microlink`, `othermeta`, `noembed`, `local`)
+- **Indicador visual de origem**: badges no preview distinguem dados vindos da web vs fallback local
+
+### Design System / Padronização de Tokens UI
+
+- **Tokens compartilhados adicionados** em `src/lib/utils.ts`:
+  - `COMPACT_BADGE_CLASS`
+  - `TEXT_XS_CLASS`
+  - `ICON_BTN_SM_CLASS`
+  - `ICON_BTN_MD_CLASS`
+- **Refatoração ampla de classes utilitárias duplicadas** (`text-xs`, `h-6 w-6`, `h-7 w-7`, badge compacto) para usar tokens compartilhados
+- **Escopo da padronização**: aplicado em views de links, formulários, painéis, diálogos, componentes de suporte e componentes base de UI (`ui/badge`, `ui/sidebar`)
+
+### Validação Técnica
+
+- **Build de produção validado** após cada bloco de mudanças (`npm run build`)
+- **Sem erros de tipagem** nos arquivos alterados durante a refatoração
+
+---
+
 ## [0.14.0] — 2026-02-22
 
 ### Operações em Lote (Batch) — Aprimoradas
