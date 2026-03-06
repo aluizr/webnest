@@ -85,11 +85,11 @@ export function LinkPreview({ metadata, url }: LinkPreviewProps) {
       {metadata.title && (
         <div className="flex flex-wrap gap-1.5">
           <Badge variant="secondary" className="text-[10px]">
-            {metadata.source === "local" ? "Fallback local" : "Fonte web"}
+            {metadata.source === "local" ? "Local" : "Web"}
           </Badge>
-          <Badge variant="outline" className="text-[10px]">Título</Badge>
-          {metadata.description && <Badge variant="outline" className="text-[10px]">Descrição</Badge>}
-          {metadata.image && <Badge variant="outline" className="text-[10px]">Imagem</Badge>}
+          <Badge variant="outline" className="text-[10px]">Auto</Badge>
+          {metadata.description && <Badge variant="outline" className="text-[10px]">Desc</Badge>}
+          {metadata.image && <Badge variant="outline" className="text-[10px]">Img</Badge>}
         </div>
       )}
     </div>
