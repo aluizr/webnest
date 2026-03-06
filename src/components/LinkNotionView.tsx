@@ -190,9 +190,9 @@ export function LinkNotionView({
               </div>
             </div>
 
-            <div className="relative flex w-[140px] shrink-0 items-center justify-center border-l bg-muted/10 p-2">
+            <div className="relative flex w-[140px] shrink-0 items-start justify-center border-l bg-muted/5 p-2 pt-3">
               <div
-                className="overflow-hidden rounded-md border border-border/50 bg-muted/20"
+                className="overflow-hidden rounded-md border border-border/35 bg-muted/10"
                 style={{ width: "124px", height: "78px" }}
               >
                 {link.ogImage ? (
