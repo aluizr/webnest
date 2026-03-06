@@ -1,5 +1,6 @@
 import { AlertCircle, Loader2, Globe } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import type { LinkMetadata } from "@/hooks/use-metadata";
 
 interface LinkPreviewProps {
@@ -82,15 +83,13 @@ export function LinkPreview({ metadata, url }: LinkPreviewProps) {
       </div>
 
       {metadata.title && (
-        <div className="text-xs text-muted-foreground space-y-1">
-          {metadata.source === "local" ? (
-            <p>ℹ️ Metadados básicos (fallback local)</p>
-          ) : (
-            <p>🌐 Metadados carregados da web</p>
-          )}
-          <p>✅ Título preenchido automaticamente</p>
-          {metadata.description && <p>✅ Descrição carregada</p>}
-          {metadata.image && <p>✅ Imagem detectada</p>}
+        <div className="flex flex-wrap gap-1.5">
+          <Badge variant="secondary" className="text-[10px]">
+            {metadata.source === "local" ? "Fallback local" : "Fonte web"}
+          </Badge>
+          <Badge variant="outline" className="text-[10px]">Título</Badge>
+          {metadata.description && <Badge variant="outline" className="text-[10px]">Descrição</Badge>}
+          {metadata.image && <Badge variant="outline" className="text-[10px]">Imagem</Badge>}
         </div>
       )}
     </div>
