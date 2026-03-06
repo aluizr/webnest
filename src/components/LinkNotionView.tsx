@@ -253,10 +253,10 @@ export function LinkNotionView({
               </div>
             </div>
 
-            <div className="relative w-[112px] shrink-0 border-l bg-muted/10 p-1.5 sm:w-[136px] sm:p-2 md:w-[220px]">
-              <div className="h-full w-full overflow-hidden rounded-md border border-border/50 bg-muted/20">
+            <div className="relative flex w-[112px] shrink-0 items-center border-l bg-muted/10 p-1.5 sm:w-[136px] sm:p-2 md:w-[220px]">
+              <div className="w-full overflow-hidden rounded-md border border-border/50 bg-muted/20">
                 {link.ogImage ? (
-                  <div className="mx-auto aspect-[16/10] h-full max-h-[118px] w-full md:max-h-[132px]">
+                  <div className="mx-auto aspect-[16/10] w-full">
                     <img
                       src={link.ogImage}
                       alt=""
@@ -268,7 +268,7 @@ export function LinkNotionView({
                     />
                   </div>
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center">
+                  <div className="flex aspect-[16/10] w-full items-center justify-center">
                     <div className="flex flex-col items-center gap-1.5 px-1 text-muted-foreground">
                       <FaviconWithFallback url={link.url} favicon={link.favicon} size={20} />
                       <span className={`max-w-full truncate ${TEXT_XS_CLASS}`}>{domain}</span>
