@@ -569,7 +569,7 @@ const Index = ({ user, onSignOut }: IndexProps) => {
           />
 
           {/* Links Grid/List */}
-          <div className="mt-6">
+          <div className={viewMode === "list" ? "mt-4" : "mt-6"}>
           {filteredLinks.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <p className="text-lg text-muted-foreground">

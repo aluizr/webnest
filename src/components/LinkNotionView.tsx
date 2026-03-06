@@ -74,7 +74,7 @@ export function LinkNotionView({
   const dragEnabled = Boolean(onDragStart);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border/60 bg-background">
+    <div className="overflow-hidden rounded-lg border border-border/60 bg-background">
       {links.map((link) => {
         const isDragging = draggedLinkId === link.id;
         const isDropZone = dropZoneId === link.id && draggedLinkId !== null && !isDragging;
@@ -105,14 +105,14 @@ export function LinkNotionView({
             }}
             onDragEnd={(e) => onDragEnd?.(e)}
             data-card-id={link.id}
-            className={`group relative grid grid-cols-1 md:grid-cols-[1fr_264px] overflow-hidden border-b border-border/60 bg-background transition-colors duration-150 last:border-b-0 ${
+            className={`group relative grid grid-cols-1 md:grid-cols-[1fr_248px] overflow-hidden border-b border-border/60 bg-background transition-colors duration-150 last:border-b-0 ${
               dragEnabled ? "cursor-grab active:cursor-grabbing" : ""
             } ${
               isSelected ? "bg-primary/5" : ""
             } ${
               isDragging ? "opacity-30" : "hover:bg-muted/30"
             } ${
-              isDropZone ? "bg-primary/8" : ""
+              isDropZone ? "bg-primary/10" : ""
             }`}
           >
             {isDropZone && dragDirection === "above" && (
@@ -122,7 +122,7 @@ export function LinkNotionView({
               <div className="absolute bottom-0 left-2 right-2 z-10 h-[3px] rounded-full bg-primary" />
             )}
 
-            <div className="relative p-3.5 md:p-4">
+            <div className="relative p-3 md:p-3.5">
               <div className="flex items-start gap-2.5">
                 <div className="pt-0.5 text-muted-foreground/70 opacity-0 transition-opacity group-hover:opacity-100">
                   <GripVertical className="h-3.5 w-3.5" />
@@ -142,12 +142,12 @@ export function LinkNotionView({
                   />
                 )}
 
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1 pr-20">
                   <a
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex max-w-full items-center gap-1.5 text-[15px] font-medium text-foreground transition-colors hover:text-primary md:text-base"
+                    className="inline-flex max-w-full items-center gap-1.5 text-[15px] font-medium text-foreground transition-colors hover:text-primary"
                   >
                     {health === "broken" && <ShieldAlert className="h-4 w-4 shrink-0 text-destructive" />}
                     <span className="truncate">{link.title || domain}</span>
@@ -164,13 +164,13 @@ export function LinkNotionView({
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-1.5 inline-flex items-center gap-1.5 text-xs text-foreground/85 hover:text-primary"
+                    className="mt-1 inline-flex items-center gap-1.5 text-xs text-foreground/80 hover:text-primary"
                   >
                     <FaviconWithFallback url={link.url} favicon={link.favicon} size={14} />
                     <span className="truncate">{domain}</span>
                   </a>
 
-                  <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                  <div className="mt-2 flex flex-wrap items-center gap-1">
                     <Badge variant={link.status === "done" ? "default" : link.status === "in_progress" ? "secondary" : "outline"} className={COMPACT_BADGE_CLASS}>
                       {statusLabel(link.status)}
                     </Badge>
@@ -227,7 +227,7 @@ export function LinkNotionView({
               </div>
             </div>
 
-            <div className="relative min-h-[108px] border-t bg-muted/20 md:min-h-[112px] md:border-l md:border-t-0">
+            <div className="relative min-h-[104px] border-t bg-muted/20 md:min-h-[108px] md:border-l md:border-t-0">
               {link.ogImage ? (
                 <img
                   src={link.ogImage}
