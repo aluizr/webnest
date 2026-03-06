@@ -91,6 +91,13 @@ export const linkSchema = z.object({
       img => !img || img.startsWith('http'),
       "OG Image deve ser uma URL válida"
     ),
+  status: z.enum(["backlog", "in_progress", "done"]).default("backlog"),
+  priority: z.enum(["low", "medium", "high"]).default("medium"),
+  dueDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Data limite inválida")
+    .optional()
+    .nullable(),
 });
 
 // ✅ Validação dinâmica de ícones usando a lista real do Lucide

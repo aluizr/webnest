@@ -31,6 +31,18 @@ import {
 import { COMPACT_BADGE_CLASS, ICON_BTN_MD_CLASS, TEXT_XS_CLASS } from "@/lib/utils";
 import type { LinkItem, Category } from "@/types/link";
 
+const statusLabel: Record<LinkItem["status"], string> = {
+  backlog: "Backlog",
+  in_progress: "Em progresso",
+  done: "Concluído",
+};
+
+const priorityLabel: Record<LinkItem["priority"], string> = {
+  low: "Baixa",
+  medium: "Média",
+  high: "Alta",
+};
+
 interface LinkCardProps {
   link: LinkItem;
   categories?: Category[];
@@ -232,6 +244,23 @@ export function LinkCard({
                   {tag}
                 </Badge>
               ))}
+              <Badge
+                variant={link.status === "done" ? "default" : link.status === "in_progress" ? "secondary" : "outline"}
+                className={COMPACT_BADGE_CLASS}
+              >
+                {statusLabel[link.status]}
+              </Badge>
+              <Badge
+                variant={link.priority === "high" ? "destructive" : link.priority === "medium" ? "secondary" : "outline"}
+                className={COMPACT_BADGE_CLASS}
+              >
+                {priorityLabel[link.priority]}
+              </Badge>
+              {link.dueDate && (
+                <Badge variant="outline" className={COMPACT_BADGE_CLASS}>
+                  {new Date(link.dueDate).toLocaleDateString("pt-BR")}
+                </Badge>
+              )}
               {link.notes && (
                 <span className={`inline-flex items-center gap-0.5 ${TEXT_XS_CLASS} text-muted-foreground`} title="Tem notas">
                   <StickyNote className="h-3 w-3" />

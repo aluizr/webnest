@@ -39,6 +39,9 @@ export function useLinks(userId: string | undefined) {
     period: "all",
     sort: "manual",
     favoritesOnly: false,
+    status: "all",
+    priority: "all",
+    dueDate: "all",
   });
 
   const getCategoryFullName = useCallback((cat: Category, parent?: Category | null) => {
@@ -62,7 +65,7 @@ export function useLinks(userId: string | undefined) {
       }
 
       const [linksRes, catsRes] = await Promise.all([
-        supabase.from("links").select("id, url, title, description, category, tags, is_favorite, favicon, og_image, notes, created_at, position, deleted_at, user_id").order("position", { ascending: true }), // ✅ Ordenar por position
+        supabase.from("links").select("id, url, title, description, category, tags, is_favorite, favicon, og_image, notes, status, priority, due_date, created_at, position, deleted_at, user_id").order("position", { ascending: true }), // ✅ Ordenar por position
         supabase.from("categories").select("*").order("position", { ascending: true }), // ✅ Ordenar categorias por position
       ]);
       if (linksRes.data) {
@@ -77,6 +80,9 @@ export function useLinks(userId: string | undefined) {
           favicon: r.favicon,
           ogImage: r.og_image || "",
           notes: r.notes || "",
+          status: r.status || "backlog",
+          priority: r.priority || "medium",
+          dueDate: r.due_date || null,
           createdAt: r.created_at,
           position: r.position || 0, // ✅ Adicionar position
           deletedAt: r.deleted_at ?? null, // ✅ Soft delete
@@ -133,10 +139,13 @@ export function useLinks(userId: string | undefined) {
         favicon: v.favicon || "",
         og_image: v.ogImage || "",
         notes: v.notes || "",
+        status: v.status,
+        priority: v.priority,
+        due_date: v.dueDate || null,
         user_id: userId,
         position: maxPosition + 1, // ✅ Adicionar position
       })
-      .select("id, url, title, description, category, tags, is_favorite, favicon, og_image, notes, created_at, position, deleted_at, user_id")
+      .select("id, url, title, description, category, tags, is_favorite, favicon, og_image, notes, status, priority, due_date, created_at, position, deleted_at, user_id")
       .single();
     if (error) {
       logger.error("Erro ao adicionar link", error, { url: v.url });
@@ -164,6 +173,9 @@ export function useLinks(userId: string | undefined) {
         favicon: data.favicon,
         ogImage: data.og_image || "",
         notes: data.notes || "",
+        status: data.status || "backlog",
+        priority: data.priority || "medium",
+        dueDate: data.due_date || null,
         createdAt: data.created_at,
         position: data.position || 0, // ✅ Adicionar position
       };
@@ -201,6 +213,9 @@ export function useLinks(userId: string | undefined) {
     if (data.favicon !== undefined) partial.favicon = data.favicon;
     if (data.ogImage !== undefined) partial.og_image = data.ogImage;
     if (data.notes !== undefined) partial.notes = data.notes;
+    if (data.status !== undefined) partial.status = data.status;
+    if (data.priority !== undefined) partial.priority = data.priority;
+    if (data.dueDate !== undefined) partial.due_date = data.dueDate;
 
     const { error } = await supabase.from("links").update(partial).eq("id", id);
     if (error) {
@@ -546,6 +561,9 @@ export function useLinks(userId: string | undefined) {
           favicon: r.favicon,
           ogImage: r.og_image || "",
           notes: r.notes || "",
+          status: r.status || "backlog",
+          priority: r.priority || "medium",
+          dueDate: r.due_date || null,
           createdAt: r.created_at,
           position: r.position || 0,
         }));

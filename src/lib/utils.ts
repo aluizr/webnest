@@ -68,7 +68,38 @@ export function filterAndSortLinks(
     result = result.filter((link) => link.isFavorite);
   }
 
-  // 6. Ordenar
+  // 6. Filtrar por status
+  if (filters.status !== "all") {
+    result = result.filter((link) => link.status === filters.status);
+  }
+
+  // 7. Filtrar por prioridade
+  if (filters.priority !== "all") {
+    result = result.filter((link) => link.priority === filters.priority);
+  }
+
+  // 8. Filtrar por data limite
+  if (filters.dueDate !== "all") {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    result = result.filter((link) => {
+      if (!link.dueDate) {
+        return filters.dueDate === "none";
+      }
+
+      const due = new Date(link.dueDate);
+      due.setHours(0, 0, 0, 0);
+
+      if (filters.dueDate === "none") return false;
+      if (filters.dueDate === "today") return due.getTime() === today.getTime();
+      if (filters.dueDate === "overdue") return due.getTime() < today.getTime();
+      if (filters.dueDate === "upcoming") return due.getTime() > today.getTime();
+      return true;
+    });
+  }
+
+  // 9. Ordenar
   const sortFunctions: Record<string, (a: LinkItem, b: LinkItem) => number> = {
     manual: (a, b) => (a.position ?? 0) - (b.position ?? 0),
     newest: (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),

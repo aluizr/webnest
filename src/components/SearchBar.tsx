@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { SearchFilters, DatePeriod, SortOption, Category } from "@/types/link";
+import type { SearchFilters, DatePeriod, SortOption, DueDateFilter, LinkStatus, LinkPriority, Category } from "@/types/link";
 import { cn, TEXT_XS_CLASS } from "@/lib/utils";
 
 interface SearchBarProps {
@@ -81,6 +81,27 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(function S
     });
   };
 
+  const handleStatusChange = (status: string) => {
+    onFiltersChange({
+      ...filters,
+      status: status as LinkStatus | "all",
+    });
+  };
+
+  const handlePriorityChange = (priority: string) => {
+    onFiltersChange({
+      ...filters,
+      priority: priority as LinkPriority | "all",
+    });
+  };
+
+  const handleDueDateChange = (dueDate: string) => {
+    onFiltersChange({
+      ...filters,
+      dueDate: dueDate as DueDateFilter,
+    });
+  };
+
   const handleClearFilters = () => {
     onFiltersChange({
       query: "",
@@ -89,6 +110,9 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(function S
       period: "all",
       sort: "manual",
       favoritesOnly: false,
+      status: "all",
+      priority: "all",
+      dueDate: "all",
     });
     setShowAdvanced(false);
   };
@@ -99,7 +123,10 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(function S
     filters.tags.length > 0 ||
     filters.period !== "all" ||
     filters.sort !== "manual" ||
-    filters.favoritesOnly;
+    filters.favoritesOnly ||
+    filters.status !== "all" ||
+    filters.priority !== "all" ||
+    filters.dueDate !== "all";
 
   const parentCategories = categories.filter((c) => !c.parentId);
   const childCategories = categories.filter((c) => c.parentId);
@@ -149,7 +176,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(function S
       {showAdvanced && (
         <div className="space-y-3 border-t pt-3">
           {/* Row 1: Category + Period + Sort */}
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
             {/* Category Filter */}
             <Select
               value={filters.category || "all"}
@@ -193,6 +220,45 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(function S
                 <SelectItem value="oldest">Mais antigos</SelectItem>
                 <SelectItem value="alphabetical">A-Z</SelectItem>
                 <SelectItem value="favorites">Favoritos primeiro</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+            <Select value={filters.status} onValueChange={handleStatusChange}>
+              <SelectTrigger className={`h-8 ${TEXT_XS_CLASS}`}>
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os status</SelectItem>
+                <SelectItem value="backlog">Backlog</SelectItem>
+                <SelectItem value="in_progress">Em progresso</SelectItem>
+                <SelectItem value="done">Concluído</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={filters.priority} onValueChange={handlePriorityChange}>
+              <SelectTrigger className={`h-8 ${TEXT_XS_CLASS}`}>
+                <SelectValue placeholder="Prioridade" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas prioridades</SelectItem>
+                <SelectItem value="low">Baixa</SelectItem>
+                <SelectItem value="medium">Média</SelectItem>
+                <SelectItem value="high">Alta</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={filters.dueDate} onValueChange={handleDueDateChange}>
+              <SelectTrigger className={`h-8 ${TEXT_XS_CLASS}`}>
+                <SelectValue placeholder="Data limite" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Qualquer data</SelectItem>
+                <SelectItem value="overdue">Atrasados</SelectItem>
+                <SelectItem value="today">Vence hoje</SelectItem>
+                <SelectItem value="upcoming">Próximos</SelectItem>
+                <SelectItem value="none">Sem data</SelectItem>
               </SelectContent>
             </Select>
           </div>

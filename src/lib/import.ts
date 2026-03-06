@@ -10,6 +10,20 @@ interface ImportResult {
   links: Omit<LinkItem, "id" | "createdAt" | "position">[];
 }
 
+function normalizeStatus(value: string | null | undefined): "backlog" | "in_progress" | "done" {
+  const normalized = (value || "").trim().toLowerCase();
+  if (normalized === "done" || normalized === "concluido" || normalized === "concluído") return "done";
+  if (normalized === "in_progress" || normalized === "in progress" || normalized === "em progresso") return "in_progress";
+  return "backlog";
+}
+
+function normalizePriority(value: string | null | undefined): "low" | "medium" | "high" {
+  const normalized = (value || "").trim().toLowerCase();
+  if (normalized === "high" || normalized === "alta") return "high";
+  if (normalized === "low" || normalized === "baixa") return "low";
+  return "medium";
+}
+
 /**
  * Parse CSV content and extract links
  */
@@ -33,6 +47,9 @@ export function parseCSV(content: string): ImportResult {
   const favoriteIdx = headers.findIndex(h => h.includes('favorite') || h.includes('fav'));
   const descriptionIdx = headers.findIndex(h => h.includes('description') || h.includes('desc'));
   const notesIdx = headers.findIndex(h => h.includes('notes') || h.includes('nota'));
+  const statusIdx = headers.findIndex(h => h.includes('status'));
+  const priorityIdx = headers.findIndex(h => h.includes('priority') || h.includes('prioridade'));
+  const dueDateIdx = headers.findIndex(h => h.includes('due') || h.includes('prazo'));
 
   // Parse data rows
   for (let i = 1; i < lines.length; i++) {
@@ -50,6 +67,9 @@ export function parseCSV(content: string): ImportResult {
       const favoriteStr = fields[favoriteIdx]?.trim().toLowerCase() || 'no';
       const description = fields[descriptionIdx]?.trim() || undefined;
       const notes = fields[notesIdx]?.trim() || '';
+      const status = normalizeStatus(fields[statusIdx]);
+      const priority = normalizePriority(fields[priorityIdx]);
+      const dueDate = fields[dueDateIdx]?.trim() || null;
 
       const tags = tagsStr
         ? tagsStr.split(';').map(t => t.trim()).filter(Boolean)
@@ -66,6 +86,9 @@ export function parseCSV(content: string): ImportResult {
         notes,
         isFavorite,
         favicon: '',
+        status,
+        priority,
+        dueDate,
       };
 
       // Validate using linkSchema
@@ -153,6 +176,9 @@ export function parseHTML(content: string): ImportResult {
   const favoriteIdx = headers.findIndex(h => h.includes('fav'));
   const descriptionIdx = headers.findIndex(h => h.includes('description'));
   const notesIdx = headers.findIndex(h => h.includes('notes') || h.includes('nota'));
+  const statusIdx = headers.findIndex(h => h.includes('status'));
+  const priorityIdx = headers.findIndex(h => h.includes('priority') || h.includes('prioridade'));
+  const dueDateIdx = headers.findIndex(h => h.includes('due') || h.includes('prazo'));
 
   const links: Omit<LinkItem, "id" | "createdAt" | "position">[] = [];
   const errors: Array<{ row: number; error: string }> = [];
@@ -177,6 +203,9 @@ export function parseHTML(content: string): ImportResult {
       const favoriteStr = texts[favoriteIdx]?.trim().toLowerCase() || 'no';
       const description = texts[descriptionIdx]?.trim() || undefined;
       const notes = texts[notesIdx]?.trim() || '';
+      const status = normalizeStatus(texts[statusIdx]);
+      const priority = normalizePriority(texts[priorityIdx]);
+      const dueDate = texts[dueDateIdx]?.trim() || null;
 
       const tags = tagsStr
         ? tagsStr.split(';').map(t => t.trim()).filter(Boolean)
@@ -192,6 +221,9 @@ export function parseHTML(content: string): ImportResult {
         notes,
         isFavorite,
         favicon: '',
+        status,
+        priority,
+        dueDate,
       };
 
       const validated = linkSchema.parse(linkData);
@@ -237,6 +269,9 @@ export function parseJSON(content: string): ImportResult {
           notes: item.notes || '',
           isFavorite: !!item.isFavorite,
           favicon: item.favicon || '',
+          status: normalizeStatus(item.status),
+          priority: normalizePriority(item.priority),
+          dueDate: item.dueDate || null,
         };
 
         const validated = linkSchema.parse(linkData);

@@ -9,6 +9,9 @@ export interface LinkItem {
   favicon: string;
   ogImage: string;
   notes: string;
+  status: LinkStatus;
+  priority: LinkPriority;
+  dueDate?: string | null;
   createdAt: string;
   position: number; // ✅ Para drag & drop ordering
   deletedAt?: string | null; // ✅ Soft delete — null = ativo, ISO date = na lixeira
@@ -26,6 +29,9 @@ export interface Category {
 export type SortOption = "manual" | "newest" | "oldest" | "alphabetical" | "favorites";
 export type DatePeriod = "all" | "week" | "month" | "3months" | "year";
 export type ViewMode = "grid" | "list" | "table" | "board" | "cards" | "gallery";
+export type LinkStatus = "backlog" | "in_progress" | "done";
+export type LinkPriority = "low" | "medium" | "high";
+export type DueDateFilter = "all" | "overdue" | "today" | "upcoming" | "none";
 
 // Histórico de alterações
 export type ActivityAction =
@@ -58,4 +64,7 @@ export interface SearchFilters {
   period: DatePeriod;
   sort: SortOption;
   favoritesOnly: boolean;
+  status: LinkStatus | "all";
+  priority: LinkPriority | "all";
+  dueDate: DueDateFilter;
 }

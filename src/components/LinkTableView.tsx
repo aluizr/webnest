@@ -16,6 +16,18 @@ import {
 import { COMPACT_BADGE_CLASS, ICON_BTN_MD_CLASS, TEXT_XS_CLASS } from "@/lib/utils";
 import type { LinkItem } from "@/types/link";
 
+const statusLabel: Record<LinkItem["status"], string> = {
+  backlog: "Backlog",
+  in_progress: "Em progresso",
+  done: "Concluído",
+};
+
+const priorityLabel: Record<LinkItem["priority"], string> = {
+  low: "Baixa",
+  medium: "Média",
+  high: "Alta",
+};
+
 interface LinkTableViewProps {
   links: LinkItem[];
   onToggleFavorite: (id: string) => void;
@@ -64,7 +76,9 @@ export function LinkTableView({ links, onToggleFavorite, onEdit, onDelete, selec
               <th className="text-left font-medium px-4 py-3 hidden md:table-cell">Descrição</th>
               <th className="text-left font-medium px-4 py-3 hidden sm:table-cell">Categoria</th>
               <th className="text-left font-medium px-4 py-3 hidden lg:table-cell">Tags</th>
-              <th className="text-left font-medium px-4 py-3 hidden lg:table-cell">Data</th>
+              <th className="text-left font-medium px-4 py-3 hidden lg:table-cell">Status</th>
+              <th className="text-left font-medium px-4 py-3 hidden xl:table-cell">Prioridade</th>
+              <th className="text-left font-medium px-4 py-3 hidden xl:table-cell">Prazo</th>
               <th className="text-right font-medium px-4 py-3 w-28">Ações</th>
             </tr>
           </thead>
@@ -157,13 +171,35 @@ export function LinkTableView({ links, onToggleFavorite, onEdit, onDelete, selec
                   </div>
                 </td>
 
-                {/* Date */}
+                {/* Status */}
                 <td className="px-4 py-3 hidden lg:table-cell">
+                  <Badge
+                    variant={link.status === "done" ? "default" : link.status === "in_progress" ? "secondary" : "outline"}
+                    className={COMPACT_BADGE_CLASS}
+                  >
+                    {statusLabel[link.status]}
+                  </Badge>
+                </td>
+
+                {/* Priority */}
+                <td className="px-4 py-3 hidden xl:table-cell">
+                  <Badge
+                    variant={link.priority === "high" ? "destructive" : link.priority === "medium" ? "secondary" : "outline"}
+                    className={COMPACT_BADGE_CLASS}
+                  >
+                    {priorityLabel[link.priority]}
+                  </Badge>
+                </td>
+
+                {/* Due Date */}
+                <td className="px-4 py-3 hidden xl:table-cell">
                   <span className={`${TEXT_XS_CLASS} text-muted-foreground whitespace-nowrap`}>
-                    {new Date(link.createdAt).toLocaleDateString("pt-BR", {
-                      day: "2-digit",
-                      month: "short",
-                    })}
+                    {link.dueDate
+                      ? new Date(link.dueDate).toLocaleDateString("pt-BR", {
+                          day: "2-digit",
+                          month: "short",
+                        })
+                      : "—"}
                   </span>
                 </td>
 

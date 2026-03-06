@@ -6,6 +6,9 @@ export interface LinkDraft {
   description: string;
   notes: string;
   selectedCategoryId: string;
+  status?: "backlog" | "in_progress" | "done";
+  priority?: "low" | "medium" | "high";
+  dueDate?: string | null;
   // Mantidos para compatibilidade com rascunhos antigos
   selectedParentId?: string;
   selectedChildId?: string;

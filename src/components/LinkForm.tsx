@@ -19,7 +19,7 @@ import { useDuplicateDetector } from "@/hooks/use-duplicate-detector";
 import { LinkPreview } from "@/components/LinkPreview";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { TEXT_XS_CLASS } from "@/lib/utils";
-import type { LinkItem, Category } from "@/types/link";
+import type { LinkItem, Category, LinkPriority, LinkStatus } from "@/types/link";
 
 interface LinkFormProps {
   open: boolean;
@@ -47,6 +47,9 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
   const [notes, setNotes] = useState("");
   const [favicon, setFavicon] = useState("");
   const [ogImage, setOgImage] = useState("");
+  const [status, setStatus] = useState<LinkStatus>("backlog");
+  const [priority, setPriority] = useState<LinkPriority>("medium");
+  const [dueDate, setDueDate] = useState("");
   const [showDraftRecovery, setShowDraftRecovery] = useState(false);
   const [forceAllowDuplicate, setForceAllowDuplicate] = useState(false);
   const { metadata, fetchMetadata } = useMetadata();
@@ -111,6 +114,9 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
       setNotes(editingLink.notes || "");
       setFavicon(editingLink.favicon);
       setOgImage(editingLink.ogImage || "");
+      setStatus(editingLink.status || "backlog");
+      setPriority(editingLink.priority || "medium");
+      setDueDate(editingLink.dueDate || "");
       setAutoFilledTitle(true);
       setShowDraftRecovery(false);
       setForceAllowDuplicate(false);
@@ -133,6 +139,9 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
         setNotes("");
         setFavicon("");
         setOgImage("");
+        setStatus("backlog");
+        setPriority("medium");
+        setDueDate("");
         setAutoFilledTitle(false);
         setForceAllowDuplicate(false);
         initialLoadDone.current = true;
@@ -193,6 +202,9 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
         description,
         notes,
         selectedCategoryId,
+        status,
+        priority,
+        dueDate: dueDate || null,
         tags,
         favicon,
         ogImage,
@@ -202,7 +214,7 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
     return () => {
       if (draftTimeoutRef.current) clearTimeout(draftTimeoutRef.current);
     };
-  }, [url, title, description, notes, selectedCategoryId, tags, favicon, ogImage, editingLink, saveDraft]);
+  }, [url, title, description, notes, selectedCategoryId, status, priority, dueDate, tags, favicon, ogImage, editingLink, saveDraft]);
 
   const handleAddTag = () => {
     const trimmed = tagInput.trim().toLowerCase();
@@ -249,6 +261,9 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
       isFavorite: editingLink?.isFavorite ?? false,
       favicon: favicon || fetchedFavicon || "",
       ogImage: ogImage || fetchedImage || "",
+      status,
+      priority,
+      dueDate: dueDate || null,
     });
     // Limpar rascunho após envio bem-sucedido
     clearDraft();
@@ -263,6 +278,9 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
       setDescription(draft.description);
       setNotes(draft.notes || "");
       setSelectedCategoryId(draft.selectedCategoryId || draft.selectedParentId || "");
+      setStatus(draft.status || "backlog");
+      setPriority(draft.priority || "medium");
+      setDueDate(draft.dueDate || "");
       setTags(draft.tags);
       setFavicon(draft.favicon);
       setOgImage(draft.ogImage || "");
@@ -280,6 +298,9 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
     setDescription("");
     setNotes("");
     setSelectedCategoryId("");
+    setStatus("backlog");
+    setPriority("medium");
+    setDueDate("");
     setTags([]);
     setFavicon("");
     setOgImage("");
@@ -451,6 +472,43 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
                 </option>
               ))}
             </select>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="status-select">Status</Label>
+              <select
+                id="status-select"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                value={status}
+                onChange={(e) => setStatus(e.target.value as LinkStatus)}
+              >
+                <option value="backlog">Backlog</option>
+                <option value="in_progress">Em progresso</option>
+                <option value="done">Concluído</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="priority-select">Prioridade</Label>
+              <select
+                id="priority-select"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                value={priority}
+                onChange={(e) => setPriority(e.target.value as LinkPriority)}
+              >
+                <option value="low">Baixa</option>
+                <option value="medium">Média</option>
+                <option value="high">Alta</option>
+              </select>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="due-date">Data limite</Label>
+            <Input
+              id="due-date"
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label>Tags</Label>

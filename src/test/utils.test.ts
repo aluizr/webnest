@@ -15,6 +15,9 @@ function makeLink(overrides: Partial<LinkItem> = {}): LinkItem {
     favicon: "",
     ogImage: "",
     notes: "",
+    status: "backlog",
+    priority: "medium",
+    dueDate: null,
     createdAt: "2025-01-15T12:00:00Z",
     position: 0,
     ...overrides,
@@ -28,6 +31,9 @@ const defaultFilters: SearchFilters = {
   period: "all",
   sort: "newest",
   favoritesOnly: false,
+  status: "all",
+  priority: "all",
+  dueDate: "all",
 };
 
 describe("filterAndSortLinks", () => {

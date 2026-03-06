@@ -42,7 +42,7 @@ function escapeCSV(value: string | null | undefined): string {
  * Export links as CSV
  */
 export function exportAsCSV(links: LinkItem[]): Blob {
-  const headers = ['Title', 'URL', 'Category', 'Tags', 'Favorite', 'Description', 'Notes', 'Created At'];
+  const headers = ['Title', 'URL', 'Category', 'Tags', 'Favorite', 'Status', 'Priority', 'Due Date', 'Description', 'Notes', 'Created At'];
   
   const rows = links.map(link => [
     escapeCSV(link.title),
@@ -50,6 +50,9 @@ export function exportAsCSV(links: LinkItem[]): Blob {
     escapeCSV(link.category),
     escapeCSV(link.tags.join('; ')),
     link.isFavorite ? 'Yes' : 'No',
+    escapeCSV(link.status),
+    escapeCSV(link.priority),
+    escapeCSV(link.dueDate || ''),
     escapeCSV(link.description),
     escapeCSV(link.notes),
     new Date(link.createdAt).toLocaleString('pt-BR'),
@@ -209,6 +212,9 @@ export function exportAsHTML(links: LinkItem[], collectionName: string = 'Links'
                     <th style="width: 12%">Categoria</th>
                     <th style="width: 15%">Tags</th>
                     <th style="width: 8%">Fav</th>
+                    <th style="width: 8%">Status</th>
+                    <th style="width: 8%">Prioridade</th>
+                    <th style="width: 10%">Prazo</th>
                     <th style="width: 15%">Descrição</th>
                     <th style="width: 15%">Notas</th>
                     <th style="width: 10%">Data</th>
@@ -232,6 +238,9 @@ export function exportAsHTML(links: LinkItem[], collectionName: string = 'Links'
                             </div>
                         </td>
                         <td>${link.isFavorite ? '<span class="favorite">★</span>' : '○'}</td>
+                        <td>${escapeHtml(link.status)}</td>
+                        <td>${escapeHtml(link.priority)}</td>
+                        <td>${link.dueDate ? new Date(link.dueDate).toLocaleDateString('pt-BR') : '-'}</td>
                         <td class="description">${escapeHtml(link.description) || '-'}</td>
                         <td class="description">${escapeHtml(link.notes) || '-'}</td>
                         <td>${new Date(link.createdAt).toLocaleDateString('pt-BR')}</td>
