@@ -70,6 +70,30 @@ function normalizeUrl(url: string): string {
   }
 }
 
+function buildLocalFallback(url: string): LinkMetadata {
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.replace(/^www\./i, "");
+    return {
+      title: host,
+      description: null,
+      image: null,
+      favicon: `https://icon.horse/icon/${parsed.hostname}?size=32`,
+      loading: false,
+      error: null,
+    };
+  } catch {
+    return {
+      title: null,
+      description: null,
+      image: null,
+      favicon: null,
+      loading: false,
+      error: null,
+    };
+  }
+}
+
 /**
  * Try to extract metadata using Microlink API with fallback
  */
@@ -274,16 +298,9 @@ export function useMetadata() {
         result = await fetchFromNoembed(normalizedUrl);
       }
 
-      // If still no result, create empty result (don't show error, just empty preview)
+      // If still no result, derive a basic local fallback from URL
       if (!result) {
-        result = {
-          title: null,
-          description: null,
-          image: null,
-          favicon: null,
-          loading: false,
-          error: null,
-        };
+        result = buildLocalFallback(normalizedUrl);
       }
 
       // Update cache
