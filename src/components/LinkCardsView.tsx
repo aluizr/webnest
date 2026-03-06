@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { COMPACT_BADGE_CLASS } from "@/lib/utils";
+import { COMPACT_BADGE_CLASS, ICON_BTN_MD_CLASS, ICON_BTN_SM_CLASS, TEXT_XS_CLASS } from "@/lib/utils";
 import type { LinkItem } from "@/types/link";
 import type { CardSize } from "@/components/ViewSwitcher";
 
@@ -38,14 +38,14 @@ const placeholderIcon: Record<CardSize, string> = {
 };
 
 const titleClasses: Record<CardSize, string> = {
-  sm: "text-xs leading-tight",
+  sm: `${TEXT_XS_CLASS} leading-tight`,
   md: "text-sm leading-snug",
   lg: "text-base leading-snug",
 };
 
 const descLines: Record<CardSize, string> = {
   sm: "line-clamp-1 text-[10px]",
-  md: "line-clamp-2 text-xs",
+  md: `line-clamp-2 ${TEXT_XS_CLASS}`,
   lg: "line-clamp-2 text-sm",
 };
 
@@ -58,14 +58,14 @@ const badgeClasses: Record<CardSize, string> = {
 const domainClasses: Record<CardSize, string> = {
   sm: "text-[10px]",
   md: "text-[11px]",
-  lg: "text-xs",
+  lg: TEXT_XS_CLASS,
 };
 
 const faviconSizes: Record<CardSize, number> = { sm: 12, md: 14, lg: 16 };
 const maxTags: Record<CardSize, number> = { sm: 1, md: 2, lg: 3 };
 const actionBtnSize: Record<CardSize, string> = {
-  sm: "h-6 w-6",
-  md: "h-7 w-7",
+  sm: ICON_BTN_SM_CLASS,
+  md: ICON_BTN_MD_CLASS,
   lg: "h-8 w-8",
 };
 const actionIconSize: Record<CardSize, string> = {

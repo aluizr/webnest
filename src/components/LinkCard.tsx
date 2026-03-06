@@ -28,7 +28,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { COMPACT_BADGE_CLASS } from "@/lib/utils";
+import { COMPACT_BADGE_CLASS, ICON_BTN_MD_CLASS, TEXT_XS_CLASS } from "@/lib/utils";
 import type { LinkItem, Category } from "@/types/link";
 
 interface LinkCardProps {
@@ -181,7 +181,7 @@ export function LinkCard({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 shrink-0"
+                className={`${ICON_BTN_MD_CLASS} shrink-0`}
                 onClick={() => onToggleFavorite(link.id)}
               >
                 <Star
@@ -233,26 +233,26 @@ export function LinkCard({
                 </Badge>
               ))}
               {link.notes && (
-                <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground" title="Tem notas">
+                <span className={`inline-flex items-center gap-0.5 ${TEXT_XS_CLASS} text-muted-foreground`} title="Tem notas">
                   <StickyNote className="h-3 w-3" />
                 </span>
               )}
             </div>
 
             {link.notes && (
-              <div className="mt-2 rounded-md bg-muted/50 px-2.5 py-1.5 text-xs leading-relaxed line-clamp-3">
-                <RichTextDisplay content={link.notes} className="text-xs" />
+              <div className={`mt-2 rounded-md bg-muted/50 px-2.5 py-1.5 ${TEXT_XS_CLASS} leading-relaxed line-clamp-3`}>
+                <RichTextDisplay content={link.notes} className={TEXT_XS_CLASS} />
               </div>
             )}
           </div>
 
           <div className="absolute right-2 bottom-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEdit(link)}>
+            <Button variant="ghost" size="icon" className={ICON_BTN_MD_CLASS} onClick={() => onEdit(link)}>
               <Pencil className="h-3.5 w-3.5" />
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive">
+                <Button variant="ghost" size="icon" className={`${ICON_BTN_MD_CLASS} text-destructive`}>
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               </AlertDialogTrigger>

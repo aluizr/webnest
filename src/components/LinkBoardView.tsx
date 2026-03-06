@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { COMPACT_BADGE_CLASS } from "@/lib/utils";
+import { COMPACT_BADGE_CLASS, ICON_BTN_SM_CLASS, TEXT_XS_CLASS } from "@/lib/utils";
 import type { LinkItem, Category } from "@/types/link";
 
 interface LinkBoardViewProps {
@@ -115,7 +115,7 @@ export function LinkBoardView({ links, categories, onToggleFavorite, onEdit, onD
                 {/* Subcategory label */}
                 {section.name && (
                   <div className="px-1 pb-1 pt-2">
-                    <p className="text-xs font-medium text-muted-foreground">{section.name}</p>
+                    <p className={`${TEXT_XS_CLASS} font-medium text-muted-foreground`}>{section.name}</p>
                   </div>
                 )}
                 {section.links.map((link) => (
@@ -169,7 +169,7 @@ export function LinkBoardView({ links, categories, onToggleFavorite, onEdit, onD
                       </a>
 
                       {link.description && (
-                        <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
+                        <p className={`mt-1 ${TEXT_XS_CLASS} text-muted-foreground line-clamp-2`}>
                           {link.description}
                         </p>
                       )}
@@ -189,7 +189,7 @@ export function LinkBoardView({ links, categories, onToggleFavorite, onEdit, onD
                       )}
 
                       {link.notes && (
-                        <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground mt-1" title={link.notes}>
+                        <span className={`inline-flex items-center gap-0.5 ${TEXT_XS_CLASS} text-muted-foreground mt-1`} title={link.notes}>
                           <StickyNote className="h-3 w-3" />
                         </span>
                       )}
@@ -201,19 +201,19 @@ export function LinkBoardView({ links, categories, onToggleFavorite, onEdit, onD
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-6 w-6"
+                      className={ICON_BTN_SM_CLASS}
                       onClick={() => onToggleFavorite(link.id)}
                     >
                       <Star
                         className={`h-3 w-3 ${link.isFavorite ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`}
                       />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => onEdit(link)}>
+                    <Button variant="ghost" size="icon" className={ICON_BTN_SM_CLASS} onClick={() => onEdit(link)}>
                       <Pencil className="h-3 w-3" />
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive">
+                        <Button variant="ghost" size="icon" className={`${ICON_BTN_SM_CLASS} text-destructive`}>
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </AlertDialogTrigger>
@@ -244,7 +244,7 @@ export function LinkBoardView({ links, categories, onToggleFavorite, onEdit, onD
 
             {allLinks.length === 0 && (
               <div className="rounded-lg border-2 border-dashed border-muted-foreground/20 p-6 text-center">
-                <p className="text-xs text-muted-foreground">Nenhum link</p>
+                <p className={`${TEXT_XS_CLASS} text-muted-foreground`}>Nenhum link</p>
               </div>
             )}
           </div>

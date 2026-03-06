@@ -2,7 +2,7 @@ import { AlertCircle, Loader2, Globe } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import type { LinkMetadata } from "@/hooks/use-metadata";
-import { COMPACT_BADGE_CLASS } from "@/lib/utils";
+import { COMPACT_BADGE_CLASS, TEXT_XS_CLASS } from "@/lib/utils";
 
 interface LinkPreviewProps {
   metadata: LinkMetadata;
@@ -73,11 +73,11 @@ export function LinkPreview({ metadata, url }: LinkPreviewProps) {
             <p className="font-semibold text-sm line-clamp-2">{metadata.title}</p>
           )}
           {metadata.description && (
-            <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
+            <p className={`${TEXT_XS_CLASS} text-muted-foreground line-clamp-2 mt-1`}>
               {metadata.description}
             </p>
           )}
-          <p className="text-xs text-muted-foreground mt-2 truncate">
+          <p className={`${TEXT_XS_CLASS} text-muted-foreground mt-2 truncate`}>
             {getHostname(url)}
           </p>
         </div>

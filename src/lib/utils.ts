@@ -7,6 +7,9 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const COMPACT_BADGE_CLASS = "text-[10px] px-1.5 py-0 h-[18px]";
+export const TEXT_XS_CLASS = "text-xs";
+export const ICON_BTN_SM_CLASS = "h-6 w-6";
+export const ICON_BTN_MD_CLASS = "h-7 w-7";
 
 // ✅ Filtrar e ordenar links baseado em SearchFilters
 export function filterAndSortLinks(

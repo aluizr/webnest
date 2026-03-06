@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { COMPACT_BADGE_CLASS } from "@/lib/utils";
+import { COMPACT_BADGE_CLASS, ICON_BTN_MD_CLASS, TEXT_XS_CLASS } from "@/lib/utils";
 import type { LinkItem } from "@/types/link";
 
 interface LinkTableViewProps {
@@ -111,7 +111,7 @@ export function LinkTableView({ links, onToggleFavorite, onEdit, onDelete, selec
                     {link.title || link.url}
                     <ExternalLink className="h-3 w-3 shrink-0 opacity-40" />
                   </a>
-                  <p className="text-xs text-muted-foreground truncate mt-0.5">
+                  <p className={`${TEXT_XS_CLASS} text-muted-foreground truncate mt-0.5`}>
                     {new URL(link.url).hostname}
                   </p>
                 </td>
@@ -122,7 +122,7 @@ export function LinkTableView({ links, onToggleFavorite, onEdit, onDelete, selec
                     {link.description || "—"}
                   </p>
                   {link.notes && (
-                    <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground mt-0.5" title={link.notes}>
+                    <span className={`inline-flex items-center gap-0.5 ${TEXT_XS_CLASS} text-muted-foreground mt-0.5`} title={link.notes}>
                       <StickyNote className="h-3 w-3" />
                     </span>
                   )}
@@ -173,19 +173,19 @@ export function LinkTableView({ links, onToggleFavorite, onEdit, onDelete, selec
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7"
+                      className={ICON_BTN_MD_CLASS}
                       onClick={() => onToggleFavorite(link.id)}
                     >
                       <Star
                         className={`h-3.5 w-3.5 ${link.isFavorite ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`}
                       />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEdit(link)}>
+                    <Button variant="ghost" size="icon" className={ICON_BTN_MD_CLASS} onClick={() => onEdit(link)}>
                       <Pencil className="h-3.5 w-3.5" />
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive">
+                        <Button variant="ghost" size="icon" className={`${ICON_BTN_MD_CLASS} text-destructive`}>
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </AlertDialogTrigger>
