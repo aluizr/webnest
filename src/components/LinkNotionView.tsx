@@ -45,7 +45,7 @@ function safeDomain(url: string): string {
 const THUMB_MIN_WIDTH = 112;
 const THUMB_MAX_WIDTH = 220;
 const THUMB_DEFAULT_WIDTH = 140;
-const THUMB_SNAP_WIDTHS = [120, 140, 176] as const;
+const THUMB_SNAP_WIDTHS = [112, 160, 220] as const;
 const THUMB_STORAGE_KEY = "notion-thumb-width";
 const DENSITY_STORAGE_KEY = "notion-list-density";
 
