@@ -69,7 +69,7 @@ const DENSITY_STYLES: Record<ListDensity, {
   compact: {
     rowMinHeight: "min-h-[108px]",
     contentPadding: "p-2.5 md:p-3",
-    contentLeftPadding: "pl-11",
+    contentLeftPadding: "pl-0",
     textRightPadding: "pr-20 md:pr-24",
     titleClass: "text-[15px]",
     descriptionClass: "mt-0.5 text-xs",
@@ -79,7 +79,7 @@ const DENSITY_STYLES: Record<ListDensity, {
   normal: {
     rowMinHeight: "min-h-[126px]",
     contentPadding: "p-3 md:p-3.5",
-    contentLeftPadding: "pl-11",
+    contentLeftPadding: "pl-4",
     textRightPadding: "pr-20 md:pr-24",
     titleClass: "text-base",
     descriptionClass: "mt-1 text-sm",
@@ -89,7 +89,7 @@ const DENSITY_STYLES: Record<ListDensity, {
   comfortable: {
     rowMinHeight: "min-h-[144px]",
     contentPadding: "p-4 md:p-4",
-    contentLeftPadding: "pl-12",
+    contentLeftPadding: "pl-5",
     textRightPadding: "pr-20 md:pr-24",
     titleClass: "text-base md:text-[17px]",
     descriptionClass: "mt-1.5 text-sm",
@@ -198,7 +198,7 @@ export function LinkNotionView({
   const thumbFrameHeight = Math.max(62, Math.round(thumbFrameWidth * 0.63));
 
   return (
-    <div ref={containerRef} className="mx-2 flex flex-col gap-3 md:mx-4">
+    <div ref={containerRef} className="mx-3 flex flex-col gap-3 md:mx-6 lg:mx-8">
       <div className="sticky top-0 z-20 flex items-center border-b border-border/60 bg-background/95 px-3 py-2 backdrop-blur-sm md:px-3.5">
         <div className="min-w-0 flex-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
           Conteudo
@@ -236,8 +236,30 @@ export function LinkNotionView({
         const isFirstRow = index === 0;
 
         return (
+          <div key={link.id} className="group flex items-stretch gap-2">
+            <div className="w-8 shrink-0 pt-3">
+              <div className="flex items-start justify-center gap-1.5">
+                <div className="pt-0.5 text-muted-foreground/70 opacity-80 transition-opacity group-hover:opacity-100">
+                  <GripVertical className="h-3.5 w-3.5" />
+                </div>
+
+                {onToggleSelect && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleSelect(link.id, e.shiftKey);
+                    }}
+                    className={`h-4 w-4 rounded-sm border transition-all ${
+                      isSelected
+                        ? "border-primary bg-primary"
+                        : "border-muted-foreground/40 bg-background opacity-80 group-hover:opacity-100"
+                    }`}
+                  />
+                )}
+              </div>
+            </div>
+
           <article
-            key={link.id}
             draggable={dragEnabled}
             onDragStart={(e) => onDragStart?.(e, link)}
             onDragOver={(e) => {
@@ -258,7 +280,7 @@ export function LinkNotionView({
             }}
             onDragEnd={(e) => onDragEnd?.(e)}
             data-card-id={link.id}
-            className={`group relative flex items-stretch overflow-hidden rounded-xl border border-border/40 bg-background transition-colors duration-150 ${densityStyle.rowMinHeight} ${
+            className={`relative flex flex-1 items-stretch overflow-hidden rounded-xl border border-border/40 bg-background transition-colors duration-150 ${densityStyle.rowMinHeight} ${
               dragEnabled ? "cursor-grab active:cursor-grabbing" : ""
             } ${
               isSelected ? "bg-primary/5" : ""
@@ -275,27 +297,8 @@ export function LinkNotionView({
               <div className="absolute bottom-0 left-2 right-2 z-10 h-[3px] rounded-full bg-primary" />
             )}
 
-            <div className="absolute left-3 top-3 z-10 flex items-start gap-2">
-              <div className="pt-0.5 text-muted-foreground/70 opacity-0 transition-opacity group-hover:opacity-100">
-                <GripVertical className="h-3.5 w-3.5" />
-              </div>
 
-              {onToggleSelect && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onToggleSelect(link.id, e.shiftKey);
-                  }}
-                  className={`h-4 w-4 rounded-sm border transition-all ${
-                    isSelected
-                      ? "border-primary bg-primary"
-                      : "border-muted-foreground/40 bg-background opacity-0 group-hover:opacity-100"
-                  }`}
-                />
-              )}
-            </div>
-
-            <div className={`relative min-w-0 flex flex-1 items-center ${densityStyle.contentPadding} ${densityStyle.contentLeftPadding}`}>
+            <div className={`relative min-w-0 flex flex-1 items-center ${densityStyle.contentPadding}`}>
               <div className="flex w-full items-center">
                 <div className={`min-w-0 flex-1 ${densityStyle.textRightPadding} flex flex-col justify-center`}>
                   <a
@@ -438,6 +441,7 @@ export function LinkNotionView({
               </div>
             </div>
           </article>
+          </div>
         );
       })}
     </div>
