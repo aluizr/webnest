@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ExternalLink, GripVertical, Pencil, ShieldAlert, Star, Trash2 } from "lucide-react";
+import { ExternalLink, GripVertical, MoreHorizontal, Pencil, ShieldAlert, Star, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FaviconWithFallback } from "@/components/FaviconWithFallback";
 import {
@@ -77,7 +77,7 @@ const DENSITY_STYLES: Record<ListDensity, {
     descriptionClass: "mt-0.5 text-xs",
     descriptionSlotClass: "min-h-8",
     domainClass: "mt-3 text-xs",
-    thumbPadding: "p-1.5 pt-2",
+    thumbPadding: "p-1.5",
     gutterTopClass: "pt-2.5",
     gutterGapClass: "gap-[5px]",
   },
@@ -89,7 +89,7 @@ const DENSITY_STYLES: Record<ListDensity, {
     descriptionClass: "mt-1 text-sm",
     descriptionSlotClass: "min-h-10",
     domainClass: "mt-4 text-sm",
-    thumbPadding: "p-2 pt-3",
+    thumbPadding: "p-2",
     gutterTopClass: "pt-3",
     gutterGapClass: "gap-1.5",
   },
@@ -101,7 +101,7 @@ const DENSITY_STYLES: Record<ListDensity, {
     descriptionClass: "mt-1.5 text-sm",
     descriptionSlotClass: "min-h-11",
     domainClass: "mt-5 text-sm",
-    thumbPadding: "p-2.5 pt-3.5",
+    thumbPadding: "p-2.5",
     gutterTopClass: "pt-3.5",
     gutterGapClass: "gap-1.5",
   },
@@ -146,6 +146,7 @@ export function LinkNotionView({
     return Number.isFinite(saved) ? clampThumbWidth(saved) : THUMB_DEFAULT_WIDTH;
   });
   const [isResizingThumb, setIsResizingThumb] = useState(false);
+  const [openMobileMenuId, setOpenMobileMenuId] = useState<string | null>(null);
   const [density, setDensity] = useState<ListDensity>(() => {
     if (typeof window === "undefined") return "normal";
     const saved = window.localStorage.getItem(DENSITY_STORAGE_KEY);
@@ -206,6 +207,26 @@ export function LinkNotionView({
     };
   }, [isResizingThumb]);
 
+  useEffect(() => {
+    if (!openMobileMenuId) return;
+
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!target) return;
+
+      const clickedTrigger = target.closest("[data-mobile-actions-trigger='true']");
+      const clickedMenu = target.closest("[data-mobile-actions-menu='true']");
+      if (!clickedTrigger && !clickedMenu) {
+        setOpenMobileMenuId(null);
+      }
+    };
+
+    window.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      window.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, [openMobileMenuId]);
+
   const startResize = (event: React.PointerEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
@@ -242,6 +263,32 @@ export function LinkNotionView({
               {option.label}
             </button>
           ))}
+        </div>
+        <div className="mr-2 flex items-center gap-1 border-l border-border/50 pl-2">
+          <button
+            type="button"
+            onClick={() => setThumbWidth(THUMB_SNAP_WIDTHS[0])}
+            className={`rounded px-1.5 py-1 text-[10px] font-medium transition-colors ${thumbWidth === THUMB_SNAP_WIDTHS[0] ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"}`}
+            title="Thumbnail pequena"
+          >
+            S
+          </button>
+          <button
+            type="button"
+            onClick={() => setThumbWidth(THUMB_SNAP_WIDTHS[1])}
+            className={`rounded px-1.5 py-1 text-[10px] font-medium transition-colors ${thumbWidth === THUMB_SNAP_WIDTHS[1] ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"}`}
+            title="Thumbnail média"
+          >
+            M
+          </button>
+          <button
+            type="button"
+            onClick={() => setThumbWidth(THUMB_SNAP_WIDTHS[2])}
+            className={`rounded px-1.5 py-1 text-[10px] font-medium transition-colors ${thumbWidth === THUMB_SNAP_WIDTHS[2] ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"}`}
+            title="Thumbnail grande"
+          >
+            L
+          </button>
         </div>
         <div
           className="flex items-center justify-center border-l border-border/70 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/75"
@@ -401,6 +448,55 @@ export function LinkNotionView({
                 >
                   <Star className={`h-4 w-4 md:h-3.5 md:w-3.5 ${link.isFavorite ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`} />
                 </Button>
+
+                <div className="relative md:hidden">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    data-mobile-actions-trigger="true"
+                    className={`${ICON_BTN_MD_CLASS} h-8 w-8`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenMobileMenuId((current) => (current === link.id ? null : link.id));
+                    }}
+                    title="Mais ações"
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+
+                  {openMobileMenuId === link.id && (
+                    <div
+                      data-mobile-actions-menu="true"
+                      className="absolute right-0 top-9 z-30 min-w-[132px] rounded-md border border-border/70 bg-background p-1 shadow-lg"
+                    >
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEdit(link);
+                          setOpenMobileMenuId(null);
+                        }}
+                        className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-muted"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDelete(link.id);
+                          setOpenMobileMenuId(null);
+                        }}
+                        className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs text-destructive hover:bg-muted"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Excluir
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex items-center gap-0.5 md:pointer-events-none md:translate-x-1 md:opacity-0 md:transition-all md:duration-150 md:group-hover:pointer-events-auto md:group-hover:translate-x-0 md:group-hover:opacity-100">
                   <Button variant="ghost" size="icon" className={`${ICON_BTN_MD_CLASS} h-8 w-8 md:h-7 md:w-7`} onClick={() => onEdit(link)}>
                     <Pencil className="h-4 w-4 md:h-3.5 md:w-3.5" />
@@ -432,7 +528,7 @@ export function LinkNotionView({
             </div>
 
             <div
-              className={`relative flex shrink-0 items-start justify-center border-l border-border/60 bg-muted/5 transition-[padding,width] duration-150 ease-out ${densityStyle.thumbPadding}`}
+              className={`relative flex shrink-0 items-center justify-center border-l border-border/60 bg-muted/5 transition-[padding,width] duration-150 ease-out ${densityStyle.thumbPadding}`}
               style={{ width: `${thumbWidth}px` }}
             >
               <button

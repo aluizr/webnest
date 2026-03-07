@@ -86,7 +86,12 @@ const Index = ({ user, onSignOut }: IndexProps) => {
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingLink, setEditingLink] = useState<LinkItem | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    if (typeof window === "undefined") return "list";
+    const saved = window.localStorage.getItem("view-mode");
+    const modes: ViewMode[] = ["grid", "list", "cards", "table", "board", "gallery"];
+    return modes.includes(saved as ViewMode) ? (saved as ViewMode) : "list";
+  });
   const [gridColumns, setGridColumns] = useState<GridColumns>(3);
   const [cardSize, setCardSize] = useState<CardSize>("md");
   const [statsOpen, setStatsOpen] = useState(false);
@@ -100,6 +105,11 @@ const Index = ({ user, onSignOut }: IndexProps) => {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const filteredLinks = getFilteredLinks();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("view-mode", viewMode);
+  }, [viewMode]);
 
   // ✅ Atalhos de teclado globais
   useKeyboardShortcuts({
