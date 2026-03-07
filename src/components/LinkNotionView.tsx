@@ -47,6 +47,7 @@ const THUMB_MAX_WIDTH = 220;
 const THUMB_DEFAULT_WIDTH = 140;
 const THUMB_STORAGE_KEY = "notion-thumb-width";
 const DENSITY_STORAGE_KEY = "notion-list-density";
+const ACTIONS_COLUMN_WIDTH = 104;
 
 type ListDensity = "compact" | "normal" | "comfortable";
 
@@ -68,7 +69,7 @@ const DENSITY_STYLES: Record<ListDensity, {
   compact: {
     rowMinHeight: "min-h-[108px]",
     contentPadding: "p-2.5 md:p-3",
-    textRightPadding: "pr-24 md:pr-20",
+    textRightPadding: "pr-2",
     titleClass: "text-[15px]",
     descriptionClass: "mt-0.5 text-xs",
     domainClass: "mt-2 text-xs",
@@ -77,7 +78,7 @@ const DENSITY_STYLES: Record<ListDensity, {
   normal: {
     rowMinHeight: "min-h-[126px]",
     contentPadding: "p-3 md:p-3.5",
-    textRightPadding: "pr-24 md:pr-20",
+    textRightPadding: "pr-2",
     titleClass: "text-base",
     descriptionClass: "mt-1 text-sm",
     domainClass: "mt-3 text-sm",
@@ -86,7 +87,7 @@ const DENSITY_STYLES: Record<ListDensity, {
   comfortable: {
     rowMinHeight: "min-h-[144px]",
     contentPadding: "p-4 md:p-4",
-    textRightPadding: "pr-24 md:pr-20",
+    textRightPadding: "pr-2",
     titleClass: "text-base md:text-[17px]",
     descriptionClass: "mt-1.5 text-sm",
     domainClass: "mt-3.5 text-sm",
@@ -215,7 +216,16 @@ export function LinkNotionView({
             </button>
           ))}
         </div>
-        <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground" style={{ width: `${thumbWidth}px` }}>
+        <div
+          className="flex items-center justify-center border-l border-border/60 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground"
+          style={{ width: `${ACTIONS_COLUMN_WIDTH}px` }}
+        >
+          Acoes
+        </div>
+        <div
+          className="flex items-center justify-center border-l border-border/60 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground"
+          style={{ width: `${thumbWidth}px` }}
+        >
           Preview
         </div>
       </div>
@@ -352,16 +362,34 @@ export function LinkNotionView({
                 </div>
               </div>
 
-              <div className="absolute right-2 top-2 flex gap-0.5 opacity-100 transition-opacity md:right-3 md:top-3 md:opacity-0 md:group-hover:opacity-100">
-                <Button variant="ghost" size="icon" className={`${ICON_BTN_MD_CLASS} h-8 w-8 md:h-7 md:w-7`} onClick={() => onToggleFavorite(link.id)}>
+            </div>
+
+            <div
+              className="relative flex shrink-0 items-start justify-center border-l border-border/60 bg-background/70 p-2 pt-3"
+              style={{ width: `${ACTIONS_COLUMN_WIDTH}px` }}
+            >
+              <div className="flex flex-col items-center gap-1 opacity-100 transition-opacity md:opacity-65 md:group-hover:opacity-100">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  title={link.isFavorite ? "Remover favorito" : "Favoritar"}
+                  className={`${ICON_BTN_MD_CLASS} h-8 w-8 md:h-7 md:w-7`}
+                  onClick={() => onToggleFavorite(link.id)}
+                >
                   <Star className={`h-4 w-4 md:h-3.5 md:w-3.5 ${link.isFavorite ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`} />
                 </Button>
-                <Button variant="ghost" size="icon" className={`${ICON_BTN_MD_CLASS} h-8 w-8 md:h-7 md:w-7`} onClick={() => onEdit(link)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  title="Editar"
+                  className={`${ICON_BTN_MD_CLASS} h-8 w-8 md:h-7 md:w-7`}
+                  onClick={() => onEdit(link)}
+                >
                   <Pencil className="h-4 w-4 md:h-3.5 md:w-3.5" />
                 </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="ghost" size="icon" className={`${ICON_BTN_MD_CLASS} h-8 w-8 md:h-7 md:w-7 text-destructive`}>
+                    <Button variant="ghost" size="icon" title="Excluir" className={`${ICON_BTN_MD_CLASS} h-8 w-8 md:h-7 md:w-7 text-destructive`}>
                       <Trash2 className="h-4 w-4 md:h-3.5 md:w-3.5" />
                     </Button>
                   </AlertDialogTrigger>
@@ -384,7 +412,7 @@ export function LinkNotionView({
             </div>
 
             <div
-              className={`relative flex shrink-0 items-start justify-center border-l bg-muted/5 ${densityStyle.thumbPadding}`}
+              className={`relative flex shrink-0 items-start justify-center border-l border-border/60 bg-muted/5 ${densityStyle.thumbPadding}`}
               style={{ width: `${thumbWidth}px` }}
             >
               <button
