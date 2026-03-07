@@ -14,6 +14,16 @@ Versão mais recente: [0.14.1 — 2026-03-06](CHANGELOG.md#0141--2026-03-06)
 
 ## [0.14.1] — 2026-03-06
 
+### Lista estilo Notion (Polimento Visual)
+
+- **Layout da linha refinado**: cards com separação visual mais clara e espaçamento lateral ampliado para dar mais respiro ao conteúdo
+- **Preview lateral ajustável**: thumbnail fixa na coluna direita com redimensionamento dinâmico por alça (drag), limite mínimo/máximo e persistência em `localStorage`
+- **Densidade da lista**: modos `Compacto`, `Normal` e `Conforto` com persistência por usuário
+- **Header de database**: cabeçalho sticky da lista com rótulos de coluna e melhor legibilidade geral
+- **Ações contextuais**: ações principais no hover com visual mais discreto e alinhado ao estilo Notion
+- **Controles externos à linha**: grip + checkbox movidos para gutter externo à esquerda, aproximando o comportamento visual do Notion
+- **Ajustes finos de tipografia e espaçamento**: melhor separação entre descrição e URL, alinhamento vertical do texto e bordas suavizadas
+
 ### Correções de Metadados (Adicionar Link)
 
 - **Resiliência no carregamento de metadados**: fluxo do `useMetadata` com cadeia de fallback `Microlink -> OtherMeta -> noembed -> local`
