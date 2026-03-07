@@ -47,7 +47,6 @@ const THUMB_MAX_WIDTH = 220;
 const THUMB_DEFAULT_WIDTH = 140;
 const THUMB_STORAGE_KEY = "notion-thumb-width";
 const DENSITY_STORAGE_KEY = "notion-list-density";
-const ACTIONS_COLUMN_WIDTH = 104;
 
 type ListDensity = "compact" | "normal" | "comfortable";
 
@@ -95,6 +94,12 @@ const DENSITY_STYLES: Record<ListDensity, {
   },
 };
 
+const ACTIONS_COLUMN_WIDTH_BY_DENSITY: Record<ListDensity, number> = {
+  compact: 86,
+  normal: 104,
+  comfortable: 112,
+};
+
 function clampThumbWidth(value: number): number {
   return Math.min(THUMB_MAX_WIDTH, Math.max(THUMB_MIN_WIDTH, value));
 }
@@ -130,6 +135,7 @@ export function LinkNotionView({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const dragEnabled = Boolean(onDragStart) && !isResizingThumb;
   const densityStyle = DENSITY_STYLES[density];
+  const actionsColumnWidth = ACTIONS_COLUMN_WIDTH_BY_DENSITY[density];
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -218,7 +224,7 @@ export function LinkNotionView({
         </div>
         <div
           className="flex items-center justify-center border-l border-border/60 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground"
-          style={{ width: `${ACTIONS_COLUMN_WIDTH}px` }}
+          style={{ width: `${actionsColumnWidth}px` }}
         >
           Acoes
         </div>
@@ -366,7 +372,7 @@ export function LinkNotionView({
 
             <div
               className="relative flex shrink-0 items-start justify-center border-l border-border/60 bg-background/70 p-2 pt-3"
-              style={{ width: `${ACTIONS_COLUMN_WIDTH}px` }}
+              style={{ width: `${actionsColumnWidth}px` }}
             >
               <div className="flex flex-col items-center gap-1 opacity-100 transition-opacity md:opacity-65 md:group-hover:opacity-100">
                 <Button
