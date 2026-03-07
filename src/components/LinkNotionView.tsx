@@ -64,6 +64,10 @@ const DENSITY_STYLES: Record<ListDensity, {
   descriptionClass: string;
   domainClass: string;
   thumbPadding: string;
+  actionsWrapClass: string;
+  actionsLayoutClass: string;
+  actionsButtonClass: string;
+  actionsIconClass: string;
 }> = {
   compact: {
     rowMinHeight: "min-h-[108px]",
@@ -73,6 +77,10 @@ const DENSITY_STYLES: Record<ListDensity, {
     descriptionClass: "mt-0.5 text-xs",
     domainClass: "mt-2 text-xs",
     thumbPadding: "p-1.5 pt-2",
+    actionsWrapClass: "gap-0.5",
+    actionsLayoutClass: "flex-row",
+    actionsButtonClass: "h-7 w-7",
+    actionsIconClass: "h-3 w-3",
   },
   normal: {
     rowMinHeight: "min-h-[126px]",
@@ -82,6 +90,10 @@ const DENSITY_STYLES: Record<ListDensity, {
     descriptionClass: "mt-1 text-sm",
     domainClass: "mt-3 text-sm",
     thumbPadding: "p-2 pt-3",
+    actionsWrapClass: "gap-0.5",
+    actionsLayoutClass: "flex-col",
+    actionsButtonClass: "h-7 w-7",
+    actionsIconClass: "h-3.5 w-3.5",
   },
   comfortable: {
     rowMinHeight: "min-h-[144px]",
@@ -91,13 +103,17 @@ const DENSITY_STYLES: Record<ListDensity, {
     descriptionClass: "mt-1.5 text-sm",
     domainClass: "mt-3.5 text-sm",
     thumbPadding: "p-2.5 pt-3.5",
+    actionsWrapClass: "gap-1",
+    actionsLayoutClass: "flex-col",
+    actionsButtonClass: "h-8 w-8",
+    actionsIconClass: "h-4 w-4",
   },
 };
 
 const ACTIONS_COLUMN_WIDTH_BY_DENSITY: Record<ListDensity, number> = {
-  compact: 86,
-  normal: 104,
-  comfortable: 112,
+  compact: 72,
+  normal: 88,
+  comfortable: 96,
 };
 
 function clampThumbWidth(value: number): number {
@@ -375,28 +391,29 @@ export function LinkNotionView({
               style={{ width: `${actionsColumnWidth}px` }}
             >
               <div className="flex flex-col items-center gap-1 opacity-100 transition-opacity md:opacity-65 md:group-hover:opacity-100">
+                <div className={`flex items-center ${densityStyle.actionsLayoutClass} ${densityStyle.actionsWrapClass}`}>
                 <Button
                   variant="ghost"
                   size="icon"
                   title={link.isFavorite ? "Remover favorito" : "Favoritar"}
-                  className={`${ICON_BTN_MD_CLASS} h-8 w-8 md:h-7 md:w-7`}
+                  className={`${ICON_BTN_MD_CLASS} ${densityStyle.actionsButtonClass}`}
                   onClick={() => onToggleFavorite(link.id)}
                 >
-                  <Star className={`h-4 w-4 md:h-3.5 md:w-3.5 ${link.isFavorite ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`} />
+                  <Star className={`${densityStyle.actionsIconClass} ${link.isFavorite ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`} />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
                   title="Editar"
-                  className={`${ICON_BTN_MD_CLASS} h-8 w-8 md:h-7 md:w-7`}
+                  className={`${ICON_BTN_MD_CLASS} ${densityStyle.actionsButtonClass}`}
                   onClick={() => onEdit(link)}
                 >
-                  <Pencil className="h-4 w-4 md:h-3.5 md:w-3.5" />
+                  <Pencil className={densityStyle.actionsIconClass} />
                 </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="ghost" size="icon" title="Excluir" className={`${ICON_BTN_MD_CLASS} h-8 w-8 md:h-7 md:w-7 text-destructive`}>
-                      <Trash2 className="h-4 w-4 md:h-3.5 md:w-3.5" />
+                    <Button variant="ghost" size="icon" title="Excluir" className={`${ICON_BTN_MD_CLASS} ${densityStyle.actionsButtonClass} text-destructive`}>
+                      <Trash2 className={densityStyle.actionsIconClass} />
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
@@ -414,6 +431,7 @@ export function LinkNotionView({
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
+                </div>
               </div>
             </div>
 
