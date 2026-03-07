@@ -45,6 +45,7 @@ function safeDomain(url: string): string {
 const THUMB_MIN_WIDTH = 112;
 const THUMB_MAX_WIDTH = 220;
 const THUMB_DEFAULT_WIDTH = 140;
+const THUMB_SNAP_WIDTHS = [120, 140, 176] as const;
 const THUMB_STORAGE_KEY = "notion-thumb-width";
 const DENSITY_STORAGE_KEY = "notion-list-density";
 
@@ -102,6 +103,18 @@ function clampThumbWidth(value: number): number {
   return Math.min(THUMB_MAX_WIDTH, Math.max(THUMB_MIN_WIDTH, value));
 }
 
+function nearestSnapWidth(value: number): number {
+  return THUMB_SNAP_WIDTHS.reduce((closest, candidate) => {
+    return Math.abs(candidate - value) < Math.abs(closest - value) ? candidate : closest;
+  }, THUMB_SNAP_WIDTHS[0]);
+}
+
+function nextSnapWidth(value: number): number {
+  const current = nearestSnapWidth(value);
+  const idx = THUMB_SNAP_WIDTHS.indexOf(current);
+  return THUMB_SNAP_WIDTHS[(idx + 1) % THUMB_SNAP_WIDTHS.length];
+}
+
 export function LinkNotionView({
   links,
   onToggleFavorite,
@@ -150,7 +163,10 @@ export function LinkNotionView({
     const onPointerMove = (event: PointerEvent) => {
       const rect = containerRef.current?.getBoundingClientRect();
       if (!rect) return;
-      const nextWidth = clampThumbWidth(Math.round(rect.right - event.clientX));
+      let nextWidth = clampThumbWidth(Math.round(rect.right - event.clientX));
+      if (event.shiftKey) {
+        nextWidth = nearestSnapWidth(nextWidth);
+      }
       setThumbWidth(nextWidth);
     };
 
@@ -191,7 +207,7 @@ export function LinkNotionView({
   const resetResize = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    setThumbWidth(THUMB_DEFAULT_WIDTH);
+    setThumbWidth(nextSnapWidth(thumbWidth));
   };
 
   const thumbFrameWidth = Math.max(96, thumbWidth - 16);
@@ -280,7 +296,7 @@ export function LinkNotionView({
             }}
             onDragEnd={(e) => onDragEnd?.(e)}
             data-card-id={link.id}
-            className={`relative flex flex-1 items-stretch overflow-hidden rounded-xl border border-border/40 bg-background transition-colors duration-150 ${densityStyle.rowMinHeight} ${
+            className={`relative flex flex-1 items-stretch overflow-hidden rounded-xl border border-border/40 bg-background transition-[background-color,border-color,min-height] duration-150 ease-out ${densityStyle.rowMinHeight} ${
               dragEnabled ? "cursor-grab active:cursor-grabbing" : ""
             } ${
               isSelected ? "bg-primary/5" : ""
@@ -298,7 +314,7 @@ export function LinkNotionView({
             )}
 
 
-            <div className={`relative min-w-0 flex flex-1 items-center ${densityStyle.contentPadding}`}>
+            <div className={`relative min-w-0 flex flex-1 items-center transition-[padding] duration-150 ease-out ${densityStyle.contentPadding}`}>
               <div className="flex w-full items-center">
                 <div className={`min-w-0 flex-1 ${densityStyle.textRightPadding} flex flex-col justify-center`}>
                   <a
@@ -397,7 +413,7 @@ export function LinkNotionView({
             </div>
 
             <div
-              className={`relative flex shrink-0 items-start justify-center border-l border-border/60 bg-muted/5 ${densityStyle.thumbPadding}`}
+              className={`relative flex shrink-0 items-start justify-center border-l border-border/60 bg-muted/5 transition-[padding,width] duration-150 ease-out ${densityStyle.thumbPadding}`}
               style={{ width: `${thumbWidth}px` }}
             >
               <button
@@ -405,7 +421,7 @@ export function LinkNotionView({
                 aria-label="Redimensionar thumbnail"
                 onPointerDown={startResize}
                 onDoubleClick={resetResize}
-                title="Arraste para redimensionar (duplo clique para resetar)"
+                title="Arraste para redimensionar (Shift para snap; duplo clique alterna tamanhos)"
                 className="absolute -left-2 top-0 h-full w-4 cursor-col-resize bg-transparent touch-none"
                 style={{ touchAction: "none" }}
               >
@@ -413,7 +429,7 @@ export function LinkNotionView({
                 <span className={`pointer-events-none absolute left-1/2 top-2 -translate-x-1/2 rounded bg-background/95 px-1.5 py-0.5 text-[10px] text-muted-foreground shadow-sm transition-opacity ${
                   isResizingThumb || isFirstRow ? "opacity-100" : "opacity-0 group-hover:opacity-100"
                 }`}>
-                  Arraste
+                  Shift=Snap
                 </span>
               </button>
               <div
