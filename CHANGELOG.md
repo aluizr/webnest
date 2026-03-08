@@ -45,6 +45,7 @@ Versão mais recente: [0.14.1 — 2026-03-06](CHANGELOG.md#0141--2026-03-06)
 
 - **Legibilidade no escuro melhorada**: tokens do tema `dark` ajustados para superfícies mais claras e maior contraste de texto/bordas.
 - **Animação configurável de troca de tema**: novo controle `Suave/Forte` no seletor de temas com persistência em `localStorage` (`theme-motion-intensity`).
+- **Modo sem animação**: adicionada opção `Sem` no seletor para desativar completamente o efeito de troca de tema.
 - **Efeito global com acessibilidade**: transição visual aplicada no `html` via `data-theme-motion`, respeitando `prefers-reduced-motion`.
 
 ### Correções de Metadados (Adicionar Link)

@@ -392,6 +392,11 @@
     --theme-swap-peak: 0.18;
   }
 
+  html[data-theme-motion="off"] {
+    --theme-swap-duration: 0ms;
+    --theme-swap-peak: 0;
+  }
+
   html[data-theme-motion="strong"] {
     --theme-swap-duration: 520ms;
     --theme-swap-peak: 0.34;
@@ -399,6 +404,11 @@
 
   html.theme-switching body::after {
     animation: theme-swap-pulse var(--theme-swap-duration, 300ms) ease;
+  }
+
+  html[data-theme-motion="off"] body::after {
+    animation: none;
+    opacity: 0;
   }
 
   .light body {

@@ -10,7 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const THEME_MOTION_STORAGE_KEY = "theme-motion-intensity";
-type ThemeMotionIntensity = "soft" | "strong";
+type ThemeMotionIntensity = "off" | "soft" | "strong";
 
 const themes = [
   {
@@ -106,7 +106,7 @@ export function ThemeToggle() {
 
   useEffect(() => {
     const value = window.localStorage.getItem(THEME_MOTION_STORAGE_KEY);
-    const initialValue: ThemeMotionIntensity = value === "strong" ? "strong" : "soft";
+    const initialValue: ThemeMotionIntensity = value === "off" || value === "strong" ? value : "soft";
 
     setMotionIntensity(initialValue);
     document.documentElement.setAttribute("data-theme-motion", initialValue);
@@ -177,7 +177,16 @@ export function ThemeToggle() {
           <p className="px-2 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             Animacao
           </p>
-          <div className="grid grid-cols-2 gap-1 px-1 pb-1">
+          <div className="grid grid-cols-3 gap-1 px-1 pb-1">
+            <Button
+              type="button"
+              variant={motionIntensity === "off" ? "default" : "outline"}
+              size="sm"
+              onClick={() => updateMotionIntensity("off")}
+              className="h-8"
+            >
+              Sem
+            </Button>
             <Button
               type="button"
               variant={motionIntensity === "soft" ? "default" : "outline"}

@@ -12,7 +12,7 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 const THEME_MOTION_STORAGE_KEY = "theme-motion-intensity";
-type ThemeMotionIntensity = "soft" | "strong";
+type ThemeMotionIntensity = "off" | "soft" | "strong";
 
 function getThemeMotionIntensity(): ThemeMotionIntensity {
   const fallback: ThemeMotionIntensity = "soft";
@@ -22,6 +22,9 @@ function getThemeMotionIntensity(): ThemeMotionIntensity {
   }
 
   const value = window.localStorage.getItem(THEME_MOTION_STORAGE_KEY);
+  if (value === "off") {
+    return "off";
+  }
   return value === "strong" ? "strong" : fallback;
 }
 
@@ -79,6 +82,13 @@ function ThemeTransitionEffect() {
   useEffect(() => {
     const root = document.documentElement;
     const intensity = getThemeMotionIntensity();
+    if (intensity === "off") {
+      root.classList.remove("theme-switching");
+      root.setAttribute("data-theme-motion", "off");
+      firstRender.current = false;
+      return;
+    }
+
     const duration = intensity === "strong" ? 520 : 300;
     root.setAttribute("data-theme-motion", intensity);
 
