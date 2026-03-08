@@ -94,6 +94,9 @@ Versão mais recente: [0.14.1 — 2026-03-06](CHANGELOG.md#0141--2026-03-06)
 - **Atualizacao de vista sem prompt**: novo botao `Atualizar vista` para sobrescrever rapidamente a vista selecionada com os filtros atuais.
 - **Indicador de divergencia**: badge `Alteracoes nao salvas` quando os filtros atuais diferem da vista salva selecionada.
 - **Gestao de vistas salvas**: novos botoes `Duplicar vista` e `Renomear vista` para organizar presets sem recriar do zero.
+- **Fase 3 - Facetas avancadas no Board**: filtros globais de `Status`, `Prioridade` e `Prazo` (`Vencido`, `Hoje`, `7 dias`, `30 dias`, `Sem prazo`).
+- **Tags multi-selecao com operador**: combinacao de tags com modos `OR` e `AND` para consultas mais precisas.
+- **Chips removiveis de filtros ativos**: cada filtro aplicado aparece como chip e pode ser removido individualmente.
 
 ### Galeria (Catalogo V1)
 
@@ -107,6 +110,9 @@ Versão mais recente: [0.14.1 — 2026-03-06](CHANGELOG.md#0141--2026-03-06)
 - **Atualizacao de vista sem prompt**: botao `Atualizar vista` para sobrescrever a vista ativa com o estado corrente.
 - **Indicador de divergencia**: badge `Alteracoes nao salvas` quando o estado atual nao corresponde ao preset ativo.
 - **Gestao de vistas salvas**: suporte a `Duplicar vista` e `Renomear vista` diretamente no painel da Galeria.
+- **Fase 3 - Facetas avancadas na Galeria**: novos filtros de `Status`, `Prioridade` e `Prazo` com atalhos rapidos.
+- **Tags multi-selecao com operador**: suporte a `OR/AND` para combinar varias tags ao mesmo tempo.
+- **Chips removiveis de filtros ativos**: limpeza rapida de filtros individuais direto no painel.
 
 ### Cartoes (Catalogo V1)
 
@@ -120,6 +126,9 @@ Versão mais recente: [0.14.1 — 2026-03-06](CHANGELOG.md#0141--2026-03-06)
 - **Atualizacao de vista sem prompt**: botao `Atualizar vista` para sobrescrever o preset ativo.
 - **Indicador de divergencia**: badge `Alteracoes nao salvas` ao editar filtros sem atualizar a vista ativa.
 - **Gestao de vistas salvas**: suporte a `Duplicar vista` e `Renomear vista` no painel dos Cartoes.
+- **Fase 3 - Facetas avancadas nos Cartoes**: filtros adicionais de `Status`, `Prioridade` e `Prazo`.
+- **Tags multi-selecao com operador**: suporte a combinacoes `OR/AND` para busca por multiplas tags.
+- **Chips removiveis de filtros ativos**: visibilidade e remocao individual dos filtros aplicados.
 
 ### Correções de Metadados (Adicionar Link)
 

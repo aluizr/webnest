@@ -36,6 +36,8 @@ interface LinkGalleryViewProps {
 
 type CatalogSort = "newest" | "alphabetical" | "favorites" | "priority";
 type CurationFilter = "all" | "featured" | "new" | "trending";
+type TagMatchMode = "or" | "and";
+type DueFilter = "all" | "overdue" | "today" | "7d" | "30d" | "no_due";
 
 const GALLERY_FILTERS_STORAGE_KEY = "gallery-catalog-filters-v1";
 const GALLERY_PRESETS_STORAGE_KEY = "gallery-catalog-presets-v1";
@@ -43,7 +45,11 @@ const GALLERY_PRESETS_STORAGE_KEY = "gallery-catalog-presets-v1";
 type GalleryCatalogPreset = {
   name: string;
   selectedCategory: string;
-  selectedTag: string;
+  selectedTags: string[];
+  tagMatchMode: TagMatchMode;
+  statusFilter: "all" | LinkItem["status"];
+  priorityFilter: "all" | LinkItem["priority"];
+  dueFilter: DueFilter;
   curationFilter: CurationFilter;
   sortBy: CatalogSort;
 };
@@ -66,7 +72,11 @@ export function LinkGalleryView({
   onToggleSelect,
 }: LinkGalleryViewProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedTag, setSelectedTag] = useState<string>("all");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [tagMatchMode, setTagMatchMode] = useState<TagMatchMode>("or");
+  const [statusFilter, setStatusFilter] = useState<"all" | LinkItem["status"]>("all");
+  const [priorityFilter, setPriorityFilter] = useState<"all" | LinkItem["priority"]>("all");
+  const [dueFilter, setDueFilter] = useState<DueFilter>("all");
   const [curationFilter, setCurationFilter] = useState<CurationFilter>("all");
   const [sortBy, setSortBy] = useState<CatalogSort>("newest");
   const [presets, setPresets] = useState<GalleryCatalogPreset[]>([]);
@@ -80,12 +90,37 @@ export function LinkGalleryView({
       const parsed = JSON.parse(raw) as {
         selectedCategory?: unknown;
         selectedTag?: unknown;
+        selectedTags?: unknown;
+        tagMatchMode?: unknown;
+        statusFilter?: unknown;
+        priorityFilter?: unknown;
+        dueFilter?: unknown;
         curationFilter?: unknown;
         sortBy?: unknown;
       };
 
       if (typeof parsed.selectedCategory === "string") setSelectedCategory(parsed.selectedCategory);
-      if (typeof parsed.selectedTag === "string") setSelectedTag(parsed.selectedTag);
+      if (Array.isArray(parsed.selectedTags) && parsed.selectedTags.every((item) => typeof item === "string")) {
+        setSelectedTags(parsed.selectedTags);
+      } else if (typeof parsed.selectedTag === "string" && parsed.selectedTag !== "all") {
+        setSelectedTags([parsed.selectedTag]);
+      }
+
+      if (parsed.tagMatchMode === "or" || parsed.tagMatchMode === "and") {
+        setTagMatchMode(parsed.tagMatchMode);
+      }
+
+      if (parsed.statusFilter === "all" || parsed.statusFilter === "backlog" || parsed.statusFilter === "in_progress" || parsed.statusFilter === "done") {
+        setStatusFilter(parsed.statusFilter);
+      }
+
+      if (parsed.priorityFilter === "all" || parsed.priorityFilter === "low" || parsed.priorityFilter === "medium" || parsed.priorityFilter === "high") {
+        setPriorityFilter(parsed.priorityFilter);
+      }
+
+      if (parsed.dueFilter === "all" || parsed.dueFilter === "overdue" || parsed.dueFilter === "today" || parsed.dueFilter === "7d" || parsed.dueFilter === "30d" || parsed.dueFilter === "no_due") {
+        setDueFilter(parsed.dueFilter);
+      }
 
       if (parsed.curationFilter === "all" || parsed.curationFilter === "featured" || parsed.curationFilter === "new" || parsed.curationFilter === "trending") {
         setCurationFilter(parsed.curationFilter);
@@ -105,7 +140,11 @@ export function LinkGalleryView({
         GALLERY_FILTERS_STORAGE_KEY,
         JSON.stringify({
           selectedCategory,
-          selectedTag,
+          selectedTags,
+          tagMatchMode,
+          statusFilter,
+          priorityFilter,
+          dueFilter,
           curationFilter,
           sortBy,
         })
@@ -113,7 +152,7 @@ export function LinkGalleryView({
     } catch {
       // Ignore persistence errors (private mode/quota).
     }
-  }, [selectedCategory, selectedTag, curationFilter, sortBy]);
+  }, [selectedCategory, selectedTags, tagMatchMode, statusFilter, priorityFilter, dueFilter, curationFilter, sortBy]);
 
   useEffect(() => {
     try {
@@ -127,7 +166,11 @@ export function LinkGalleryView({
         .filter((item): item is GalleryCatalogPreset => (
           typeof item.name === "string" &&
           typeof item.selectedCategory === "string" &&
-          typeof item.selectedTag === "string" &&
+          Array.isArray(item.selectedTags) && item.selectedTags.every((tag) => typeof tag === "string") &&
+          (item.tagMatchMode === "or" || item.tagMatchMode === "and") &&
+          (item.statusFilter === "all" || item.statusFilter === "backlog" || item.statusFilter === "in_progress" || item.statusFilter === "done") &&
+          (item.priorityFilter === "all" || item.priorityFilter === "low" || item.priorityFilter === "medium" || item.priorityFilter === "high") &&
+          (item.dueFilter === "all" || item.dueFilter === "overdue" || item.dueFilter === "today" || item.dueFilter === "7d" || item.dueFilter === "30d" || item.dueFilter === "no_due") &&
           (item.curationFilter === "all" || item.curationFilter === "featured" || item.curationFilter === "new" || item.curationFilter === "trending") &&
           (item.sortBy === "newest" || item.sortBy === "alphabetical" || item.sortBy === "favorites" || item.sortBy === "priority")
         ));
@@ -154,7 +197,11 @@ export function LinkGalleryView({
     const preset = presets.find((item) => item.name === name);
     if (!preset) return;
     setSelectedCategory(preset.selectedCategory);
-    setSelectedTag(preset.selectedTag);
+    setSelectedTags(preset.selectedTags);
+    setTagMatchMode(preset.tagMatchMode);
+    setStatusFilter(preset.statusFilter);
+    setPriorityFilter(preset.priorityFilter);
+    setDueFilter(preset.dueFilter);
     setCurationFilter(preset.curationFilter);
     setSortBy(preset.sortBy);
     setActivePresetName(name);
@@ -168,7 +215,11 @@ export function LinkGalleryView({
     const nextPreset: GalleryCatalogPreset = {
       name,
       selectedCategory,
-      selectedTag,
+      selectedTags,
+      tagMatchMode,
+      statusFilter,
+      priorityFilter,
+      dueFilter,
       curationFilter,
       sortBy,
     };
@@ -228,7 +279,11 @@ export function LinkGalleryView({
   const isActivePresetDirty = activePreset
     ? (
       activePreset.selectedCategory !== selectedCategory ||
-      activePreset.selectedTag !== selectedTag ||
+      activePreset.selectedTags.join("|") !== selectedTags.join("|") ||
+      activePreset.tagMatchMode !== tagMatchMode ||
+      activePreset.statusFilter !== statusFilter ||
+      activePreset.priorityFilter !== priorityFilter ||
+      activePreset.dueFilter !== dueFilter ||
       activePreset.curationFilter !== curationFilter ||
       activePreset.sortBy !== sortBy
     )
@@ -239,7 +294,11 @@ export function LinkGalleryView({
     const nextPreset: GalleryCatalogPreset = {
       name: activePreset.name,
       selectedCategory,
-      selectedTag,
+      selectedTags,
+      tagMatchMode,
+      statusFilter,
+      priorityFilter,
+      dueFilter,
       curationFilter,
       sortBy,
     };
@@ -263,6 +322,55 @@ export function LinkGalleryView({
   };
 
   const isFeatured = (link: LinkItem) => link.priority === "high" || (link.isFavorite && link.tags.length > 0);
+
+  const dueState = (dueDate?: string | null): "none" | "overdue" | "today" | "upcoming" => {
+    if (!dueDate) return "none";
+    const due = new Date(dueDate);
+    if (Number.isNaN(due.getTime())) return "none";
+
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tomorrow = new Date(todayStart);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    if (due < todayStart) return "overdue";
+    if (due >= todayStart && due < tomorrow) return "today";
+    return "upcoming";
+  };
+
+  const matchesDueFilter = (link: LinkItem) => {
+    if (dueFilter === "all") return true;
+    if (dueFilter === "no_due") return !link.dueDate;
+
+    const state = dueState(link.dueDate);
+    if (dueFilter === "overdue") return state === "overdue";
+    if (dueFilter === "today") return state === "today";
+
+    if (!link.dueDate) return false;
+    const due = new Date(link.dueDate);
+    if (Number.isNaN(due.getTime())) return false;
+
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const diffDays = Math.ceil((due.getTime() - todayStart.getTime()) / (1000 * 60 * 60 * 24));
+    if (dueFilter === "7d") return diffDays >= 0 && diffDays <= 7;
+    if (dueFilter === "30d") return diffDays >= 0 && diffDays <= 30;
+    return true;
+  };
+
+  const toggleTag = (tag: string) => {
+    setSelectedTags((prev) => prev.includes(tag) ? prev.filter((item) => item !== tag) : [...prev, tag]);
+  };
+
+  const clearSingleFilter = (kind: "category" | "status" | "priority" | "due" | "curation" | "sort" | "tags") => {
+    if (kind === "category") setSelectedCategory("all");
+    if (kind === "status") setStatusFilter("all");
+    if (kind === "priority") setPriorityFilter("all");
+    if (kind === "due") setDueFilter("all");
+    if (kind === "curation") setCurationFilter("all");
+    if (kind === "sort") setSortBy("newest");
+    if (kind === "tags") setSelectedTags([]);
+  };
 
   const categoryCounts = useMemo(() => {
     const map = new Map<string, number>();
@@ -304,9 +412,23 @@ export function LinkGalleryView({
       }
     }
 
-    if (selectedTag !== "all") {
-      next = next.filter((link) => link.tags.includes(selectedTag));
+    if (selectedTags.length > 0) {
+      if (tagMatchMode === "or") {
+        next = next.filter((link) => selectedTags.some((tag) => link.tags.includes(tag)));
+      } else {
+        next = next.filter((link) => selectedTags.every((tag) => link.tags.includes(tag)));
+      }
     }
+
+    if (statusFilter !== "all") {
+      next = next.filter((link) => link.status === statusFilter);
+    }
+
+    if (priorityFilter !== "all") {
+      next = next.filter((link) => link.priority === priorityFilter);
+    }
+
+    next = next.filter(matchesDueFilter);
 
     if (curationFilter === "featured") {
       next = next.filter((link) => isFeatured(link));
@@ -338,7 +460,7 @@ export function LinkGalleryView({
     }
 
     return next;
-  }, [links, selectedCategory, selectedTag, curationFilter, sortBy]);
+  }, [links, selectedCategory, selectedTags, tagMatchMode, statusFilter, priorityFilter, dueFilter, curationFilter, sortBy]);
 
   return (
     <div className="space-y-4">
@@ -423,6 +545,94 @@ export function LinkGalleryView({
           </Select>
         </div>
 
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          <Select value={statusFilter} onValueChange={(value: "all" | LinkItem["status"]) => setStatusFilter(value)}>
+            <SelectTrigger className="h-8 w-[160px] text-xs">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Status: Todos</SelectItem>
+              <SelectItem value="backlog">Backlog</SelectItem>
+              <SelectItem value="in_progress">Em progresso</SelectItem>
+              <SelectItem value="done">Concluido</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={priorityFilter} onValueChange={(value: "all" | LinkItem["priority"]) => setPriorityFilter(value)}>
+            <SelectTrigger className="h-8 w-[170px] text-xs">
+              <SelectValue placeholder="Prioridade" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Prioridade: Todas</SelectItem>
+              <SelectItem value="high">Alta</SelectItem>
+              <SelectItem value="medium">Media</SelectItem>
+              <SelectItem value="low">Baixa</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <span className="text-[11px] uppercase tracking-wide text-muted-foreground">Prazo:</span>
+          {[
+            { id: "all", label: "Todos" },
+            { id: "overdue", label: "Vencido" },
+            { id: "today", label: "Hoje" },
+            { id: "7d", label: "7 dias" },
+            { id: "30d", label: "30 dias" },
+            { id: "no_due", label: "Sem prazo" },
+          ].map((item) => (
+            <Button
+              key={item.id}
+              type="button"
+              variant={dueFilter === item.id ? "default" : "outline"}
+              size="sm"
+              className="h-6 px-2 text-[11px]"
+              onClick={() => setDueFilter(item.id as DueFilter)}
+            >
+              {item.label}
+            </Button>
+          ))}
+        </div>
+
+        {(selectedCategory !== "all" || selectedTags.length > 0 || statusFilter !== "all" || priorityFilter !== "all" || dueFilter !== "all" || curationFilter !== "all" || sortBy !== "newest") && (
+          <div className="mb-2 flex flex-wrap items-center gap-1.5">
+            <span className="text-[11px] uppercase tracking-wide text-muted-foreground">Filtros ativos:</span>
+            {selectedCategory !== "all" && (
+              <Button type="button" variant="secondary" size="sm" className="h-6 px-2 text-[11px]" onClick={() => clearSingleFilter("category")}>
+                Cat: {selectedCategory} x
+              </Button>
+            )}
+            {statusFilter !== "all" && (
+              <Button type="button" variant="secondary" size="sm" className="h-6 px-2 text-[11px]" onClick={() => clearSingleFilter("status")}>
+                Status: {statusFilter} x
+              </Button>
+            )}
+            {priorityFilter !== "all" && (
+              <Button type="button" variant="secondary" size="sm" className="h-6 px-2 text-[11px]" onClick={() => clearSingleFilter("priority")}>
+                Prio: {priorityFilter} x
+              </Button>
+            )}
+            {dueFilter !== "all" && (
+              <Button type="button" variant="secondary" size="sm" className="h-6 px-2 text-[11px]" onClick={() => clearSingleFilter("due")}>
+                Prazo: {dueFilter} x
+              </Button>
+            )}
+            {selectedTags.length > 0 && (
+              <Button type="button" variant="secondary" size="sm" className="h-6 px-2 text-[11px]" onClick={() => clearSingleFilter("tags")}>
+                Tags ({selectedTags.length}, {tagMatchMode.toUpperCase()}) x
+              </Button>
+            )}
+            {curationFilter !== "all" && (
+              <Button type="button" variant="secondary" size="sm" className="h-6 px-2 text-[11px]" onClick={() => clearSingleFilter("curation")}>
+                Curadoria: {curationFilter} x
+              </Button>
+            )}
+            {sortBy !== "newest" && (
+              <Button type="button" variant="secondary" size="sm" className="h-6 px-2 text-[11px]" onClick={() => clearSingleFilter("sort")}>
+                Ordenacao: {sortBy} x
+              </Button>
+            )}
+          </div>
+        )}
+
         <div className="mb-2 flex flex-wrap items-center gap-1.5">
           <span className="text-[11px] uppercase tracking-wide text-muted-foreground">Curadoria:</span>
           {[
@@ -473,10 +683,28 @@ export function LinkGalleryView({
           <span className="text-[11px] uppercase tracking-wide text-muted-foreground">Tags:</span>
           <Button
             type="button"
-            variant={selectedTag === "all" ? "default" : "outline"}
+            variant={tagMatchMode === "or" ? "default" : "outline"}
             size="sm"
             className="h-6 px-2 text-[11px]"
-            onClick={() => setSelectedTag("all")}
+            onClick={() => setTagMatchMode("or")}
+          >
+            OR
+          </Button>
+          <Button
+            type="button"
+            variant={tagMatchMode === "and" ? "default" : "outline"}
+            size="sm"
+            className="h-6 px-2 text-[11px]"
+            onClick={() => setTagMatchMode("and")}
+          >
+            AND
+          </Button>
+          <Button
+            type="button"
+            variant={selectedTags.length === 0 ? "default" : "outline"}
+            size="sm"
+            className="h-6 px-2 text-[11px]"
+            onClick={() => setSelectedTags([])}
           >
             Todas
           </Button>
@@ -484,10 +712,10 @@ export function LinkGalleryView({
             <Button
               key={tag}
               type="button"
-              variant={selectedTag === tag ? "default" : "outline"}
+              variant={selectedTags.includes(tag) ? "default" : "outline"}
               size="sm"
               className="h-6 px-2 text-[11px]"
-              onClick={() => setSelectedTag(tag)}
+              onClick={() => toggleTag(tag)}
             >
               #{tag} ({count})
             </Button>
