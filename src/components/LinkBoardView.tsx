@@ -43,10 +43,20 @@ type CatalogSort = "newest" | "alphabetical" | "favorites" | "priority";
 type CurationFilter = "all" | "featured" | "new" | "trending";
 
 const BOARD_FILTERS_STORAGE_KEY = "board-catalog-filters-v1";
+const BOARD_PRESETS_STORAGE_KEY = "board-catalog-presets-v1";
 const DEFAULT_COLUMN_FILTERS: Record<LinkItem["status"], BoardColumnFilter> = {
   backlog: "all",
   in_progress: "all",
   done: "all",
+};
+
+type BoardCatalogPreset = {
+  name: string;
+  selectedCategory: string;
+  selectedTag: string;
+  curationFilter: CurationFilter;
+  sortBy: CatalogSort;
+  columnFilters: Record<LinkItem["status"], BoardColumnFilter>;
 };
 
 const statusMeta: Record<LinkItem["status"], { label: string; badgeVariant: "outline" | "secondary" | "default" }> = {
@@ -65,6 +75,8 @@ export function LinkBoardView({ links, onToggleFavorite, onUpdateLink, onEdit, o
   const [curationFilter, setCurationFilter] = useState<CurationFilter>("all");
   const [sortBy, setSortBy] = useState<CatalogSort>("newest");
   const [columnFilters, setColumnFilters] = useState<Record<LinkItem["status"], BoardColumnFilter>>(DEFAULT_COLUMN_FILTERS);
+  const [presets, setPresets] = useState<BoardCatalogPreset[]>([]);
+  const [activePresetName, setActivePresetName] = useState<string>("none");
 
   useEffect(() => {
     try {
@@ -124,6 +136,164 @@ export function LinkBoardView({ links, onToggleFavorite, onUpdateLink, onEdit, o
       // Ignore persistence errors (private mode/quota).
     }
   }, [selectedCategory, selectedTag, curationFilter, sortBy, columnFilters]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(BOARD_PRESETS_STORAGE_KEY);
+      if (!raw) return;
+
+      const parsed = JSON.parse(raw) as Array<Partial<BoardCatalogPreset>>;
+      if (!Array.isArray(parsed)) return;
+
+      const normalizeFilter = (value: unknown): BoardColumnFilter => {
+        if (value === "favorites" || value === "high" || value === "urgent") return value;
+        return "all";
+      };
+
+      const valid = parsed
+        .filter((item): item is BoardCatalogPreset => (
+          typeof item.name === "string" &&
+          typeof item.selectedCategory === "string" &&
+          typeof item.selectedTag === "string" &&
+          (item.curationFilter === "all" || item.curationFilter === "featured" || item.curationFilter === "new" || item.curationFilter === "trending") &&
+          (item.sortBy === "newest" || item.sortBy === "alphabetical" || item.sortBy === "favorites" || item.sortBy === "priority") &&
+          item.columnFilters !== undefined
+        ))
+        .map((item) => ({
+          ...item,
+          columnFilters: {
+            backlog: normalizeFilter(item.columnFilters?.backlog),
+            in_progress: normalizeFilter(item.columnFilters?.in_progress),
+            done: normalizeFilter(item.columnFilters?.done),
+          },
+        }));
+
+      setPresets(valid);
+    } catch {
+      // Ignore invalid presets payload.
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(BOARD_PRESETS_STORAGE_KEY, JSON.stringify(presets));
+    } catch {
+      // Ignore persistence errors.
+    }
+  }, [presets]);
+
+  const applyPreset = (name: string) => {
+    if (name === "none") {
+      setActivePresetName("none");
+      return;
+    }
+
+    const preset = presets.find((item) => item.name === name);
+    if (!preset) return;
+
+    setSelectedCategory(preset.selectedCategory);
+    setSelectedTag(preset.selectedTag);
+    setCurationFilter(preset.curationFilter);
+    setSortBy(preset.sortBy);
+    setColumnFilters(preset.columnFilters);
+    setActivePresetName(name);
+  };
+
+  const saveCurrentPreset = () => {
+    const suggested = activePresetName !== "none" ? activePresetName : "Minha vista";
+    const name = window.prompt("Nome da vista:", suggested)?.trim();
+    if (!name) return;
+
+    const nextPreset: BoardCatalogPreset = {
+      name,
+      selectedCategory,
+      selectedTag,
+      curationFilter,
+      sortBy,
+      columnFilters,
+    };
+
+    setPresets((prev) => {
+      const withoutSameName = prev.filter((item) => item.name !== name);
+      return [...withoutSameName, nextPreset].sort((a, b) => a.name.localeCompare(b.name));
+    });
+    setActivePresetName(name);
+  };
+
+  const deleteActivePreset = () => {
+    if (activePresetName === "none") return;
+    setPresets((prev) => prev.filter((item) => item.name !== activePresetName));
+    setActivePresetName("none");
+  };
+
+  const duplicateActivePreset = () => {
+    if (!activePreset) return;
+    const suggested = `${activePreset.name} copia`;
+    const name = window.prompt("Duplicar vista como:", suggested)?.trim();
+    if (!name) return;
+    if (presets.some((item) => item.name === name)) {
+      window.alert("Ja existe uma vista com esse nome.");
+      return;
+    }
+
+    const nextPreset: BoardCatalogPreset = {
+      ...activePreset,
+      name,
+    };
+
+    setPresets((prev) => [...prev, nextPreset].sort((a, b) => a.name.localeCompare(b.name)));
+    setActivePresetName(name);
+  };
+
+  const renameActivePreset = () => {
+    if (!activePreset) return;
+    const name = window.prompt("Novo nome da vista:", activePreset.name)?.trim();
+    if (!name || name === activePreset.name) return;
+    if (presets.some((item) => item.name === name)) {
+      window.alert("Ja existe uma vista com esse nome.");
+      return;
+    }
+
+    setPresets((prev) => prev
+      .map((item) => item.name === activePreset.name ? { ...item, name } : item)
+      .sort((a, b) => a.name.localeCompare(b.name))
+    );
+    setActivePresetName(name);
+  };
+
+  const activePreset = activePresetName === "none"
+    ? undefined
+    : presets.find((item) => item.name === activePresetName);
+
+  const isSameColumnFilters = (a: Record<LinkItem["status"], BoardColumnFilter>, b: Record<LinkItem["status"], BoardColumnFilter>) => (
+    a.backlog === b.backlog &&
+    a.in_progress === b.in_progress &&
+    a.done === b.done
+  );
+
+  const isActivePresetDirty = activePreset
+    ? (
+      activePreset.selectedCategory !== selectedCategory ||
+      activePreset.selectedTag !== selectedTag ||
+      activePreset.curationFilter !== curationFilter ||
+      activePreset.sortBy !== sortBy ||
+      !isSameColumnFilters(activePreset.columnFilters, columnFilters)
+    )
+    : false;
+
+  const updateActivePreset = () => {
+    if (!activePreset) return;
+    const nextPreset: BoardCatalogPreset = {
+      name: activePreset.name,
+      selectedCategory,
+      selectedTag,
+      curationFilter,
+      sortBy,
+      columnFilters,
+    };
+
+    setPresets((prev) => prev.map((item) => item.name === activePreset.name ? nextPreset : item));
+  };
 
   const isNew = (link: LinkItem) => {
     const created = new Date(link.createdAt);
@@ -277,6 +447,68 @@ export function LinkBoardView({ links, onToggleFavorite, onUpdateLink, onEdit, o
           <Badge variant="secondary" className="text-[11px]">
             Catalogo: {baseLinks.length}/{links.length}
           </Badge>
+
+          <Select value={activePresetName} onValueChange={applyPreset}>
+            <SelectTrigger className="h-8 w-[180px] text-xs">
+              <SelectValue placeholder="Vistas salvas" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Vistas salvas</SelectItem>
+              {presets.map((preset) => (
+                <SelectItem key={preset.name} value={preset.name}>{preset.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Button type="button" variant="outline" size="sm" className="h-8 px-2 text-xs" onClick={saveCurrentPreset}>
+            Salvar vista
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 px-2 text-xs"
+            disabled={!activePreset}
+            onClick={duplicateActivePreset}
+          >
+            Duplicar vista
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 px-2 text-xs"
+            disabled={!activePreset}
+            onClick={renameActivePreset}
+          >
+            Renomear vista
+          </Button>
+          <Button
+            type="button"
+            variant={isActivePresetDirty ? "default" : "outline"}
+            size="sm"
+            className="h-8 px-2 text-xs"
+            disabled={!activePreset || !isActivePresetDirty}
+            onClick={updateActivePreset}
+          >
+            Atualizar vista
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 px-2 text-xs"
+            disabled={activePresetName === "none"}
+            onClick={deleteActivePreset}
+          >
+            Excluir
+          </Button>
+
+          {activePreset && isActivePresetDirty && (
+            <Badge variant="secondary" className="h-6 text-[10px]">
+              Alteracoes nao salvas
+            </Badge>
+          )}
 
           <Select value={sortBy} onValueChange={(value: CatalogSort) => setSortBy(value)}>
             <SelectTrigger className="h-8 w-[180px] text-xs">

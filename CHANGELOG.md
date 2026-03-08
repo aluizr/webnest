@@ -90,6 +90,10 @@ Versão mais recente: [0.14.1 — 2026-03-06](CHANGELOG.md#0141--2026-03-06)
 - **Ordenacao no Board**: opcoes `Mais recentes`, `A-Z`, `Favoritos primeiro` e `Prioridade` antes da distribuicao em colunas.
 - **Selos editoriais no Board**: badges `Novo`, `Destaque` e `Trending` exibidos diretamente nos cards.
 - **Persistencia de filtros no Board**: estado de `Curadoria`, `Categoria`, `Tags`, `Ordenacao` e filtros por coluna salvo em `localStorage` e restaurado ao reabrir.
+- **Fase 2 - Vistas salvas no Board**: presets nomeados com `Salvar vista`, seletor de vistas e `Excluir`, incluindo filtros globais e filtros por coluna.
+- **Atualizacao de vista sem prompt**: novo botao `Atualizar vista` para sobrescrever rapidamente a vista selecionada com os filtros atuais.
+- **Indicador de divergencia**: badge `Alteracoes nao salvas` quando os filtros atuais diferem da vista salva selecionada.
+- **Gestao de vistas salvas**: novos botoes `Duplicar vista` e `Renomear vista` para organizar presets sem recriar do zero.
 
 ### Galeria (Catalogo V1)
 
@@ -99,6 +103,10 @@ Versão mais recente: [0.14.1 — 2026-03-06](CHANGELOG.md#0141--2026-03-06)
 - **Ordenacao configuravel**: opcoes `Mais recentes`, `A-Z`, `Favoritos primeiro` e `Prioridade`.
 - **Selos editoriais no card**: badges contextuais `Novo`, `Destaque` e `Trending` sobre a capa para leitura mais rapida.
 - **Persistencia na Galeria**: filtros de catalogo (`Curadoria`, `Categoria`, `Tags`, `Ordenacao`) salvos em `localStorage` e restaurados automaticamente.
+- **Fase 2 - Vistas salvas na Galeria**: presets nomeados para reaplicar rapidamente filtros e ordenacao.
+- **Atualizacao de vista sem prompt**: botao `Atualizar vista` para sobrescrever a vista ativa com o estado corrente.
+- **Indicador de divergencia**: badge `Alteracoes nao salvas` quando o estado atual nao corresponde ao preset ativo.
+- **Gestao de vistas salvas**: suporte a `Duplicar vista` e `Renomear vista` diretamente no painel da Galeria.
 
 ### Cartoes (Catalogo V1)
 
@@ -108,6 +116,10 @@ Versão mais recente: [0.14.1 — 2026-03-06](CHANGELOG.md#0141--2026-03-06)
 - **Ordenacao configuravel**: `Mais recentes`, `A-Z`, `Favoritos primeiro` e `Prioridade`.
 - **Selos editoriais na capa**: badges `Novo`, `Destaque` e `Trending` integrados ao overlay do card.
 - **Persistencia nos Cartoes**: filtros de catalogo (`Curadoria`, `Categoria`, `Tags`, `Ordenacao`) salvos em `localStorage` e restaurados ao reabrir.
+- **Fase 2 - Vistas salvas nos Cartoes**: presets nomeados de filtros/ordenacao com selecao, salvamento e exclusao.
+- **Atualizacao de vista sem prompt**: botao `Atualizar vista` para sobrescrever o preset ativo.
+- **Indicador de divergencia**: badge `Alteracoes nao salvas` ao editar filtros sem atualizar a vista ativa.
+- **Gestao de vistas salvas**: suporte a `Duplicar vista` e `Renomear vista` no painel dos Cartoes.
 
 ### Correções de Metadados (Adicionar Link)
 
