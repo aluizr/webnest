@@ -601,13 +601,13 @@ export function LinkBoardView({ links, onToggleFavorite, onUpdateLink, onEdit, o
   return (
     <div className="space-y-4">
       <div className="rounded-xl border bg-card/50 p-3">
-        <div className="mb-2 flex flex-wrap items-center gap-2">
+        <div className="mb-2 flex flex-wrap items-center gap-1.5 sm:gap-2">
           <Badge variant="secondary" className="text-[11px]">
             Catalogo: {baseLinks.length}/{links.length}
           </Badge>
 
           <Select value={activePresetName} onValueChange={applyPreset}>
-            <SelectTrigger className="h-8 w-[180px] text-xs">
+            <SelectTrigger className="h-8 w-full sm:w-[180px] text-xs">
               <SelectValue placeholder="Vistas salvas" />
             </SelectTrigger>
             <SelectContent>
@@ -618,7 +618,7 @@ export function LinkBoardView({ links, onToggleFavorite, onUpdateLink, onEdit, o
             </SelectContent>
           </Select>
           <Select value={sortBy} onValueChange={(value: CatalogSort) => setSortBy(value)}>
-            <SelectTrigger className="h-8 w-[180px] text-xs">
+            <SelectTrigger className="h-8 w-full sm:w-[180px] text-xs">
               <SelectValue placeholder="Ordenacao" />
             </SelectTrigger>
             <SelectContent>
@@ -703,7 +703,7 @@ export function LinkBoardView({ links, onToggleFavorite, onUpdateLink, onEdit, o
 
         {showAdvancedFilters && (
           <>
-            <div className="mb-2 flex flex-wrap items-center gap-2">
+            <div className="mb-2 flex flex-wrap items-center gap-1.5 sm:gap-2">
               <Button type="button" variant="outline" size="sm" className="h-8 px-2 text-xs" onClick={saveCurrentPreset}>
                 Salvar vista
               </Button>
@@ -819,9 +819,9 @@ export function LinkBoardView({ links, onToggleFavorite, onUpdateLink, onEdit, o
               </div>
             )}
 
-            <div className="mb-2 flex flex-wrap items-center gap-2">
+            <div className="mb-2 flex flex-wrap items-center gap-1.5 sm:gap-2">
               <Select value={statusFilter} onValueChange={(value: "all" | LinkItem["status"]) => setStatusFilter(value)}>
-                <SelectTrigger className="h-8 w-[160px] text-xs">
+                <SelectTrigger className="h-8 w-full sm:w-[160px] text-xs">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -833,7 +833,7 @@ export function LinkBoardView({ links, onToggleFavorite, onUpdateLink, onEdit, o
               </Select>
 
               <Select value={priorityFilter} onValueChange={(value: "all" | LinkItem["priority"]) => setPriorityFilter(value)}>
-                <SelectTrigger className="h-8 w-[170px] text-xs">
+                <SelectTrigger className="h-8 w-full sm:w-[170px] text-xs">
                   <SelectValue placeholder="Prioridade" />
                 </SelectTrigger>
                 <SelectContent>
