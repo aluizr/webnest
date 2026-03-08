@@ -70,6 +70,23 @@ Versão mais recente: [0.14.1 — 2026-03-06](CHANGELOG.md#0141--2026-03-06)
 - **Chips de prazo na tabela**: filtros rapidos `Vencido`, `Hoje`, `7 dias` e `Sem prazo` para triagem de tarefas com data.
 - **Desfazer em edicoes inline**: toast de confirmacao com acao `Desfazer` para atualizacoes inline (titulo, descricao, categoria, tags, prazo, status e prioridade).
 
+### Sidebar (Menu Esquerdo)
+
+- **Reordenacao por arraste corrigida**: drag & drop de categorias no menu esquerdo agora usa alvo explicito de drop e ficou mais confiavel.
+- **Reordem por nivel**: atualizacao de `position` aplicada apenas entre categorias irmas (mesmo `parentId`), evitando efeitos colaterais em outros niveis.
+- **Grip mais visivel**: alca de arraste (`GripVertical`) com opacidade maior para melhorar descoberta da funcionalidade.
+- **Linha guia de drop**: indicador visual `top/bottom` durante drag de categoria, deixando claro onde o item sera inserido.
+- **Feedback de encaixe**: animacao curta (`snap`) no item apos drop bem-sucedido para confirmar visualmente a reordenacao.
+
+### Board (Pacote V1)
+
+- **Edicao inline de titulo**: duplo clique no titulo do card para editar sem abrir modal.
+- **Filtros rapidos por coluna**: controles `Todos`, `Fav`, `Alta` e `Urg` por status (Backlog/Em progresso/Concluido).
+- **Indicadores de urgencia por prazo**: badge de prazo com destaque para itens vencidos e para hoje.
+- **Contador filtrado por coluna**: exibicao `visiveis/total` em cada cabecalho de coluna para feedback imediato dos filtros.
+- **Prioridade inline no card**: seletor direto no Board para alterar prioridade sem abrir modal.
+- **Status inline no card**: seletor direto no Board para mover entre `Backlog`, `Em progresso` e `Concluido` sem depender apenas de drag & drop.
+
 ### Correções de Metadados (Adicionar Link)
 
 - **Resiliência no carregamento de metadados**: fluxo do `useMetadata` com cadeia de fallback `Microlink -> OtherMeta -> noembed -> local`

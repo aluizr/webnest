@@ -3,6 +3,14 @@ import { Star, ExternalLink, Pencil, Trash2, StickyNote } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { FaviconWithFallback } from "@/components/FaviconWithFallback";
 import {
   AlertDialog,
@@ -21,6 +29,7 @@ import type { LinkItem } from "@/types/link";
 interface LinkBoardViewProps {
   links: LinkItem[];
   onToggleFavorite: (id: string) => void;
+  onUpdateLink: (id: string, data: Partial<Omit<LinkItem, "id" | "createdAt" | "position">>) => void;
   onEdit: (link: LinkItem) => void;
   onDelete: (id: string) => void;
   onMoveToStatus: (id: string, status: LinkItem["status"]) => void;
@@ -29,15 +38,67 @@ interface LinkBoardViewProps {
   onToggleSelect?: (id: string, shiftKey?: boolean) => void;
 }
 
+type BoardColumnFilter = "all" | "favorites" | "high" | "urgent";
+
 const statusMeta: Record<LinkItem["status"], { label: string; badgeVariant: "outline" | "secondary" | "default" }> = {
   backlog: { label: "Backlog", badgeVariant: "outline" },
   in_progress: { label: "Em progresso", badgeVariant: "secondary" },
   done: { label: "Concluído", badgeVariant: "default" },
 };
 
-export function LinkBoardView({ links, onToggleFavorite, onEdit, onDelete, onMoveToStatus, onReorderWithinStatus, selectedIds, onToggleSelect }: LinkBoardViewProps) {
+export function LinkBoardView({ links, onToggleFavorite, onUpdateLink, onEdit, onDelete, onMoveToStatus, onReorderWithinStatus, selectedIds, onToggleSelect }: LinkBoardViewProps) {
   const [draggedLinkId, setDraggedLinkId] = useState<string | null>(null);
   const [dropStatus, setDropStatus] = useState<LinkItem["status"] | null>(null);
+  const [editingTitleId, setEditingTitleId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState("");
+  const [columnFilters, setColumnFilters] = useState<Record<LinkItem["status"], BoardColumnFilter>>({
+    backlog: "all",
+    in_progress: "all",
+    done: "all",
+  });
+
+  const dueState = (dueDate?: string | null): "none" | "overdue" | "today" | "upcoming" => {
+    if (!dueDate) return "none";
+    const due = new Date(dueDate);
+    if (Number.isNaN(due.getTime())) return "none";
+
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tomorrow = new Date(todayStart);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    if (due < todayStart) return "overdue";
+    if (due >= todayStart && due < tomorrow) return "today";
+    return "upcoming";
+  };
+
+  const applyColumnFilter = (items: LinkItem[], filter: BoardColumnFilter) => {
+    if (filter === "favorites") return items.filter((link) => link.isFavorite);
+    if (filter === "high") return items.filter((link) => link.priority === "high");
+    if (filter === "urgent") {
+      return items.filter((link) => {
+        const state = dueState(link.dueDate);
+        return state === "overdue" || state === "today";
+      });
+    }
+    return items;
+  };
+
+  const startInlineTitleEdit = (link: LinkItem) => {
+    setEditingTitleId(link.id);
+    setEditingTitle(link.title || "");
+  };
+
+  const commitInlineTitleEdit = (linkId: string) => {
+    onUpdateLink(linkId, { title: editingTitle.trim() });
+    setEditingTitleId(null);
+    setEditingTitle("");
+  };
+
+  const cancelInlineTitleEdit = () => {
+    setEditingTitleId(null);
+    setEditingTitle("");
+  };
 
   // Agrupar links por status
   const columns = useMemo(() => {
@@ -45,11 +106,16 @@ export function LinkBoardView({ links, onToggleFavorite, onEdit, onDelete, onMov
       key: statusKey,
       name: statusMeta[statusKey].label,
       badgeVariant: statusMeta[statusKey].badgeVariant,
-      links: links
+      links: applyColumnFilter(
+        links
         .filter((link) => link.status === statusKey)
         .sort((a, b) => (a.positionInStatus ?? a.position ?? 0) - (b.positionInStatus ?? b.position ?? 0)),
+        columnFilters[statusKey]
+      ),
+      total: links.filter((link) => link.status === statusKey).length,
+      filter: columnFilters[statusKey],
     }));
-  }, [links]);
+  }, [links, columnFilters]);
 
   return (
     <div className="flex gap-4 overflow-x-auto pb-4 -mx-3 px-3 md:-mx-6 md:px-6 snap-x">
@@ -92,8 +158,28 @@ export function LinkBoardView({ links, onToggleFavorite, onEdit, onDelete, onMov
               {column.name}
             </Badge>
             <Badge variant="secondary" className={`${COMPACT_BADGE_CLASS} ml-2 shrink-0`}>
-              {allLinks.length}
+              {allLinks.length}/{column.total}
             </Badge>
+          </div>
+
+          <div className="mb-2 flex flex-wrap gap-1 px-1">
+            {[
+              { id: "all", label: "Todos" },
+              { id: "favorites", label: "Fav" },
+              { id: "high", label: "Alta" },
+              { id: "urgent", label: "Urg" },
+            ].map((filter) => (
+              <Button
+                key={filter.id}
+                type="button"
+                variant={column.filter === filter.id ? "default" : "outline"}
+                size="sm"
+                className="h-6 px-2 text-[10px]"
+                onClick={() => setColumnFilters((prev) => ({ ...prev, [column.key]: filter.id as BoardColumnFilter }))}
+              >
+                {filter.label}
+              </Button>
+            ))}
           </div>
 
           {/* Column cards */}
@@ -181,15 +267,40 @@ export function LinkBoardView({ links, onToggleFavorite, onEdit, onDelete, onMov
                   <div className="flex items-start gap-2">
                     <FaviconWithFallback url={link.url} favicon={link.favicon} size={18} className="mt-0.5" />
                     <div className="min-w-0 flex-1">
-                      <a
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-sm font-medium text-foreground hover:text-primary transition-colors line-clamp-2"
-                      >
-                        {link.title || link.url}
-                        <ExternalLink className="h-3 w-3 shrink-0 opacity-40" />
-                      </a>
+                      {editingTitleId === link.id ? (
+                        <Input
+                          autoFocus
+                          value={editingTitle}
+                          onChange={(e) => setEditingTitle(e.target.value)}
+                          onBlur={() => commitInlineTitleEdit(link.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              commitInlineTitleEdit(link.id);
+                            }
+                            if (e.key === "Escape") {
+                              e.preventDefault();
+                              cancelInlineTitleEdit();
+                            }
+                          }}
+                          className="h-8 text-xs"
+                        />
+                      ) : (
+                        <a
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-sm font-medium text-foreground hover:text-primary transition-colors line-clamp-2"
+                          onDoubleClick={(e) => {
+                            e.preventDefault();
+                            startInlineTitleEdit(link);
+                          }}
+                          title="Duplo clique para editar titulo"
+                        >
+                          {link.title || link.url}
+                          <ExternalLink className="h-3 w-3 shrink-0 opacity-40" />
+                        </a>
+                      )}
 
                       {link.description && (
                         <p className={`mt-1 ${TEXT_XS_CLASS} text-muted-foreground line-clamp-2`}>
@@ -212,11 +323,44 @@ export function LinkBoardView({ links, onToggleFavorite, onEdit, onDelete, onMov
                       )}
 
                       <div className="mt-1.5 flex items-center gap-1">
-                        <Badge variant="outline" className={COMPACT_BADGE_CLASS}>
-                          {link.priority === "high" ? "Alta" : link.priority === "medium" ? "Média" : "Baixa"}
-                        </Badge>
+                        <Select
+                          value={link.status}
+                          onValueChange={(value: LinkItem["status"]) => onMoveToStatus(link.id, value)}
+                        >
+                          <SelectTrigger className="h-6 min-w-[122px] px-2 text-[11px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="backlog">Backlog</SelectItem>
+                            <SelectItem value="in_progress">Em progresso</SelectItem>
+                            <SelectItem value="done">Concluido</SelectItem>
+                          </SelectContent>
+                        </Select>
+
+                        <Select
+                          value={link.priority}
+                          onValueChange={(value: LinkItem["priority"]) => onUpdateLink(link.id, { priority: value })}
+                        >
+                          <SelectTrigger className="h-6 min-w-[104px] px-2 text-[11px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="low">Baixa</SelectItem>
+                            <SelectItem value="medium">Media</SelectItem>
+                            <SelectItem value="high">Alta</SelectItem>
+                          </SelectContent>
+                        </Select>
                         {link.dueDate && (
-                          <Badge variant="outline" className={COMPACT_BADGE_CLASS}>
+                          <Badge
+                            variant={
+                              dueState(link.dueDate) === "overdue"
+                                ? "destructive"
+                                : dueState(link.dueDate) === "today"
+                                  ? "secondary"
+                                  : "outline"
+                            }
+                            className={COMPACT_BADGE_CLASS}
+                          >
                             {new Date(link.dueDate).toLocaleDateString("pt-BR")}
                           </Badge>
                         )}

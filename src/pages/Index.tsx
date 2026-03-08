@@ -645,6 +645,7 @@ const Index = ({ user, onSignOut }: IndexProps) => {
             <LinkBoardView
               links={filteredLinks}
               onToggleFavorite={handleToggleFavorite}
+              onUpdateLink={updateLink}
               onEdit={handleEdit}
               onDelete={handleDelete}
               onMoveToStatus={handleMoveToStatus}

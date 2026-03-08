@@ -148,6 +148,8 @@ export function AppSidebar({
   const [dropTargetCat, setDropTargetCat] = useState<string | null>(null);
   const [draggedCatId, setDraggedCatId] = useState<string | null>(null);
   const [dropTargetCatId, setDropTargetCatId] = useState<string | null>(null);
+  const [dropPosition, setDropPosition] = useState<"top" | "bottom">("bottom");
+  const [justDroppedCatId, setJustDroppedCatId] = useState<string | null>(null);
 
   // Link dragging onto categories
   const handleCatDragOver = (e: React.DragEvent, catName: string) => {
@@ -159,34 +161,45 @@ export function AppSidebar({
   const handleCatDragLeave = () => {
     setDropTargetCat(null);
     setDropTargetCatId(null);
+    setDropPosition("bottom");
   };
 
-  const handleCatDrop = (e: React.DragEvent, catName: string) => {
+  const handleCatDrop = (e: React.DragEvent, catName: string, targetCatId?: string) => {
     e.preventDefault();
     // Check if it's a category reorder
     const catId = e.dataTransfer.getData("application/category-id");
-    if (catId && draggedCatId && dropTargetCatId && onReorderCategories) {
+    if (catId && draggedCatId && targetCatId && onReorderCategories) {
       const draggedCat = categories.find((c) => c.id === draggedCatId);
-      const targetCat = categories.find((c) => c.id === dropTargetCatId);
+      const targetCat = categories.find((c) => c.id === targetCatId);
 
       if (draggedCat && targetCat && draggedCat.parentId === targetCat.parentId) {
-        const reordered = [...categories];
-        const dragIdx = reordered.findIndex((c) => c.id === draggedCatId);
-        const targetIdx = reordered.findIndex((c) => c.id === dropTargetCatId);
-        const [moved] = reordered.splice(dragIdx, 1);
-        reordered.splice(targetIdx, 0, moved);
+        const siblingCategories = categories
+          .filter((c) => c.parentId === draggedCat.parentId)
+          .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
 
-        const updatedWithPositions = reordered.map((cat, idx) => ({
-          ...cat,
-          position: idx,
-        }));
+        const dragIdx = siblingCategories.findIndex((c) => c.id === draggedCatId);
+        const targetIdx = siblingCategories.findIndex((c) => c.id === targetCatId);
 
-        onReorderCategories(updatedWithPositions);
+        if (dragIdx !== -1 && targetIdx !== -1 && dragIdx !== targetIdx) {
+          const nextSiblings = [...siblingCategories];
+          const [moved] = nextSiblings.splice(dragIdx, 1);
+          nextSiblings.splice(targetIdx, 0, moved);
+
+          const nextById = new Map(categories.map((cat) => [cat.id, cat]));
+          nextSiblings.forEach((cat, idx) => {
+            nextById.set(cat.id, { ...cat, position: idx });
+          });
+
+          onReorderCategories(Array.from(nextById.values()));
+          setJustDroppedCatId(draggedCatId);
+          window.setTimeout(() => setJustDroppedCatId(null), 360);
+        }
       }
 
       setDraggedCatId(null);
       setDropTargetCatId(null);
       setDropTargetCat(null);
+      setDropPosition("bottom");
       return;
     }
 
@@ -209,6 +222,9 @@ export function AppSidebar({
     e.preventDefault();
     if (draggedCatId && draggedCatId !== targetCatId) {
       setDropTargetCatId(targetCatId);
+      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+      const offsetY = e.clientY - rect.top;
+      setDropPosition(offsetY < rect.height / 2 ? "top" : "bottom");
     }
   };
 
@@ -216,6 +232,7 @@ export function AppSidebar({
     setDraggedCatId(null);
     setDropTargetCatId(null);
     setDropTargetCat(null);
+    setDropPosition("bottom");
   };
 
   const [newCat, setNewCat] = useState("");
@@ -333,17 +350,21 @@ export function AppSidebar({
                 handleCatReorderDragOver(e, cat.id);
               }}
               onDragLeave={handleCatDragLeave}
-              onDrop={(e) => handleCatDrop(e, fullName)}
+              onDrop={(e) => handleCatDrop(e, fullName, cat.id)}
               className={`group/cat transition-colors ${
                 dropTargetCat === fullName
                   ? "bg-primary/15 ring-1 ring-primary/40 scale-[1.02]"
                   : ""
               } ${
                 dropTargetCatId === cat.id && draggedCatId
-                  ? "border-t-2 border-primary"
+                  ? dropPosition === "top"
+                    ? "border-t-2 border-primary"
+                    : "border-b-2 border-primary"
                   : ""
               } ${
                 draggedCatId === cat.id ? "opacity-40" : ""
+              } ${
+                justDroppedCatId === cat.id ? "snap-animate" : ""
               } ${
                 isActive("category", fullName)
                   ? "bg-accent text-accent-foreground font-medium"
@@ -352,7 +373,7 @@ export function AppSidebar({
               style={{ paddingLeft: `${depth * 16 + 8}px` }}
             >
               {/* Drag handle */}
-              <GripVertical className="h-3 w-3 opacity-0 group-hover/cat:opacity-50 cursor-grab shrink-0" />
+              <GripVertical className="h-3 w-3 opacity-50 group-hover/cat:opacity-80 cursor-grab shrink-0" />
 
               {/* Color dot */}
               {cat.color && (

@@ -304,7 +304,6 @@ export function LinkNotionView({
         const isSelected = selectedIds?.has(link.id);
         const domain = safeDomain(link.url);
         const health = linkStatusById?.[link.id];
-        const isFirstRow = index === 0;
         const hasDescription = Boolean(link.description?.trim());
 
         return (
@@ -536,16 +535,11 @@ export function LinkNotionView({
                 aria-label="Redimensionar thumbnail"
                 onPointerDown={startResize}
                 onDoubleClick={resetResize}
-                title="Arraste para redimensionar (Shift para snap; duplo clique alterna tamanhos)"
+                title="Arraste para redimensionar (duplo clique alterna tamanhos)"
                 className="absolute -left-2 top-0 h-full w-4 cursor-col-resize bg-transparent touch-none"
                 style={{ touchAction: "none" }}
               >
                 <span className={`absolute left-1/2 top-1/2 h-12 w-[3px] -translate-x-1/2 -translate-y-1/2 rounded-full transition-colors ${isResizingThumb ? "bg-primary" : "bg-border group-hover:bg-foreground/50"}`} />
-                <span className={`pointer-events-none absolute left-1/2 top-2 -translate-x-1/2 rounded bg-background/95 px-1.5 py-0.5 text-[10px] text-muted-foreground shadow-sm transition-opacity ${
-                  isResizingThumb || isFirstRow ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-                }`}>
-                  Shift=Snap
-                </span>
               </button>
               <div
                 className="overflow-hidden rounded-lg border border-border/30 bg-muted/10"
