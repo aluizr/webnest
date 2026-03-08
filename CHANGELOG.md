@@ -60,6 +60,12 @@ Versão mais recente: [0.14.1 — 2026-03-06](CHANGELOG.md#0141--2026-03-06)
 - **Navegacao por teclado na edicao**: suporte a `Tab` e `Shift+Tab` para avancar/retroceder entre celulas editaveis, incluindo troca para a proxima/anterior linha.
 - **Foco visual de celula ativa**: destaque da celula em edicao inline com realce de borda/fundo para leitura tipo planilha.
 - **Contexto de linha ativa**: linha com celula em edicao recebe realce sutil para facilitar orientacao em tabelas largas.
+- **Header sticky na tabela**: cabecalho com colunas permanece visivel durante scroll vertical para manter contexto de leitura/edicao.
+- **Coluna Titulo fixa**: primeira coluna de conteudo permanece visivel no scroll horizontal para preservar contexto da linha.
+- **Coluna Acoes fixa**: acoes da linha permanecem acessiveis no scroll horizontal com ancora a direita.
+- **Indicadores de scroll horizontal**: fade nas bordas esquerda/direita da tabela sinaliza conteudo fora da viewport.
+- **Snap horizontal suave**: ao parar o scroll lateral, a tabela alinha automaticamente na borda de coluna mais proxima (respeitando `prefers-reduced-motion`).
+- **Modo de densidade da tabela**: novo controle `Compacta/Normal` com persistencia em `localStorage` para caber mais conteudo na mesma pagina.
 
 ### Correções de Metadados (Adicionar Link)
 

@@ -66,6 +66,7 @@ interface TableFilters {
 }
 
 type InlineEditableColumn = "title" | "category" | "tags" | "dueDate";
+type TableDensity = "compact" | "normal";
 
 const INLINE_EDIT_SEQUENCE: InlineEditableColumn[] = ["title", "category", "tags", "dueDate"];
 
@@ -108,6 +109,7 @@ const COLUMN_PRESETS: Record<"compact" | "analysis" | "full", { label: string; c
 
 const STORAGE_VISIBLE_COLUMNS = "table-visible-columns";
 const STORAGE_COLUMN_WIDTHS = "table-column-widths";
+const STORAGE_TABLE_DENSITY = "table-density";
 
 const DEFAULT_FILTERS: TableFilters = {
   query: "",
@@ -217,8 +219,18 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
   const [filters, setFilters] = useState<TableFilters>(DEFAULT_FILTERS);
   const [editingCell, setEditingCell] = useState<{ id: string; column: InlineEditableColumn } | null>(null);
   const [editingValue, setEditingValue] = useState("");
+  const [showLeftFade, setShowLeftFade] = useState(false);
+  const [showRightFade, setShowRightFade] = useState(false);
+  const [density, setDensity] = useState<TableDensity>(() => {
+    if (typeof window === "undefined") return "compact";
+    const saved = window.localStorage.getItem(STORAGE_TABLE_DENSITY);
+    return saved === "normal" ? "normal" : "compact";
+  });
   const skipNextBlurCommitRef = useRef(false);
   const resizeRef = useRef<{ column: TableColumnId; startX: number; startWidth: number } | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const snapTimeoutRef = useRef<number | null>(null);
+  const snapLockRef = useRef(false);
 
   const getInlineInitialValue = (link: LinkItem, column: InlineEditableColumn) => {
     if (column === "title") return link.title || "";
@@ -328,6 +340,11 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
     if (typeof window === "undefined") return;
     window.localStorage.setItem(STORAGE_COLUMN_WIDTHS, JSON.stringify(columnWidths));
   }, [columnWidths]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(STORAGE_TABLE_DENSITY, density);
+  }, [density]);
 
   const processedLinks = useMemo(() => {
     let next = [...links];
@@ -461,6 +478,80 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
     };
   }, [handleMouseMove, stopResize]);
 
+  const updateHorizontalFades = useCallback(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const { scrollLeft, clientWidth, scrollWidth } = container;
+    const maxScrollLeft = scrollWidth - clientWidth;
+    setShowLeftFade(scrollLeft > 2);
+    setShowRightFade(maxScrollLeft - scrollLeft > 2);
+  }, []);
+
+  const horizontalSnapPoints = useMemo(() => {
+    const points: number[] = [0];
+    let offset = 0;
+
+    // Keep title anchored and snap scrolling to the remaining columns.
+    for (const columnId of visibleColumns) {
+      if (columnId === "title") continue;
+      points.push(offset);
+      offset += columnWidths[columnId];
+    }
+
+    return Array.from(new Set(points)).sort((a, b) => a - b);
+  }, [visibleColumns, columnWidths]);
+
+  const scheduleHorizontalSnap = useCallback(() => {
+    if (snapTimeoutRef.current) {
+      window.clearTimeout(snapTimeoutRef.current);
+    }
+
+    snapTimeoutRef.current = window.setTimeout(() => {
+      const container = scrollRef.current;
+      if (!container || snapLockRef.current) return;
+
+      const maxScrollLeft = container.scrollWidth - container.clientWidth;
+      if (maxScrollLeft <= 0) return;
+
+      const current = container.scrollLeft;
+      let target = horizontalSnapPoints[0] ?? 0;
+
+      for (const point of horizontalSnapPoints) {
+        if (Math.abs(point - current) < Math.abs(target - current)) {
+          target = point;
+        }
+      }
+
+      target = Math.max(0, Math.min(maxScrollLeft, target));
+
+      if (Math.abs(target - current) < 10) return;
+
+      snapLockRef.current = true;
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      container.scrollTo({ left: target, behavior: reducedMotion ? "auto" : "smooth" });
+
+      window.setTimeout(() => {
+        snapLockRef.current = false;
+      }, reducedMotion ? 0 : 240);
+    }, 130);
+  }, [horizontalSnapPoints]);
+
+  useEffect(() => {
+    updateHorizontalFades();
+    window.addEventListener("resize", updateHorizontalFades);
+    return () => {
+      window.removeEventListener("resize", updateHorizontalFades);
+      if (snapTimeoutRef.current) {
+        window.clearTimeout(snapTimeoutRef.current);
+      }
+    };
+  }, [updateHorizontalFades]);
+
+  useEffect(() => {
+    updateHorizontalFades();
+  }, [visibleColumns, columnWidths, processedLinks.length, updateHorizontalFades]);
+
   const estimateAutoWidth = (column: TableColumnId) => {
     const config = COLUMN_MAP[column];
     const labelLength = config.label.length;
@@ -542,31 +633,31 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
 
   return (
     <div className="rounded-lg border overflow-hidden">
-      <div className="border-b bg-muted/20 p-3 md:p-4">
+      <div className={`border-b bg-muted/20 ${density === "compact" ? "p-2 md:p-2.5" : "p-3 md:p-4"}`}>
         <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-6">
           <Input
             value={filters.query}
             onChange={(e) => setFilters((prev) => ({ ...prev, query: e.target.value }))}
             placeholder="Filtrar titulo, URL ou descricao"
-            className="h-8"
+            className={density === "compact" ? "h-7 text-xs" : "h-8"}
           />
           <Input
             value={filters.category}
             onChange={(e) => setFilters((prev) => ({ ...prev, category: e.target.value }))}
             placeholder="Categoria"
-            className="h-8"
+            className={density === "compact" ? "h-7 text-xs" : "h-8"}
           />
           <Input
             value={filters.tag}
             onChange={(e) => setFilters((prev) => ({ ...prev, tag: e.target.value }))}
             placeholder="Tag"
-            className="h-8"
+            className={density === "compact" ? "h-7 text-xs" : "h-8"}
           />
           <Select
             value={filters.status}
             onValueChange={(value: TableFilters["status"]) => setFilters((prev) => ({ ...prev, status: value }))}
           >
-            <SelectTrigger className="h-8">
+            <SelectTrigger className={density === "compact" ? "h-7 text-xs" : "h-8"}>
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -580,7 +671,7 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
             value={filters.priority}
             onValueChange={(value: TableFilters["priority"]) => setFilters((prev) => ({ ...prev, priority: value }))}
           >
-            <SelectTrigger className="h-8">
+            <SelectTrigger className={density === "compact" ? "h-7 text-xs" : "h-8"}>
               <SelectValue placeholder="Prioridade" />
             </SelectTrigger>
             <SelectContent>
@@ -594,7 +685,7 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
             value={filters.favorite}
             onValueChange={(value: TableFilters["favorite"]) => setFilters((prev) => ({ ...prev, favorite: value }))}
           >
-            <SelectTrigger className="h-8">
+            <SelectTrigger className={density === "compact" ? "h-7 text-xs" : "h-8"}>
               <SelectValue placeholder="Favoritos" />
             </SelectTrigger>
             <SelectContent>
@@ -608,7 +699,7 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8">
+              <Button variant="outline" size="sm" className={density === "compact" ? "h-7 text-xs" : "h-8"}>
                 <SlidersHorizontal className="mr-1.5 h-3.5 w-3.5" />
                 Colunas
               </Button>
@@ -636,9 +727,30 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
             </PopoverContent>
           </Popover>
 
-          <Button variant="ghost" size="sm" className="h-8" onClick={clearFiltersAndSorting}>
+          <Button variant="ghost" size="sm" className={density === "compact" ? "h-7 text-xs" : "h-8"} onClick={clearFiltersAndSorting}>
             Limpar filtros e ordenacao
           </Button>
+
+          <div className="flex items-center gap-1 rounded-md border bg-background p-0.5">
+            <Button
+              type="button"
+              variant={density === "compact" ? "default" : "ghost"}
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={() => setDensity("compact")}
+            >
+              Compacta
+            </Button>
+            <Button
+              type="button"
+              variant={density === "normal" ? "default" : "ghost"}
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={() => setDensity("normal")}
+            >
+              Normal
+            </Button>
+          </div>
 
           <span className="ml-auto text-xs text-muted-foreground">
             {processedLinks.length} de {links.length} links
@@ -646,12 +758,29 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+      <div className="relative">
+        {showLeftFade && (
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-40 w-6 bg-gradient-to-r from-background to-transparent" />
+        )}
+        {showRightFade && (
+          <div className="pointer-events-none absolute inset-y-0 right-0 z-40 w-6 bg-gradient-to-l from-background to-transparent" />
+        )}
+
+        <div
+          ref={scrollRef}
+          className="overflow-x-auto"
+          onScroll={() => {
+            updateHorizontalFades();
+            if (!snapLockRef.current) {
+              scheduleHorizontalSnap();
+            }
+          }}
+        >
+        <table className={density === "compact" ? "w-full text-xs" : "w-full text-sm"}>
           <thead>
             <tr className="border-b bg-muted/50">
               {onToggleSelect && (
-                <th className="px-4 py-3 w-10">
+                <th className={`sticky top-0 z-20 w-10 bg-muted/95 backdrop-blur supports-[backdrop-filter]:bg-muted/80 ${density === "compact" ? "px-3 py-2" : "px-4 py-3"}`}>
                   <button
                     onClick={toggleSelectAllVisible}
                     className={`h-5 w-5 rounded border-2 flex items-center justify-center transition-all ${
@@ -671,12 +800,15 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
               {visibleColumns.map((columnId) => {
                 const column = COLUMN_MAP[columnId];
                 const sortMeta = getSortMeta(columnId);
+                const isPinnedTitle = columnId === "title";
 
                 return (
                   <th
                     key={columnId}
-                    className="relative px-4 py-3 text-left font-medium"
-                    style={{ width: columnWidths[columnId], minWidth: columnWidths[columnId] }}
+                    className={`sticky top-0 relative bg-muted/95 text-left font-medium backdrop-blur supports-[backdrop-filter]:bg-muted/80 ${density === "compact" ? "px-3 py-2" : "px-4 py-3"} ${
+                      isPinnedTitle ? "left-0 z-30 shadow-[6px_0_10px_-8px_hsl(var(--border))]" : "z-20"
+                    }`}
+                    style={{ width: columnWidths[columnId], minWidth: columnWidths[columnId], left: isPinnedTitle ? 0 : undefined }}
                   >
                     <button
                       type="button"
@@ -705,7 +837,7 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
                 );
               })}
 
-              <th className="text-right font-medium px-4 py-3 w-28">Ações</th>
+              <th className={`sticky right-0 top-0 z-30 w-28 bg-muted/95 text-right font-medium shadow-[-6px_0_10px_-8px_hsl(var(--border))] backdrop-blur supports-[backdrop-filter]:bg-muted/80 ${density === "compact" ? "px-3 py-2" : "px-4 py-3"}`}>Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -722,7 +854,7 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
               >
                 {/* Selection checkbox */}
                 {onToggleSelect && (
-                  <td className="px-4 py-3">
+                  <td className={density === "compact" ? "px-3 py-2" : "px-4 py-3"}>
                     <button
                       onClick={(e) => { e.stopPropagation(); onToggleSelect(link.id, e.shiftKey); }}
                       className={`h-5 w-5 rounded border-2 flex items-center justify-center transition-all ${
@@ -743,11 +875,16 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
                 {visibleColumns.map((columnId) => (
                   <td
                     key={columnId}
-                    className={`px-4 py-3 align-top transition-colors ${
+                    className={`${density === "compact" ? "px-3 py-2" : "px-4 py-3"} align-top transition-colors ${
                       editingCell?.id === link.id && editingCell.column === columnId
                         ? "bg-primary/10 shadow-[inset_0_0_0_1px_hsl(var(--primary))]"
                         : ""
+                    } ${
+                      columnId === "title"
+                        ? "sticky left-0 z-10 bg-background/95 shadow-[6px_0_10px_-8px_hsl(var(--border))] backdrop-blur supports-[backdrop-filter]:bg-background/85"
+                        : ""
                     }`}
+                    style={{ left: columnId === "title" ? 0 : undefined }}
                   >
                     {columnId === "favicon" && (
                       <FaviconWithFallback url={link.url} favicon={link.favicon} size={20} />
@@ -768,7 +905,7 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
                               commitInlineEdit(editingCell, editingValue);
                             }}
                             onKeyDown={(e) => handleInlineInputKeyDown(e, processedLinks)}
-                            className="h-8"
+                            className={density === "compact" ? "h-7 text-xs" : "h-8"}
                           />
                         ) : (
                           <a
@@ -818,7 +955,7 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
                             commitInlineEdit(editingCell, editingValue);
                           }}
                           onKeyDown={(e) => handleInlineInputKeyDown(e, processedLinks)}
-                          className="h-8"
+                          className={density === "compact" ? "h-7 text-xs" : "h-8"}
                         />
                       ) : link.category ? (
                         <Badge
@@ -854,7 +991,7 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
                             commitInlineEdit(editingCell, editingValue);
                           }}
                           onKeyDown={(e) => handleInlineInputKeyDown(e, processedLinks)}
-                          className="h-8"
+                          className={density === "compact" ? "h-7 text-xs" : "h-8"}
                           placeholder="tag1, tag2"
                         />
                       ) : (
@@ -882,7 +1019,7 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
                         value={link.status}
                         onValueChange={(value: LinkItem["status"]) => onUpdateLink(link.id, { status: value })}
                       >
-                        <SelectTrigger className="h-8 min-w-[132px]">
+                        <SelectTrigger className={`${density === "compact" ? "h-7 text-xs min-w-[116px]" : "h-8 min-w-[132px]"}`}>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -898,7 +1035,7 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
                         value={link.priority}
                         onValueChange={(value: LinkItem["priority"]) => onUpdateLink(link.id, { priority: value })}
                       >
-                        <SelectTrigger className="h-8 min-w-[132px]">
+                        <SelectTrigger className={`${density === "compact" ? "h-7 text-xs min-w-[116px]" : "h-8 min-w-[132px]"}`}>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -924,7 +1061,7 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
                             commitInlineEdit(editingCell, editingValue);
                           }}
                           onKeyDown={(e) => handleInlineInputKeyDown(e, processedLinks)}
-                          className="h-8"
+                          className={density === "compact" ? "h-7 text-xs" : "h-8"}
                         />
                       ) : (
                         <button
@@ -946,7 +1083,7 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
                 ))}
 
                 {/* Actions */}
-                <td className="px-4 py-3 text-right">
+                <td className={`sticky right-0 z-10 bg-background/95 text-right shadow-[-6px_0_10px_-8px_hsl(var(--border))] backdrop-blur supports-[backdrop-filter]:bg-background/85 ${density === "compact" ? "px-3 py-2" : "px-4 py-3"}`}>
                   <div className="flex items-center justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button
                       variant="ghost"
@@ -991,6 +1128,7 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );
