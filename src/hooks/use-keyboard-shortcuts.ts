@@ -93,7 +93,7 @@ export function useKeyboardShortcuts(actions: KeyboardShortcutActions) {
         case "d":
           e.preventDefault();
           {
-            const allThemes = ["light", "dark", "ocean", "sunset", "forest", "rose", "lavender", "midnight"];
+            const allThemes = ["light", "paper", "mint", "peach", "dark", "ocean", "sunset", "forest", "rose", "lavender", "midnight"];
             const currentIndex = allThemes.indexOf(theme ?? "light");
             const nextIndex = (currentIndex + 1) % allThemes.length;
             setTheme(allThemes[nextIndex]);

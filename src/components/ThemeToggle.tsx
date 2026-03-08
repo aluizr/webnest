@@ -1,4 +1,4 @@
-import { Moon, Sun, Waves, Sunset, TreePine, Flower2, Sparkles, Eclipse, Palette, Check } from "lucide-react";
+import { Moon, Sun, Waves, Sunset, TreePine, Flower2, Sparkles, Eclipse, Palette, Check, ScrollText, Leaf, Citrus } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,8 +13,29 @@ const themes = [
     id: "light",
     label: "Claro",
     icon: Sun,
-    preview: "bg-white border-gray-200",
+    preview: "bg-slate-100 border-slate-400",
     color: "text-amber-500",
+  },
+  {
+    id: "paper",
+    label: "Paper",
+    icon: ScrollText,
+    preview: "bg-stone-100 border-amber-700",
+    color: "text-amber-700",
+  },
+  {
+    id: "mint",
+    label: "Mint",
+    icon: Leaf,
+    preview: "bg-emerald-100 border-emerald-600",
+    color: "text-emerald-600",
+  },
+  {
+    id: "peach",
+    label: "Peach",
+    icon: Citrus,
+    preview: "bg-orange-200 border-orange-600",
+    color: "text-orange-600",
   },
   {
     id: "dark",
@@ -27,35 +48,35 @@ const themes = [
     id: "ocean",
     label: "Oceano",
     icon: Waves,
-    preview: "bg-sky-50 border-sky-300",
+    preview: "bg-cyan-200 border-cyan-500",
     color: "text-sky-500",
   },
   {
     id: "sunset",
     label: "Pôr do Sol",
     icon: Sunset,
-    preview: "bg-orange-50 border-orange-300",
+    preview: "bg-amber-200 border-orange-500",
     color: "text-orange-500",
   },
   {
     id: "forest",
     label: "Floresta",
     icon: TreePine,
-    preview: "bg-green-50 border-green-300",
+    preview: "bg-lime-200 border-green-600",
     color: "text-green-600",
   },
   {
     id: "rose",
     label: "Rosé",
     icon: Flower2,
-    preview: "bg-pink-50 border-pink-300",
+    preview: "bg-rose-200 border-pink-600",
     color: "text-pink-500",
   },
   {
     id: "lavender",
     label: "Lavanda",
     icon: Sparkles,
-    preview: "bg-purple-50 border-purple-300",
+    preview: "bg-violet-200 border-violet-600",
     color: "text-purple-500",
   },
   {

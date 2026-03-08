@@ -60,7 +60,7 @@ const App = () => (
         attribute="class"
         defaultTheme="light"
         enableSystem={false}
-        themes={["light", "dark", "ocean", "sunset", "forest", "rose", "lavender", "midnight"]}
+        themes={["light", "paper", "mint", "peach", "dark", "ocean", "sunset", "forest", "rose", "lavender", "midnight"]}
       >
         <TooltipProvider>
           <Toaster />
