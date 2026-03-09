@@ -1,21 +1,26 @@
-# Global fallback ownership
+#--- global fallback ownership
+
 * @aluizr
 
-# Frontend application
+#--- frontend application
+
 /src/ @aluizr
 /public/ @aluizr
 
-# Backend/schema/integrations
+#--- backend/schema/integrations
+
 /supabase/ @aluizr
 /schemas/ @aluizr
 
-# Infrastructure and deployment
+#--- infrastructure and deployment
+
 /Dockerfile* @aluizr
 /docker-compose*.yml @aluizr
 /nginx.conf @aluizr
 /vite.config.js @aluizr
 
-# Security and governance docs
+#--- security and governance docs
+
 /SECURITY_* @aluizr
 /SECURITY_FIXES/ @aluizr
 /DOCKER.md @aluizr
