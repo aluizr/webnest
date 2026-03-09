@@ -10,7 +10,7 @@ Thanks for contributing to WebNest.
 npm ci
 ```
 
-2. Start development server:
+1. Start development server:
 
 ```sh
 npm run dev

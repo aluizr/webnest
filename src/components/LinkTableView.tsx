@@ -891,7 +891,7 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
                 return (
                   <th
                     key={columnId}
-                    className={`sticky top-0 relative bg-muted/95 text-left font-medium backdrop-blur supports-[backdrop-filter]:bg-muted/80 ${density === "compact" ? "px-3 py-2" : "px-4 py-3"} ${
+                    className={`sticky top-0 bg-muted/95 text-left font-medium backdrop-blur supports-[backdrop-filter]:bg-muted/80 ${density === "compact" ? "px-3 py-2" : "px-4 py-3"} ${
                       isPinnedTitle ? "left-0 z-30 shadow-[6px_0_10px_-8px_hsl(var(--border))]" : "z-20"
                     }`}
                     style={{ width: columnWidths[columnId], minWidth: columnWidths[columnId], left: isPinnedTitle ? 0 : undefined }}
