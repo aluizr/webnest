@@ -1,8 +1,23 @@
-# Global ownership
-# Replace @your-github-username with the real maintainer/organization handle.
-* @your-github-username
+# Global fallback ownership
+* @aluizr
 
-# Optional path-based ownership examples:
-# /src/components/ @frontend-team
-# /supabase/ @backend-team
-# /SECURITY_* @security-team
+# Frontend application
+/src/ @aluizr
+/public/ @aluizr
+
+# Backend/schema/integrations
+/supabase/ @aluizr
+/schemas/ @aluizr
+
+# Infrastructure and deployment
+/Dockerfile* @aluizr
+/docker-compose*.yml @aluizr
+/nginx.conf @aluizr
+/vite.config.js @aluizr
+
+# Security and governance docs
+/SECURITY_* @aluizr
+/SECURITY_FIXES/ @aluizr
+/DOCKER.md @aluizr
+/CONTRIBUTING.md @aluizr
+/README.md @aluizr

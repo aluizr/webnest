@@ -7,7 +7,7 @@ on:
       - main
       - master
 
-actions:
+permissions:
   contents: read
 
 jobs:

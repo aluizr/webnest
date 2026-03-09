@@ -46,6 +46,7 @@ const THUMB_MIN_WIDTH = 112;
 const THUMB_MAX_WIDTH = 220;
 const THUMB_DEFAULT_WIDTH = 140;
 const THUMB_SNAP_WIDTHS = [112, 160, 220] as const;
+type ThumbSnapWidth = (typeof THUMB_SNAP_WIDTHS)[number];
 const THUMB_STORAGE_KEY = "notion-thumb-width";
 const DENSITY_STORAGE_KEY = "notion-list-density";
 
@@ -111,13 +112,13 @@ function clampThumbWidth(value: number): number {
   return Math.min(THUMB_MAX_WIDTH, Math.max(THUMB_MIN_WIDTH, value));
 }
 
-function nearestSnapWidth(value: number): number {
+function nearestSnapWidth(value: number): ThumbSnapWidth {
   return THUMB_SNAP_WIDTHS.reduce((closest, candidate) => {
     return Math.abs(candidate - value) < Math.abs(closest - value) ? candidate : closest;
   }, THUMB_SNAP_WIDTHS[0]);
 }
 
-function nextSnapWidth(value: number): number {
+function nextSnapWidth(value: number): ThumbSnapWidth {
   const current = nearestSnapWidth(value);
   const idx = THUMB_SNAP_WIDTHS.indexOf(current);
   return THUMB_SNAP_WIDTHS[(idx + 1) % THUMB_SNAP_WIDTHS.length];
