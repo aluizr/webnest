@@ -35,7 +35,7 @@ Aumentar confiabilidade da edicao inline e combinacao de filtros/ordenacao.
 	- N/A (validacao automatizada por testes de componente)
 - Commits/PRs:
 	- cee887f fix(table): harden inline edit key handling and skip no-op updates
-	- (pendente) testes de regressao da tabela para inline/filtro/ordenacao
+	- 2e05cad test(table): add inline edit and filter/sort regression coverage
 
 ## Criterios de Aceite
 - [x] Comportamento consistente de teclas
