@@ -235,7 +235,7 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
   const snapTimeoutRef = useRef<number | null>(null);
   const snapLockRef = useRef(false);
 
-  const getInlineInitialValue = (link: LinkItem, column: InlineEditableColumn) => {
+  const getInlineInitialValue = useCallback((link: LinkItem, column: InlineEditableColumn) => {
     if (column === "title") return link.title || "";
     if (column === "description") return link.description || "";
     if (column === "category") return link.category || "";
@@ -245,14 +245,14 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
     const parsed = new Date(link.dueDate);
     if (Number.isNaN(parsed.getTime())) return "";
     return parsed.toISOString().slice(0, 10);
-  };
+  }, []);
 
-  const beginInlineEdit = (link: LinkItem, column: InlineEditableColumn) => {
+  const beginInlineEdit = useCallback((link: LinkItem, column: InlineEditableColumn) => {
     const value = getInlineInitialValue(link, column);
 
     setEditingCell({ id: link.id, column });
     setEditingValue(value);
-  };
+  }, [getInlineInitialValue]);
 
   const cancelInlineEdit = () => {
     setEditingCell(null);
@@ -332,7 +332,7 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
     if (nextRowIndex < 0 || nextRowIndex >= list.length) return;
 
     beginInlineEdit(list[nextRowIndex], INLINE_EDIT_SEQUENCE[nextColIndex]);
-  }, []);
+  }, [beginInlineEdit]);
 
   const handleInlineInputKeyDown = (
     event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,

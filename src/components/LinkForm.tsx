@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -61,21 +61,20 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
 
   const parentCategories = categories.filter((c) => !c.parentId);
 
-  // ✅ Build full name from category chain
-  const buildFullName = (cat: Category): string => {
-    const parts: string[] = [cat.name];
-    let current = cat;
-    while (current.parentId) {
-      const parent = categories.find((c) => c.id === current.parentId);
-      if (!parent) break;
-      parts.unshift(parent.name);
-      current = parent;
-    }
-    return parts.join(" / ");
-  };
+  const [selectedCategoryId, setSelectedCategoryId] = useState("");
+  const categoryOptions = useMemo(() => {
+    const buildFullName = (cat: Category): string => {
+      const parts: string[] = [cat.name];
+      let current = cat;
+      while (current.parentId) {
+        const parent = categories.find((c) => c.id === current.parentId);
+        if (!parent) break;
+        parts.unshift(parent.name);
+        current = parent;
+      }
+      return parts.join(" / ");
+    };
 
-  // ✅ Build flat list of all categories with indentation for select
-  const buildCategoryOptions = () => {
     const options: { id: string; label: string; fullName: string; depth: number }[] = [];
     const addChildren = (parentId: string | null, depth: number) => {
       const children = categories
@@ -91,18 +90,16 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
         addChildren(child.id, depth + 1);
       }
     };
+
     addChildren(null, 0);
     return options;
-  };
+  }, [categories]);
 
-  const [selectedCategoryId, setSelectedCategoryId] = useState("");
-  const categoryOptions = buildCategoryOptions();
-
-  const resolveSelection = (categoryValue: string): string => {
+  const resolveSelection = useCallback((categoryValue: string): string => {
     if (!categoryValue) return "";
     const found = categoryOptions.find((opt) => opt.fullName === categoryValue);
     return found?.id ?? "";
-  };
+  }, [categoryOptions]);
 
   useEffect(() => {
     if (editingLink) {
@@ -147,7 +144,7 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
         initialLoadDone.current = true;
       }
     }
-  }, [editingLink, open, categories, hasDraft]);
+  }, [editingLink, open, categories, hasDraft, resolveSelection]);
 
   // Reset forceAllowDuplicate quando URL mudar
   useEffect(() => {
@@ -195,7 +192,7 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
     if (draftTimeoutRef.current) clearTimeout(draftTimeoutRef.current);
 
     // Agendar salvamento do rascunho
-    const timer = setTimeout(() => {
+    draftTimeoutRef.current = setTimeout(() => {
       saveDraft({
         url,
         title,
@@ -212,7 +209,11 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
     }, 500);
 
     return () => {
-      if (draftTimeoutRef.current) clearTimeout(draftTimeoutRef.current);
+      const timeoutRef = draftTimeoutRef.current;
+      if (timeoutRef) {
+        clearTimeout(timeoutRef);
+      }
+      draftTimeoutRef.current = undefined;
     };
   }, [url, title, description, notes, selectedCategoryId, status, priority, dueDate, tags, favicon, ogImage, editingLink, saveDraft]);
 

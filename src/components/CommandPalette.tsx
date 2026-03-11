@@ -1,3 +1,5 @@
+/* eslint-disable react-refresh/only-export-components */
+
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   Dialog,

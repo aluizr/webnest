@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Star, ExternalLink, Pencil, Trash2, StickyNote, Flame, Sparkles, Clock3 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -400,26 +400,26 @@ export function LinkBoardView({ links, onToggleFavorite, onUpdateLink, onEdit, o
     setPresets((prev) => prev.map((item) => item.name === activePreset.name ? nextPreset : item));
   };
 
-  const isNew = (link: LinkItem) => {
+  const isNew = useCallback((link: LinkItem) => {
     const created = new Date(link.createdAt);
     if (Number.isNaN(created.getTime())) return false;
     const threshold = Math.max(1, curationRules.newDays) * 24 * 60 * 60 * 1000;
     return Date.now() - created.getTime() <= threshold;
-  };
+  }, [curationRules.newDays]);
 
-  const isTrending = (link: LinkItem) => {
+  const isTrending = useCallback((link: LinkItem) => {
     const created = new Date(link.createdAt);
     const recencyMs = Math.max(1, curationRules.trendingRecentDays) * 24 * 60 * 60 * 1000;
     const recent = !Number.isNaN(created.getTime()) && Date.now() - created.getTime() <= recencyMs;
     return (link.isFavorite && recent) || link.tags.length >= Math.max(1, curationRules.trendingMinTags);
-  };
+  }, [curationRules.trendingMinTags, curationRules.trendingRecentDays]);
 
-  const isFeatured = (link: LinkItem) => (
+  const isFeatured = useCallback((link: LinkItem) => (
     (curationRules.featuredUseHighPriority && link.priority === "high") ||
     (link.isFavorite && link.tags.length >= Math.max(0, curationRules.featuredFavoriteMinTags))
-  );
+  ), [curationRules.featuredFavoriteMinTags, curationRules.featuredUseHighPriority]);
 
-  const dueState = (dueDate?: string | null): "none" | "overdue" | "today" | "upcoming" => {
+  const dueState = useCallback((dueDate?: string | null): "none" | "overdue" | "today" | "upcoming" => {
     if (!dueDate) return "none";
     const due = new Date(dueDate);
     if (Number.isNaN(due.getTime())) return "none";
@@ -432,9 +432,9 @@ export function LinkBoardView({ links, onToggleFavorite, onUpdateLink, onEdit, o
     if (due < todayStart) return "overdue";
     if (due >= todayStart && due < tomorrow) return "today";
     return "upcoming";
-  };
+  }, []);
 
-  const applyColumnFilter = (items: LinkItem[], filter: BoardColumnFilter) => {
+  const applyColumnFilter = useCallback((items: LinkItem[], filter: BoardColumnFilter) => {
     if (filter === "favorites") return items.filter((link) => link.isFavorite);
     if (filter === "high") return items.filter((link) => link.priority === "high");
     if (filter === "urgent") {
@@ -444,9 +444,9 @@ export function LinkBoardView({ links, onToggleFavorite, onUpdateLink, onEdit, o
       });
     }
     return items;
-  };
+  }, [dueState]);
 
-  const matchesDueFilter = (link: LinkItem) => {
+  const matchesDueFilter = useCallback((link: LinkItem) => {
     if (dueFilter === "all") return true;
     if (dueFilter === "no_due") return !link.dueDate;
 
@@ -464,7 +464,7 @@ export function LinkBoardView({ links, onToggleFavorite, onUpdateLink, onEdit, o
     if (dueFilter === "7d") return diffDays >= 0 && diffDays <= 7;
     if (dueFilter === "30d") return diffDays >= 0 && diffDays <= 30;
     return true;
-  };
+  }, [dueFilter, dueState]);
 
   const toggleTag = (tag: string) => {
     setSelectedTags((prev) => prev.includes(tag) ? prev.filter((item) => item !== tag) : [...prev, tag]);
@@ -555,9 +555,9 @@ export function LinkBoardView({ links, onToggleFavorite, onUpdateLink, onEdit, o
     }
 
     return next;
-  }, [links, selectedCategory, selectedTags, tagMatchMode, statusFilter, priorityFilter, dueFilter, curationFilter]);
+  }, [links, selectedCategory, selectedTags, tagMatchMode, statusFilter, priorityFilter, curationFilter, matchesDueFilter, isFeatured, isNew, isTrending]);
 
-  const sortBySelection = (items: LinkItem[]) => {
+  const sortBySelection = useCallback((items: LinkItem[]) => {
     const next = [...items];
 
     if (sortBy === "alphabetical") {
@@ -579,7 +579,7 @@ export function LinkBoardView({ links, onToggleFavorite, onUpdateLink, onEdit, o
     }
 
     return next.sort((a, b) => (a.positionInStatus ?? a.position ?? 0) - (b.positionInStatus ?? b.position ?? 0));
-  };
+  }, [sortBy]);
 
   // Agrupar links por status
   const columns = useMemo(() => {
@@ -594,7 +594,7 @@ export function LinkBoardView({ links, onToggleFavorite, onUpdateLink, onEdit, o
       total: baseLinks.filter((link) => link.status === statusKey).length,
       filter: columnFilters[statusKey],
     }));
-  }, [baseLinks, columnFilters, sortBy]);
+  }, [baseLinks, columnFilters, applyColumnFilter, sortBySelection]);
 
   const hasColumnFilters = Object.values(columnFilters).some((filter) => filter !== "all");
   const hasActiveFilters = selectedCategory !== "all" || selectedTags.length > 0 || statusFilter !== "all" || priorityFilter !== "all" || dueFilter !== "all" || curationFilter !== "all" || sortBy !== "newest" || hasColumnFilters;

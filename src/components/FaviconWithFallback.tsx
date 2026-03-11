@@ -131,6 +131,7 @@ export function FaviconWithFallback({
  * Utilitário para obter a cor do avatar de um domínio.
  * Útil quando precisa da cor sem renderizar o componente.
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function getDomainColor(url: string) {
   return getAvatarData(url).color;
 }

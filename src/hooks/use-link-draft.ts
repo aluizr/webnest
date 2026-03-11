@@ -44,6 +44,13 @@ export function useLinkDraft() {
     }
   }, []);
 
+  // Limpar rascunho (chamado após envio bem-sucedido)
+  const clearDraft = useCallback(() => {
+    localStorage.removeItem(DRAFT_STORAGE_KEY);
+    setHasDraft(false);
+    setDraftData(null);
+  }, []);
+
   // Salvar rascunho com debounce
   const saveDraft = useCallback((data: LinkDraft) => {
     // Se a URL estiver vazia, não salva
@@ -58,7 +65,7 @@ export function useLinkDraft() {
     } catch (e) {
       console.error("Erro ao salvar rascunho:", e);
     }
-  }, []);
+  }, [clearDraft]);
 
   // Restaurar rascunho anterior
   const restoreDraft = useCallback((): LinkDraft | null => {
@@ -73,13 +80,6 @@ export function useLinkDraft() {
       console.error("Erro ao restaurar rascunho:", e);
       return null;
     }
-  }, []);
-
-  // Limpar rascunho (chamado após envio bem-sucedido)
-  const clearDraft = useCallback(() => {
-    localStorage.removeItem(DRAFT_STORAGE_KEY);
-    setHasDraft(false);
-    setDraftData(null);
   }, []);
 
   // Descartar rascunho (opção manual do usuário)

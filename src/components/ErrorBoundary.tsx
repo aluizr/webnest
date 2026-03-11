@@ -1,3 +1,5 @@
+/* eslint-disable react-refresh/only-export-components */
+
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { logger } from "@/lib/logger";
 import { TEXT_XS_CLASS } from "@/lib/utils";

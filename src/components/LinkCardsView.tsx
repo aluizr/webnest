@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Star, ExternalLink, Pencil, Trash2, StickyNote, GripVertical, Globe, Flame, Sparkles, Clock3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -434,7 +434,7 @@ export function LinkCardsView({
     setPresets((prev) => prev.map((item) => item.name === activePreset.name ? nextPreset : item));
   };
 
-  const dueState = (dueDate?: string | null): "none" | "overdue" | "today" | "upcoming" => {
+  const dueState = useCallback((dueDate?: string | null): "none" | "overdue" | "today" | "upcoming" => {
     if (!dueDate) return "none";
     const due = new Date(dueDate);
     if (Number.isNaN(due.getTime())) return "none";
@@ -447,9 +447,9 @@ export function LinkCardsView({
     if (due < todayStart) return "overdue";
     if (due >= todayStart && due < tomorrow) return "today";
     return "upcoming";
-  };
+  }, []);
 
-  const matchesDueFilter = (link: LinkItem) => {
+  const matchesDueFilter = useCallback((link: LinkItem) => {
     if (dueFilter === "all") return true;
     if (dueFilter === "no_due") return !link.dueDate;
 
@@ -467,7 +467,7 @@ export function LinkCardsView({
     if (dueFilter === "7d") return diffDays >= 0 && diffDays <= 7;
     if (dueFilter === "30d") return diffDays >= 0 && diffDays <= 30;
     return true;
-  };
+  }, [dueFilter, dueState]);
 
   const toggleTag = (tag: string) => {
     setSelectedTags((prev) => prev.includes(tag) ? prev.filter((item) => item !== tag) : [...prev, tag]);
@@ -483,24 +483,24 @@ export function LinkCardsView({
     if (kind === "tags") setSelectedTags([]);
   };
 
-  const isNew = (link: LinkItem) => {
+  const isNew = useCallback((link: LinkItem) => {
     const created = new Date(link.createdAt);
     if (Number.isNaN(created.getTime())) return false;
     const threshold = Math.max(1, curationRules.newDays) * 24 * 60 * 60 * 1000;
     return Date.now() - created.getTime() <= threshold;
-  };
+  }, [curationRules.newDays]);
 
-  const isTrending = (link: LinkItem) => {
+  const isTrending = useCallback((link: LinkItem) => {
     const created = new Date(link.createdAt);
     const recencyMs = Math.max(1, curationRules.trendingRecentDays) * 24 * 60 * 60 * 1000;
     const recent = !Number.isNaN(created.getTime()) && Date.now() - created.getTime() <= recencyMs;
     return (link.isFavorite && recent) || link.tags.length >= Math.max(1, curationRules.trendingMinTags);
-  };
+  }, [curationRules.trendingMinTags, curationRules.trendingRecentDays]);
 
-  const isFeatured = (link: LinkItem) => (
+  const isFeatured = useCallback((link: LinkItem) => (
     (curationRules.featuredUseHighPriority && link.priority === "high") ||
     (link.isFavorite && link.tags.length >= Math.max(0, curationRules.featuredFavoriteMinTags))
-  );
+  ), [curationRules.featuredFavoriteMinTags, curationRules.featuredUseHighPriority]);
 
   const categoryCounts = useMemo(() => {
     const map = new Map<string, number>();
@@ -575,7 +575,7 @@ export function LinkCardsView({
     }
 
     return next;
-  }, [links, selectedCategory, selectedTags, tagMatchMode, statusFilter, priorityFilter, dueFilter, curationFilter, sortBy]);
+  }, [links, selectedCategory, selectedTags, tagMatchMode, statusFilter, priorityFilter, curationFilter, sortBy, matchesDueFilter, isFeatured, isNew, isTrending]);
 
   const visibleTags = maxTags[cardSize];
   const dragEnabled = Boolean(onDragStart);
