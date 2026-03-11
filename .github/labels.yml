@@ -1,59 +1,59 @@
 - name: bug
-  color: d73a4a
+  color: "d73a4a"
   description: Defects or broken behavior.
 
 - name: enhancement
-  color: a2eeef
+  color: "a2eeef"
   description: New capability or improvement.
 
 - name: docs
-  color: 0075ca
+  color: "0075ca"
   description: Documentation-only changes.
 
 - name: release
-  color: 5319e7
+  color: "5319e7"
   description: Release planning and execution tasks.
 
 - name: observability
-  color: 1d76db
+  color: "1d76db"
   description: Logging, metrics, diagnostics, and runbook updates.
 
 - name: qa
-  color: fbca04
+  color: "fbca04"
   description: Validation and regression-focused tasks.
 
 - name: p0
-  color: b60205
+  color: "b60205"
   description: Critical impact, immediate action.
 
 - name: p1
-  color: d93f0b
+  color: "d93f0b"
   description: High priority, near-term execution.
 
 - name: p2
-  color: fbca04
+  color: "fbca04"
   description: Normal priority, planned execution.
 
 - name: sprint
-  color: c2e0c6
+  color: "c2e0c6"
   description: Sprint execution and tracking items.
 
 - name: frontend
-  color: 0e8a16
+  color: "0e8a16"
   description: UI, UX, and client-side behavior.
 
 - name: blocked
-  color: 000000
+  color: "000000"
   description: Work cannot proceed due to dependency or incident.
 
 - name: ready
-  color: 0e8a16
+  color: "0e8a16"
   description: Scope is clear and ready for execution.
 
 - name: in-progress
-  color: 0052cc
+  color: "0052cc"
   description: Work is actively being implemented.
 
 - name: needs-review
-  color: f9d0c4
+  color: "f9d0c4"
   description: Waiting for review or sign-off.
