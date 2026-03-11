@@ -358,8 +358,8 @@ export function AppSidebar({
               } ${
                 dropTargetCatId === cat.id && draggedCatId
                   ? dropPosition === "top"
-                    ? "border-t-2 border-primary"
-                    : "border-b-2 border-primary"
+                    ? "border-t-2 border-primary shadow-[inset_0_2px_0_hsl(var(--primary)/0.45)]"
+                    : "border-b-2 border-primary shadow-[inset_0_-2px_0_hsl(var(--primary)/0.45)]"
                   : ""
               } ${
                 draggedCatId === cat.id ? "opacity-40" : ""
@@ -372,6 +372,12 @@ export function AppSidebar({
               }`}
               style={{ paddingLeft: `${depth * 16 + 8}px` }}
             >
+              {dropTargetCat === fullName && (
+                <span className="mr-1 rounded border border-primary/40 bg-primary/15 px-1 py-0 text-[9px] font-semibold uppercase tracking-wide text-primary">
+                  Soltar link
+                </span>
+              )}
+
               {/* Drag handle */}
               <GripVertical className="h-3 w-3 opacity-50 group-hover/cat:opacity-80 cursor-grab shrink-0" />
 

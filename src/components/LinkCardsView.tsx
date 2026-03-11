@@ -998,6 +998,11 @@ export function LinkCardsView({
             {isDropZone && dragDirection === "below" && (
               <div className="absolute bottom-0 left-2 right-2 h-[3px] bg-primary rounded-full animate-pulse shadow-[0_0_8px_hsl(var(--primary)/0.6)] z-10" />
             )}
+            {isDropZone && (
+              <div className="pointer-events-none absolute inset-x-3 top-1/2 z-10 -translate-y-1/2 rounded-md border border-primary/45 bg-primary/14 px-2 py-1 text-center text-[10px] font-medium text-primary shadow-sm backdrop-blur-[1px]">
+                {dragDirection === "above" ? "Solte acima" : "Solte abaixo"}
+              </div>
+            )}
 
             {/* Cover image area */}
             <div className={`relative ${coverHeight[cardSize]} bg-muted/40 overflow-hidden`}>

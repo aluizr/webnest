@@ -970,11 +970,12 @@ export function LinkBoardView({ links, onToggleFavorite, onUpdateLink, onEdit, o
       <div className="flex gap-4 overflow-x-auto pb-4 -mx-3 px-3 md:-mx-6 md:px-6 snap-x">
       {columns.map((column) => {
         const allLinks = column.links;
+        const isColumnDropTarget = dropStatus === column.key && Boolean(draggedLinkId) && canBoardDrag;
         return (
         <div
           key={column.key}
-          className={`flex-shrink-0 w-72 snap-start rounded-lg transition-colors ${
-            dropStatus === column.key ? "bg-primary/5" : ""
+          className={`relative flex-shrink-0 w-72 snap-start rounded-lg transition-all ${
+            isColumnDropTarget ? "bg-primary/8 ring-1 ring-primary/45 shadow-[0_0_0_1px_hsl(var(--primary)/0.2)]" : ""
           }`}
           onDragOver={(e) => {
             if (!canBoardDrag) return;
@@ -1006,6 +1007,12 @@ export function LinkBoardView({ links, onToggleFavorite, onUpdateLink, onEdit, o
             setDropStatus(null);
           }}
         >
+          {isColumnDropTarget && (
+            <div className="pointer-events-none absolute inset-x-2 top-1 z-20 rounded-md border border-primary/40 bg-primary/12 px-2 py-1 text-[10px] font-medium text-primary shadow-sm">
+              Solte para mover para {column.name}
+            </div>
+          )}
+
           {/* Column header */}
           <div className="flex items-center justify-between mb-3 px-1">
             <Badge variant={column.badgeVariant} className={`${COMPACT_BADGE_CLASS} shrink-0`}>
