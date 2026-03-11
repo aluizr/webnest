@@ -29,6 +29,7 @@ Concluir validacao final e preparar publicacao com risco controlado.
 - Resultado testes: `pass (96/96)`
 - Resultado build: `pass`
 - Link para release notes: `docs/RELEASE_NOTES_0.14.2.md`
+- Link para pos-release checklist: `docs/POST_RELEASE_CHECKLIST.md`
 
 ## Go/No-Go
 - Decisao: `GO`

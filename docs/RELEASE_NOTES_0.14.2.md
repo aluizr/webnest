@@ -40,3 +40,4 @@ This release closes the sprint execution for stability, drag-and-drop UX, inline
 ## Related Artifacts
 - Changelog: CHANGELOG.md
 - Observability runbook: docs/OBSERVABILITY_RUNBOOK.md
+- Post-release checklist: docs/POST_RELEASE_CHECKLIST.md
