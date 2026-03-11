@@ -59,3 +59,9 @@ If needed, keep this set minimal and explicit:
 - Repository maintainers can create or retire labels.
 - If a new label is proposed, document rationale in the related issue.
 - Remove obsolete labels to avoid drift.
+
+## Sync automation
+
+- Label catalog source of truth: .github/labels.yml
+- Sync workflow: .github/workflows/label-sync.yml
+- Trigger manually in GitHub Actions: Label Sync -> Run workflow
