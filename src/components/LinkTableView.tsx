@@ -285,26 +285,43 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
     const rawValue = value.trim();
 
     if (cell.column === "title") {
-      applyUpdateWithUndo(link, { title: rawValue }, "Titulo", { title: link.title || "" });
+      const previous = link.title || "";
+      if (rawValue !== previous) {
+        applyUpdateWithUndo(link, { title: rawValue }, "Titulo", { title: previous });
+      }
     }
 
     if (cell.column === "description") {
-      applyUpdateWithUndo(link, { description: rawValue }, "Descricao", { description: link.description || "" });
+      const previous = link.description || "";
+      if (rawValue !== previous) {
+        applyUpdateWithUndo(link, { description: rawValue }, "Descricao", { description: previous });
+      }
     }
 
     if (cell.column === "category") {
-      applyUpdateWithUndo(link, { category: rawValue }, "Categoria", { category: link.category || "" });
+      const previous = link.category || "";
+      if (rawValue !== previous) {
+        applyUpdateWithUndo(link, { category: rawValue }, "Categoria", { category: previous });
+      }
     }
 
     if (cell.column === "tags") {
       const tags = rawValue
         ? rawValue.split(",").map((tag) => tag.trim()).filter(Boolean)
         : [];
-      applyUpdateWithUndo(link, { tags }, "Tags", { tags: link.tags });
+      const previous = link.tags;
+      const isSame = tags.length === previous.length && tags.every((tag, index) => tag === previous[index]);
+      if (!isSame) {
+        applyUpdateWithUndo(link, { tags }, "Tags", { tags: previous });
+      }
     }
 
     if (cell.column === "dueDate") {
-      applyUpdateWithUndo(link, { dueDate: rawValue || null }, "Prazo", { dueDate: link.dueDate || null });
+      const nextDueDate = rawValue || null;
+      const previous = link.dueDate || null;
+      if (nextDueDate !== previous) {
+        applyUpdateWithUndo(link, { dueDate: nextDueDate }, "Prazo", { dueDate: previous });
+      }
     }
 
     setEditingCell(null);
@@ -346,12 +363,14 @@ export function LinkTableView({ links, onToggleFavorite, onUpdateLink, onEdit, o
 
     if (event.key === "Enter") {
       event.preventDefault();
+      skipNextBlurCommitRef.current = true;
       commitInlineEdit(editingCell, editingValue);
       return;
     }
 
     if (event.key === "Escape") {
       event.preventDefault();
+      skipNextBlurCommitRef.current = true;
       cancelInlineEdit();
       return;
     }
