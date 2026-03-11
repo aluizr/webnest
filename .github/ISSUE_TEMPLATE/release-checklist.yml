@@ -1,0 +1,113 @@
+name: Release checklist
+description: Standard release issue with quality gate, Go/No-Go, and post-release checks
+labels: [release]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to run and document a production release with controlled risk.
+
+  - type: input
+    id: version
+    attributes:
+      label: Release version
+      description: Target application version
+      placeholder: e.g. 0.14.2
+    validations:
+      required: true
+
+  - type: input
+    id: release_window
+    attributes:
+      label: Release window
+      description: Planned release date/time with timezone
+      placeholder: e.g. 2026-03-12 20:00 -03:00
+    validations:
+      required: true
+
+  - type: input
+    id: owner
+    attributes:
+      label: Release owner
+      description: Person accountable for Go/No-Go decision
+      placeholder: e.g. @username
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope summary
+      description: What is included in this release?
+      placeholder: Main features, fixes, and risks
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: quality_gate
+    attributes:
+      label: Quality gate
+      description: Confirm all technical gates are green before release
+      options:
+        - label: Lint passed
+        - label: Tests passed
+        - label: Build passed
+        - label: Smoke checks passed (/, /auth, /robots.txt)
+    validations:
+      required: true
+
+  - type: textarea
+    id: quality_evidence
+    attributes:
+      label: Quality evidence
+      description: Paste concise command results
+      placeholder: |
+        lint: pass
+        tests: pass (96/96)
+        build: pass
+        smoke: / 200, /auth 200, /robots.txt 200
+      render: shell
+    validations:
+      required: true
+
+  - type: dropdown
+    id: go_no_go
+    attributes:
+      label: Go / No-Go decision
+      options:
+        - GO
+        - NO-GO
+    validations:
+      required: true
+
+  - type: textarea
+    id: decision_notes
+    attributes:
+      label: Decision notes
+      description: Why this decision was taken
+      placeholder: Include blockers, mitigations, and next steps
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: post_release
+    attributes:
+      label: Post-release checklist
+      description: Validate immediate production health
+      options:
+        - label: Core routes reachable after deployment
+        - label: Auth flow verified
+        - label: No critical error spikes in observability
+        - label: Team communication sent
+        - label: Follow-up monitoring owner assigned
+
+  - type: textarea
+    id: links
+    attributes:
+      label: Related artifacts
+      description: Link release notes, changelog, runbook, and checklist docs
+      placeholder: |
+        - Release notes: docs/RELEASE_NOTES_x.y.z.md
+        - Changelog: CHANGELOG.md
+        - Observability runbook: docs/OBSERVABILITY_RUNBOOK.md
+        - Post-release checklist: docs/POST_RELEASE_CHECKLIST.md

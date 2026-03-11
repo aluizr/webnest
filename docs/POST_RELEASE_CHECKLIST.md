@@ -59,3 +59,4 @@ Use this summary in team channels:
 - Changelog: CHANGELOG.md
 - Release notes: docs/RELEASE_NOTES_0.14.2.md
 - Observability runbook: docs/OBSERVABILITY_RUNBOOK.md
+- Reusable release issue template: .github/ISSUE_TEMPLATE/release-checklist.yml
