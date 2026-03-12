@@ -162,22 +162,22 @@ docker-compose -f docker-compose.dev.yml up
 ### Staging/QA
 
 ```bash
-docker build -f Dockerfile.nginx -t registry.example.com/gems:staging .
-docker push registry.example.com/gems:staging
+docker build -f Dockerfile.nginx -t registry.example.com/webnest:staging .
+docker push registry.example.com/webnest:staging
 ```
 
 ### Production em Servidor
 
 ```bash
 # Pull imagem
-docker pull registry.example.com/gems:latest
+docker pull registry.example.com/webnest:latest
 
 # Executar com restart policy
 docker run -d \
   --restart unless-stopped \
   -p 80:80 \
-  --name gems-prod \
-  registry.example.com/gems:latest
+  --name webnest-prod \
+  registry.example.com/webnest:latest
 ```
 
 ## 🔍 Verificação e Debug
@@ -227,7 +227,7 @@ docker push seu-usuario/webnest:latest
 ```bash
 docker tag webnest:latest registry.example.com/webnest:latest
 docker login registry.example.com
-docker push registry.example.com/gems:latest
+docker push registry.example.com/webnest:latest
 ```
 
 ## ☁️ Plataformas de Deploy Recomendadas
