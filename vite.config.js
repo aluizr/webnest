@@ -32,22 +32,43 @@ export default defineConfig(({ mode }) => ({
       {
         name: "og-image-proxy",
         configureServer(server) {
-          // Proxy /og-proxy?url=<encoded> → fetches external image with CORP: cross-origin
           server.middlewares.use("/og-proxy", (req, res) => {
-            const rawUrl = new URL(req.url, "http://localhost").searchParams.get("url");
+            // req.url here is just the query string part: "?url=..."
+            const qs = req.url.startsWith("?") ? req.url : `?${req.url}`;
+            const rawUrl = new URLSearchParams(qs.slice(1)).get("url");
             if (!rawUrl) { res.statusCode = 400; res.end("Missing url"); return; }
-            try {
-              const target = new URL(rawUrl);
+
+            const fetchUrl = (urlStr, redirectCount = 0) => {
+              if (redirectCount > 5) { res.statusCode = 502; res.end("Too many redirects"); return; }
+              let target;
+              try { target = new URL(urlStr); } catch { res.statusCode = 400; res.end("Invalid url"); return; }
               const client = target.protocol === "https:" ? https : http;
-              client.get(target.toString(), (upstream) => {
+              const options = {
+                hostname: target.hostname,
+                path: target.pathname + target.search,
+                headers: { "User-Agent": "Mozilla/5.0 (compatible; WebNest/1.0)" },
+              };
+              client.get(options, (upstream) => {
+                // Follow redirects
+                if ([301, 302, 303, 307, 308].includes(upstream.statusCode) && upstream.headers.location) {
+                  upstream.resume();
+                  const next = upstream.headers.location.startsWith("http")
+                    ? upstream.headers.location
+                    : `${target.origin}${upstream.headers.location}`;
+                  return fetchUrl(next, redirectCount + 1);
+                }
                 res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+                res.setHeader("Access-Control-Allow-Origin", "*");
                 res.setHeader("Content-Type", upstream.headers["content-type"] || "image/jpeg");
-                res.statusCode = upstream.statusCode || 200;
+                res.statusCode = 200;
                 upstream.pipe(res);
-              }).on("error", () => { res.statusCode = 502; res.end("Proxy error"); });
-            } catch {
-              res.statusCode = 400; res.end("Invalid url");
-            }
+              }).on("error", (err) => {
+                console.error("[og-proxy] error:", err.message);
+                res.statusCode = 502; res.end("Proxy error");
+              });
+            };
+
+            fetchUrl(rawUrl);
           });
         },
       },
