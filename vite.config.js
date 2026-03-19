@@ -21,6 +21,8 @@ export default defineConfig(({ mode }) => ({
       "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
       "Referrer-Policy": "strict-origin-when-cross-origin",
       "Permissions-Policy": "geolocation=(), microphone=(), camera=()",
+      "Cross-Origin-Resource-Policy": "cross-origin",
+      "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
     },
   },
   plugins: [react()],
