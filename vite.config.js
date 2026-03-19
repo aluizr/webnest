@@ -33,9 +33,7 @@ export default defineConfig(({ mode }) => ({
         name: "og-image-proxy",
         configureServer(server) {
           server.middlewares.use("/og-proxy", (req, res) => {
-            // req.url here is just the query string part: "?url=..."
-            const qs = req.url.startsWith("?") ? req.url : `?${req.url}`;
-            const rawUrl = new URLSearchParams(qs.slice(1)).get("url");
+            const rawUrl = new URL(req.url, "http://localhost:8080").searchParams.get("url");
             if (!rawUrl) { res.statusCode = 400; res.end("Missing url"); return; }
 
             const fetchUrl = (urlStr, redirectCount = 0) => {
@@ -46,7 +44,15 @@ export default defineConfig(({ mode }) => ({
               const options = {
                 hostname: target.hostname,
                 path: target.pathname + target.search,
-                headers: { "User-Agent": "Mozilla/5.0 (compatible; WebNest/1.0)" },
+                headers: {
+                  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                  "Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+                  "Accept-Language": "en-US,en;q=0.9",
+                  "Referer": target.origin,
+                  "sec-fetch-dest": "image",
+                  "sec-fetch-mode": "no-cors",
+                  "sec-fetch-site": "cross-site",
+                },
               };
               client.get(options, (upstream) => {
                 // Follow redirects
