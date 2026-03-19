@@ -55,7 +55,7 @@ export function LinkPreview({ metadata, url }: LinkPreviewProps) {
       <div className="flex items-start gap-3">
         {metadata.image ? (
           <img
-            src={metadata.image}
+            src={`/og-proxy?url=${encodeURIComponent(metadata.image!)}`}
             alt="Preview"
             className="h-20 w-20 object-cover rounded border"
             onError={(e) => {

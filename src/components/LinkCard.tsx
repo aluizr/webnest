@@ -149,7 +149,7 @@ export function LinkCard({
       {link.ogImage && (
         <div className="w-full h-24 overflow-hidden bg-muted">
           <img
-            src={link.ogImage}
+            src={`/og-proxy?url=${encodeURIComponent(link.ogImage)}`}
             alt=""
             loading="lazy"
             className="w-full h-full object-cover"

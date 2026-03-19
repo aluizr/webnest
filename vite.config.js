@@ -1,6 +1,8 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
+import https from "https";
+import http from "http";
 
 export default defineConfig(({ mode }) => ({
   server: {
@@ -25,7 +27,31 @@ export default defineConfig(({ mode }) => ({
       "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
     },
   },
-  plugins: [react()],
+    plugins: [
+      react(),
+      {
+        name: "og-image-proxy",
+        configureServer(server) {
+          // Proxy /og-proxy?url=<encoded> → fetches external image with CORP: cross-origin
+          server.middlewares.use("/og-proxy", (req, res) => {
+            const rawUrl = new URL(req.url, "http://localhost").searchParams.get("url");
+            if (!rawUrl) { res.statusCode = 400; res.end("Missing url"); return; }
+            try {
+              const target = new URL(rawUrl);
+              const client = target.protocol === "https:" ? https : http;
+              client.get(target.toString(), (upstream) => {
+                res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+                res.setHeader("Content-Type", upstream.headers["content-type"] || "image/jpeg");
+                res.statusCode = upstream.statusCode || 200;
+                upstream.pipe(res);
+              }).on("error", () => { res.statusCode = 502; res.end("Proxy error"); });
+            } catch {
+              res.statusCode = 400; res.end("Invalid url");
+            }
+          });
+        },
+      },
+    ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
