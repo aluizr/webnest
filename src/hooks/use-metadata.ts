@@ -64,8 +64,8 @@ async function fetchWithTimeout(input: RequestInfo | URL, init?: RequestInit, ti
 function normalizeUrl(url: string): string {
   try {
     const u = new URL(url);
-    // Remove trailing slash, lowercase host
-    return u.origin.toLowerCase() + u.pathname.replace(/\/+$/, "") + u.search + u.hash;
+    // Remove trailing slash, lowercase host, strip hash (never sent to server)
+    return u.origin.toLowerCase() + u.pathname.replace(/\/+$/, "") + u.search;
   } catch {
     return url.trim().toLowerCase();
   }
@@ -252,7 +252,9 @@ export function useMetadata() {
       }
 
       // Validate one more time
-      new URL(normalizedUrl);
+      const parsedUrl = new URL(normalizedUrl);
+      // Strip hash — never sent to server, causes cache misses
+      normalizedUrl = parsedUrl.origin + parsedUrl.pathname + parsedUrl.search;
 
       // Try primary API - Microlink
       let result = await fetchFromMicrolink(normalizedUrl);
