@@ -104,39 +104,24 @@ async function fetchFromMicrolink(url: string): Promise<LinkMetadata | null> {
   try {
     const microlinkUrl = new URL("https://api.microlink.io");
     microlinkUrl.searchParams.set("url", url);
+    microlinkUrl.searchParams.set("screenshot", "true");
 
     const response = await fetchWithTimeout(microlinkUrl.toString(), {
       method: "GET",
-      headers: {
-        Accept: "application/json",
-      },
+      headers: { Accept: "application/json" },
     });
 
-    // If 400, endpoint doesn't support this URL - return null for fallback
-    if (response.status === 400) {
-      return null;
-    }
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
+    if (response.status === 400) return null;
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
     const data = await response.json();
-
-    if (!data.data) {
-      return null;
-    }
+    if (!data.data) return null;
 
     const title = data.data.title || null;
+    if (title && /^error:/i.test(title.trim())) return null;
 
-    // Microlink sometimes returns error pages as valid responses
-    if (title && /^error:/i.test(title.trim())) {
-      return null;
-    }
-
-    // Use screenshot as image fallback when no OG image is available
-    const image = data.data.image?.url ||
-      `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url`;
+    // Use OG image first, fall back to screenshot
+    const image = data.data.image?.url || data.data.screenshot?.url || null;
 
     return {
       title,
