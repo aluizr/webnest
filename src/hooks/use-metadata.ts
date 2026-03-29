@@ -134,10 +134,14 @@ async function fetchFromMicrolink(url: string): Promise<LinkMetadata | null> {
       return null;
     }
 
+    // Use screenshot as image fallback when no OG image is available
+    const image = data.data.image?.url ||
+      `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url`;
+
     return {
       title,
       description: data.data.description || null,
-      image: data.data.image?.url || null,
+      image,
       favicon: data.data.logo?.url || null,
       loading: false,
       error: null,
