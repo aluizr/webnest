@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => ({
       allowedHeaders: ["Content-Type", "Authorization", "X-CSRF-Token"],
     },
     headers: {
-      "Content-Security-Policy": `default-src 'self'; script-src 'self' 'wasm-unsafe-eval' ${mode === "development" ? "'unsafe-inline'" : "'sha256-Z2/iFzh9VMlVkEOar1f/oSHWwQk3ve1qk/C2WdsC4Xk='"}; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://noembed.com https://api.microlink.io; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests`,
+      "Content-Security-Policy": `default-src 'self'; script-src 'self' 'wasm-unsafe-eval' ${mode === "development" ? "'unsafe-inline'" : "'sha256-Z2/iFzh9VMlVkEOar1f/oSHWwQk3ve1qk/C2WdsC4Xk='"}; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://noembed.com https://api.microlink.io https://*.microlink.io; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests`,
       "X-Frame-Options": "DENY",
       "X-Content-Type-Options": "nosniff",
       "X-XSS-Protection": "1; mode=block",
