@@ -136,6 +136,66 @@ export function LinkDiagnostics({ links, onUpdateLink }: LinkDiagnosticsProps) {
     }
   };
 
+  const cleanProxyUrl = (imageUrl: string): string => {
+    if (!imageUrl) return imageUrl;
+    
+    try {
+      const url = new URL(imageUrl);
+      
+      // Next.js Image Optimization: /_next/image?url=...
+      if (url.pathname.includes('/_next/image')) {
+        const originalUrl = url.searchParams.get('url');
+        if (originalUrl) {
+          return originalUrl.startsWith('http') ? originalUrl : imageUrl;
+        }
+      }
+      
+      // Vercel Image Optimization
+      if (url.pathname.includes('/_vercel/image')) {
+        const originalUrl = url.searchParams.get('url');
+        if (originalUrl) {
+          return originalUrl.startsWith('http') ? originalUrl : imageUrl;
+        }
+      }
+      
+      return imageUrl;
+    } catch {
+      return imageUrl;
+    }
+  };
+
+  const fixProxyUrls = async () => {
+    const proxyLinks = results.filter(
+      (r) => r.hasOgImage && 
+             (r.link.ogImage.includes('/_next/image') || 
+              r.link.ogImage.includes('/_vercel/image') ||
+              r.link.ogImage.includes('/cdn-cgi/image'))
+    );
+    
+    if (proxyLinks.length === 0) {
+      toast.info("Nenhuma URL de proxy encontrada");
+      return;
+    }
+
+    toast.info(`Limpando ${proxyLinks.length} URLs de proxy...`);
+    
+    for (const result of proxyLinks) {
+      const cleanedUrl = cleanProxyUrl(result.link.ogImage);
+      if (cleanedUrl !== result.link.ogImage) {
+        setFixing((prev) => new Set(prev).add(result.link.id));
+        onUpdateLink(result.link.id, { ogImage: cleanedUrl });
+        setFixing((prev) => {
+          const next = new Set(prev);
+          next.delete(result.link.id);
+          return next;
+        });
+      }
+    }
+    
+    await runDiagnostics();
+    toast.success("URLs de proxy limpas!");
+  };
+
   const forceProxy = async (linkId: string, ogImageUrl: string) => {
     setFixing((prev) => new Set(prev).add(linkId));
     
@@ -216,6 +276,7 @@ export function LinkDiagnostics({ links, onUpdateLink }: LinkDiagnosticsProps) {
     missingThumb: results.filter((r) => !r.hasOgImage || r.ogImageStatus === "error").length,
     missingFavicon: results.filter((r) => !r.hasFavicon || r.faviconStatus === "error").length,
     corsErrors: results.filter((r) => r.hasOgImage && r.ogImageStatus === "error" && !r.link.ogImage.startsWith("/og-proxy")).length,
+    proxyUrls: results.filter((r) => r.hasOgImage && (r.link.ogImage.includes('/_next/image') || r.link.ogImage.includes('/_vercel/image') || r.link.ogImage.includes('/cdn-cgi/image'))).length,
     allGood: results.filter((r) => r.hasOgImage && r.ogImageStatus === "success" && r.hasFavicon && r.faviconStatus === "success").length,
   };
 
@@ -229,10 +290,21 @@ export function LinkDiagnostics({ links, onUpdateLink }: LinkDiagnosticsProps) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button onClick={runDiagnostics} disabled={checking || links.length === 0}>
               {checking ? "Verificando..." : "Iniciar Diagnóstico"}
             </Button>
+            
+            {results.length > 0 && stats.proxyUrls > 0 && (
+              <Button 
+                onClick={fixProxyUrls} 
+                disabled={fixing.size > 0}
+                variant="default"
+              >
+                <Wand2 className="h-4 w-4 mr-2" />
+                Limpar Proxies ({stats.proxyUrls})
+              </Button>
+            )}
             
             {results.length > 0 && stats.corsErrors > 0 && (
               <Button 
@@ -259,7 +331,7 @@ export function LinkDiagnostics({ links, onUpdateLink }: LinkDiagnosticsProps) {
 
           {results.length > 0 && (
             <>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
                 <Card>
                   <CardContent className="pt-6">
                     <div className="text-2xl font-bold">{stats.total}</div>
@@ -276,6 +348,12 @@ export function LinkDiagnostics({ links, onUpdateLink }: LinkDiagnosticsProps) {
                   <CardContent className="pt-6">
                     <div className="text-2xl font-bold text-amber-600">{stats.missingThumb}</div>
                     <div className="text-xs text-muted-foreground">Sem thumbnail</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-2xl font-bold text-purple-600">{stats.proxyUrls}</div>
+                    <div className="text-xs text-muted-foreground">URLs de proxy</div>
                   </CardContent>
                 </Card>
                 <Card>
