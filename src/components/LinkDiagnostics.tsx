@@ -32,8 +32,11 @@ export function LinkDiagnostics({ links, onUpdateLink }: LinkDiagnosticsProps) {
   const checkImage = async (url: string): Promise<{ status: "success" | "error"; error?: string }> => {
     if (!url) return { status: "error", error: "URL vazia" };
 
+    // Don't use crossOrigin to avoid forcing CORS checks
+    // Images that fail to load might be CORS issues
     return new Promise((resolve) => {
       const img = document.createElement("img");
+      
       const timeout = setTimeout(() => {
         img.src = "";
         resolve({ status: "error", error: "Timeout (5s)" });
@@ -44,19 +47,12 @@ export function LinkDiagnostics({ links, onUpdateLink }: LinkDiagnosticsProps) {
         resolve({ status: "success" });
       };
 
-      img.onerror = (e) => {
+      img.onerror = () => {
         clearTimeout(timeout);
-        // Try to detect CORS/CORP errors
-        const errorMsg = e.toString();
-        if (errorMsg.includes("CORS") || errorMsg.includes("cross-origin")) {
-          resolve({ status: "error", error: "CORS/CORP bloqueado" });
-        } else {
-          resolve({ status: "error", error: "Falha ao carregar" });
-        }
+        // Most image loading failures are due to CORS or 404
+        resolve({ status: "error", error: "Falha ao carregar (CORS?)" });
       };
 
-      // Set crossOrigin to detect CORS issues
-      img.crossOrigin = "anonymous";
       img.src = url;
     });
   };
@@ -173,12 +169,11 @@ export function LinkDiagnostics({ links, onUpdateLink }: LinkDiagnosticsProps) {
     const corsLinks = results.filter(
       (r) => r.hasOgImage && 
              r.ogImageStatus === "error" && 
-             !r.link.ogImage.startsWith("/og-proxy") &&
-             (r.ogImageError?.includes("CORS") || r.ogImageError?.includes("bloqueado") || r.ogImageError?.includes("Falha"))
+             !r.link.ogImage.startsWith("/og-proxy")
     );
     
     if (corsLinks.length === 0) {
-      toast.info("Nenhuma imagem com erro de CORS encontrada");
+      toast.info("Nenhuma imagem com erro encontrada");
       return;
     }
 
@@ -188,7 +183,7 @@ export function LinkDiagnostics({ links, onUpdateLink }: LinkDiagnosticsProps) {
       await forceProxy(result.link.id, result.link.ogImage);
     }
     
-    toast.success("Correção de CORS concluída!");
+    toast.success("Correção via proxy concluída!");
   };
 
   const fixAllBroken = async () => {
@@ -246,7 +241,7 @@ export function LinkDiagnostics({ links, onUpdateLink }: LinkDiagnosticsProps) {
                 variant="default"
               >
                 <Wand2 className="h-4 w-4 mr-2" />
-                Corrigir CORS ({stats.corsErrors})
+                Forçar Proxy ({stats.corsErrors})
               </Button>
             )}
             
@@ -286,7 +281,7 @@ export function LinkDiagnostics({ links, onUpdateLink }: LinkDiagnosticsProps) {
                 <Card>
                   <CardContent className="pt-6">
                     <div className="text-2xl font-bold text-red-600">{stats.corsErrors}</div>
-                    <div className="text-xs text-muted-foreground">Erros CORS</div>
+                    <div className="text-xs text-muted-foreground">Imagens quebradas</div>
                   </CardContent>
                 </Card>
                 <Card>
@@ -350,9 +345,7 @@ export function LinkDiagnostics({ links, onUpdateLink }: LinkDiagnosticsProps) {
                               <Badge variant={result.ogImageStatus === "success" ? "default" : result.ogImageStatus === "error" ? "destructive" : "secondary"}>
                                 <Image className="h-3 w-3 mr-1" />
                                 Thumb: {result.hasOgImage ? (
-                                  result.ogImageStatus === "success" ? "OK" : 
-                                  (result.ogImageError?.includes("CORS") || result.ogImageError?.includes("bloqueado")) ? "CORS ⚠️" :
-                                  result.ogImageError || "Erro"
+                                  result.ogImageStatus === "success" ? "OK" : result.ogImageError || "Erro"
                                 ) : "Vazio"}
                               </Badge>
                               <Badge variant={result.faviconStatus === "success" ? "default" : result.faviconStatus === "error" ? "destructive" : "secondary"}>
