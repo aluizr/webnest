@@ -1,4 +1,6 @@
 import { useState, useCallback } from "react";
+import { fetchNotionPageMetadata } from "@/lib/notion-api";
+import { isNotionUrl } from "@/lib/notion-utils";
 
 export interface LinkMetadata {
   title: string | null;
@@ -7,7 +9,7 @@ export interface LinkMetadata {
   favicon: string | null;
   loading: boolean;
   error: string | null;
-  source: "microlink" | "noembed" | "local" | null;
+  source: "notion" | "microlink" | "noembed" | "local" | null;
 }
 
 // LRU cache with bounded size for metadata requests
@@ -94,6 +96,41 @@ function buildLocalFallback(url: string): LinkMetadata {
       error: null,
       source: null,
     };
+  }
+}
+
+/**
+ * Try to fetch metadata from Notion API
+ * This handles Notion pages when an API key is available
+ */
+async function fetchFromNotion(url: string): Promise<LinkMetadata | null> {
+  // Try to get Notion API key from localStorage
+  const notionApiKey = localStorage.getItem("webnest:notion_api_key");
+  if (!notionApiKey) {
+    console.debug("No Notion API key configured, skipping Notion fetch");
+    return null;
+  }
+
+  // Only try Notion API for Notion URLs
+  if (!isNotionUrl(url)) {
+    return null;
+  }
+
+  try {
+    const notionMetadata = await fetchNotionPageMetadata(url, notionApiKey);
+    if (!notionMetadata) {
+      return null;
+    }
+
+    return {
+      ...notionMetadata,
+      loading: false,
+      error: null,
+      source: "notion",
+    };
+  } catch (err) {
+    console.debug("Notion API error:", err);
+    return null;
   }
 }
 
@@ -254,8 +291,13 @@ export function useMetadata() {
         return cached;
       }
 
+      // Try Notion API first for Notion URLs (if API key is configured)
+      let result = await fetchFromNotion(normalizedUrl);
+
       // Try primary API - Microlink
-      let result = await fetchFromMicrolink(normalizedUrl);
+      if (!result) {
+        result = await fetchFromMicrolink(normalizedUrl);
+      }
 
       // Third fallback for common providers (YouTube, Vimeo, etc.)
       if (!result) {

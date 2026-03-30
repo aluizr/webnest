@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback, useMemo, useEffect, lazy, Suspense } from "react";
-import { Plus, Download, Upload, LogOut, BarChart3, Clock, Command, Trash2, ShieldCheck } from "lucide-react";
+import { Plus, Download, Upload, LogOut, BarChart3, Clock, Command, Trash2, ShieldCheck, Settings } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { NotionSettingsDialog } from "@/components/NotionSettingsDialog";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { LinkCard } from "@/components/LinkCard";
@@ -101,6 +102,7 @@ const Index = ({ user, onSignOut }: IndexProps) => {
   const [commandOpen, setCommandOpen] = useState(false);
   const [trashOpen, setTrashOpen] = useState(false);
   const [linkCheckerOpen, setLinkCheckerOpen] = useState(false);
+  const [notionSettingsOpen, setNotionSettingsOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -562,6 +564,9 @@ const Index = ({ user, onSignOut }: IndexProps) => {
               <Button variant="outline" size="icon" onClick={() => setLinkCheckerOpen(true)} title="Verificar links">
                 <ShieldCheck className="h-4 w-4" />
               </Button>
+              <Button variant="outline" size="icon" onClick={() => setNotionSettingsOpen(true)} title="Configurações do Notion">
+                <Settings className="h-4 w-4" />
+              </Button>
               {!isMobile && (
                 <>
                   <Button variant="outline" size="icon" onClick={() => setExportOpen(true)} title="Exportar (E)">
@@ -824,6 +829,8 @@ const Index = ({ user, onSignOut }: IndexProps) => {
           onCancel={cancelLinkCheck}
           onClear={clearLinkCheckResults}
         />
+
+        <NotionSettingsDialog open={notionSettingsOpen} onOpenChange={setNotionSettingsOpen} />
       </Suspense>
     </SidebarProvider>
   );
