@@ -34,12 +34,46 @@ export default defineConfig(({ mode }) => ({
         configureServer(server) {
           server.middlewares.use("/og-proxy", (req, res) => {
             const rawUrl = new URL(req.url, "http://localhost:8080").searchParams.get("url");
-            if (!rawUrl) { res.statusCode = 400; res.end("Missing url"); return; }
+            
+            console.log("[og-proxy] Request:", rawUrl);
+            
+            if (!rawUrl) { 
+              console.error("[og-proxy] Missing url parameter");
+              res.statusCode = 400; 
+              res.end("Missing url parameter"); 
+              return; 
+            }
+
+            // Validate URL format
+            try {
+              new URL(rawUrl);
+            } catch (e) {
+              console.error("[og-proxy] Invalid URL format:", rawUrl, e.message);
+              res.statusCode = 400;
+              res.end("Invalid URL format");
+              return;
+            }
 
             const fetchUrl = (urlStr, redirectCount = 0) => {
-              if (redirectCount > 5) { res.statusCode = 502; res.end("Too many redirects"); return; }
+              if (redirectCount > 5) { 
+                console.error("[og-proxy] Too many redirects for:", urlStr);
+                res.statusCode = 502; 
+                res.end("Too many redirects"); 
+                return; 
+              }
+              
               let target;
-              try { target = new URL(urlStr); } catch { res.statusCode = 400; res.end("Invalid url"); return; }
+              try { 
+                target = new URL(urlStr); 
+              } catch (e) { 
+                console.error("[og-proxy] Invalid URL:", urlStr, e.message);
+                res.statusCode = 400; 
+                res.end("Invalid url"); 
+                return; 
+              }
+              
+              console.log("[og-proxy] Fetching:", target.href);
+              
               const client = target.protocol === "https:" ? https : http;
               const options = {
                 hostname: target.hostname,
@@ -54,23 +88,38 @@ export default defineConfig(({ mode }) => ({
                   "sec-fetch-site": "cross-site",
                 },
               };
+              
               client.get(options, (upstream) => {
+                console.log("[og-proxy] Response status:", upstream.statusCode);
+                
                 // Follow redirects
                 if ([301, 302, 303, 307, 308].includes(upstream.statusCode) && upstream.headers.location) {
                   upstream.resume();
                   const next = upstream.headers.location.startsWith("http")
                     ? upstream.headers.location
                     : `${target.origin}${upstream.headers.location}`;
+                  console.log("[og-proxy] Redirecting to:", next);
                   return fetchUrl(next, redirectCount + 1);
                 }
+                
+                // Handle error status codes
+                if (upstream.statusCode >= 400) {
+                  console.error("[og-proxy] Upstream error:", upstream.statusCode, urlStr);
+                  res.statusCode = upstream.statusCode;
+                  res.end(`Upstream error: ${upstream.statusCode}`);
+                  return;
+                }
+                
                 res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
                 res.setHeader("Access-Control-Allow-Origin", "*");
                 res.setHeader("Content-Type", upstream.headers["content-type"] || "image/jpeg");
+                res.setHeader("Cache-Control", "public, max-age=86400");
                 res.statusCode = 200;
                 upstream.pipe(res);
               }).on("error", (err) => {
-                console.error("[og-proxy] error:", err.message);
-                res.statusCode = 502; res.end("Proxy error");
+                console.error("[og-proxy] Network error:", err.message, "for URL:", urlStr);
+                res.statusCode = 502; 
+                res.end("Proxy error: " + err.message);
               });
             };
 
