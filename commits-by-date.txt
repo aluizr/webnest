@@ -1,3 +1,5 @@
+2026-03-30 - feat: adiciona detecção e correção automática de erros CORS
+2026-03-30 - chore: atualiza commits-by-date.txt
 2026-03-30 - feat: adiciona correção automática de thumbnails quebradas
 2026-03-30 - chore: atualiza commits-by-date.txt
 2026-03-30 - feat: adiciona ferramenta de diagnóstico de thumbnails
