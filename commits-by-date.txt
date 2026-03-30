@@ -1,309 +1,318 @@
-2026-03-19 ff0de20 docs(summary): fix CORP/CSP blocking of external images and APIs
-2026-03-19 390b89f fix(proxy): route ogImage through /og-proxy in all remaining view components
-2026-03-19 c2540ec fix(proxy): send browser-like headers to avoid 400 from external servers
-2026-03-19 712f6cc fix(proxy): fix og-proxy URL parsing and add redirect following
-2026-03-19 7404981 fix(images): fix duplicate src attrs and replace icon.horse in LinkForm
-2026-03-19 f0dc9cf fix(corp): add og-image proxy middleware to bypass CORP same-origin blocks
-2026-03-19 fc325f6 fix(corp): resolve NotSameOrigin errors and clean up LinkCard
-2026-03-19 2024c31 fix(csp): allow external metadata/favicon APIs and fix CORP blocked resources
-2026-03-11 bf83abd chore(repo): update issue template links after repo rename
-2026-03-11 a452b5f chore(branding): align project naming to WebNest
-2026-03-11 03dc548 feat(table): improve inline edit discoverability and due date signals
-2026-03-11 28142e7 docs(readme): update top release summary to 0.14.2
-2026-03-11 07bc50c fix(process): remove orphan label from sprint day 2 template
-2026-03-11 461f3ab chore(labels): enforce strict label sync catalog
-2026-03-11 c3b3e47 fix(labels): quote YAML color values for sync compatibility
-2026-03-11 08500a3 fix(labels): grant checkout permission to label sync workflow
-2026-03-11 d2aeeeb chore(labels): add GitHub Actions label sync catalog
-2026-03-11 3b4f754 docs(process): add label taxonomy and triage convention
-2026-03-11 f972903 docs(process): convert sprint day issue templates to interactive YAML
-2026-03-11 62ae092 docs(process): add reusable release issue template
-2026-03-11 4625532 docs(release): add post-release operational checklist
-2026-03-11 49275d6 chore(release): finalize sprint day 5 go decision and release notes
-2026-03-11 3177a31 feat(observability): instrument critical flows and add diagnostics runbook
-2026-03-11 f611f72 docs(process): finalize day 3 evidence with published test commit
-2026-03-11 2e05cad test(table): add inline edit and filter/sort regression coverage
-2026-03-11 cee887f fix(table): harden inline edit key handling and skip no-op updates
-2026-03-11 8ca94cd feat(dnd): improve drop-target visual cues across board cards and sidebar
-2026-03-11 30c41dc chore(process): add sprint day issue templates
-2026-03-11 c248744 chore(lint): stabilize hook deps and silence react-refresh warnings
-2026-03-11 6495b2d refactor(types): remove any usage and restore drag-drop reorder API
-2026-03-09 7d04ae2 style: improve className formatting in LinkTableView for consistency
-2026-03-08 b068100 style: standardize section headers in CODEOWNERS for improved readability
-2026-03-08 0162cf9 fix: correct file extension in tsconfig include path; ensure compatibility with JavaScript files
-2026-03-08 5076ade feat: update CODEOWNERS for proper ownership; fix issue template URLs; adjust CI permissions; enhance type definitions in LinkNotionView
-2026-03-08 a65d80e feat: update .gitignore to include coverage, test artifacts, and local Supabase files; add CODEOWNERS and issue templates for bug reports and feature requests; create CI workflow and contributing guidelines
-2026-03-08 4ed43fd feat: update Content Security Policy to include worker-src directive; refactor drag-and-drop logic in useDragDropManager and Index
-2026-03-08 362dd48 feat: enhance drag-and-drop functionality; improve manual reordering hints and filter handling in LinkBoardView and Index
-2026-03-08 d82f6f9 feat: enhance manual reordering functionality in Index; add user hints for reordering links
-2026-03-08 4be3f1a feat: adjust layout and spacing in LinkBoardView, LinkCardsView, and LinkGalleryView for improved responsiveness
-2026-03-08 40a0c16 feat: add advanced filters to LinkCardsView and LinkGalleryView
-2026-03-08 65dfb3c feat: update Vite configuration for optimized chunking and security; remove legacy vite.config.ts
-2026-03-08 5733885 feat: implement configurable curation rules for LinkBoardView, LinkCardsView, and LinkGalleryView; enhance lazy loading in Index page and update Vite config for better chunking
-2026-03-08 1b32f00 feat: enhance filtering options in LinkCardsView and LinkGalleryView
-2026-03-08 6f77054 feat: implement saved views functionality in LinkBoardView, LinkCardsView, and LinkGalleryView; add options to save, duplicate, rename, and delete presets
-2026-03-08 3fec8b4 feat: enhance catalog filtering and sorting in LinkBoardView, LinkCardsView, and LinkGalleryView; add inline badges for new, featured, and trending links
-2026-03-08 96ff03b feat: enhance LinkBoardView with inline title editing and column filters, improve AppSidebar drag-and-drop functionality, and update changelog
-2026-03-08 9e11290 feat: add inline editing for description and due date filters in LinkTableView
-2026-03-08 d3d5cdd feat: update description display in LinkTableView for improved text wrapping
-2026-03-08 82ba266 feat: enhance LinkTableView with sticky headers, horizontal snap scrolling, and table density options
-2026-03-08 ca55e09 feat: add inline editing features and customizable table columns in LinkTableView
-2026-03-07 887a0db feat: add option to disable theme transition animations and update related styles
-2026-03-07 3bdf5af feat: enhance theme transition effects and add motion intensity controls
-2026-03-07 a59a19a feat: add new light themes and enhance theme toggle functionality
-2026-03-07 e06809a feat: add new themes and update styles for improved UI customization
-2026-03-07 4e6ad24 Refactor code structure for improved readability and maintainability
-2026-03-07 cda7d0f feat: add new color themes and background gradients for improved UI aesthetics
-2026-03-07 27a4d7b feat: update thumbnail snapping widths for improved resizing options
-2026-03-07 c0e6204 feat: reorganize changelog sections for improved clarity and readability
-2026-03-07 e0c21ea feat: update changelog with new features for view mode persistence and mobile actions
-2026-03-07 6436a85 feat: persist view mode selection in local storage and initialize from it
-2026-03-07 d0a63af feat: enhance LinkNotionView with additional density styles and layout adjustments
-2026-03-07 a15b644 feat: add snapping functionality for thumbnail resizing in LinkNotionView
-2026-03-07 1da71c4 feat: update changelog with new Notion style enhancements and layout improvements
-2026-03-07 d480f53 feat: update LinkNotionView styles for improved layout and spacing adjustments
-2026-03-07 6fa0377 feat: enhance LinkNotionView with contentLeftPadding for improved layout consistency
-2026-03-07 99a309e feat: update domainClass spacing in DENSITY_STYLES for improved layout consistency
-2026-03-07 769e05e feat: update LinkNotionView styles for improved layout and responsiveness
-2026-03-07 b2fddc1 feat: enhance LinkNotionView layout with improved flex properties and spacing adjustments
-2026-03-07 c520f90 feat: enhance DENSITY_STYLES with action button classes for improved layout and responsiveness
-2026-03-07 152fe40 feat: refactor ACTIONS_COLUMN_WIDTH to be density-based for improved layout flexibility
-2026-03-07 6779400 feat: add ACTIONS_COLUMN_WIDTH constant and update textRightPadding for improved layout consistency
-2026-03-07 465cbb3 feat: add list density options and styles to LinkNotionView for improved layout control
-2026-03-07 55791eb feat: enhance LinkNotionView to show resize tooltip for the first row and improve visibility during resizing
-2026-03-07 3b95231 feat: enhance resizing button with tooltip and improved styles for better user experience
-2026-03-06 a1f0662 feat: enhance thumbnail resizing functionality with improved cursor styles and local storage key refactor
-2026-03-06 1a804a3 feat: refactor thumbnail resizing to use pointer events for improved responsiveness
-2026-03-06 2b3cb1f feat: implement thumbnail resizing functionality in LinkNotionView with local storage support
-2026-03-06 55f5a6c feat: update LinkNotionView layout by adjusting padding and background colors for improved aesthetics
-2026-03-06 c1710ac feat: enhance LinkNotionView layout by adjusting flex properties and image dimensions for improved responsiveness
-2026-03-06 ce9dfea feat: refine LinkNotionView layout by adjusting grid structure and padding for improved responsiveness
-2026-03-06 39d72a7 feat: update LinkNotionView grid layout to adjust column proportions for improved display
-2026-03-06 844f356 feat: adjust padding in LinkNotionView for improved layout and spacing
-2026-03-06 71e9f99 feat: update LinkNotionView layout to use grid for improved structure and responsiveness
-2026-03-06 cdd19ee feat: simplify LinkNotionView component by removing unused status and priority labels, and adjusting layout for improved responsiveness
-2026-03-06 0220048 feat: update view mode in Index component from grid to list for improved layout
-2026-03-06 f415a5f feat: adjust LinkNotionView image container sizes and layout for improved display
-2026-03-06 0beb821 feat: enhance LinkNotionView layout with flexbox for improved image display and alignment
-2026-03-06 01514eb feat: update LinkNotionView layout for improved responsiveness and styling
-2026-03-06 997d4f6 feat: refine LinkNotionView layout with adjusted grid sizes and improved image container styling
-2026-03-06 621fb39 feat: adjust grid layout and minimum height in LinkNotionView for better responsiveness
-2026-03-06 faa5c6c feat: add due date, category, and tags display in LinkNotionView
-2026-03-06 5e00513 feat: enhance LinkNotionView styles for improved layout and responsiveness
-2026-03-06 e40105c feat: adjust margin for Links Grid/List based on view mode
-2026-03-06 bf97533 feat: update LinkNotionView styles for improved layout and responsiveness
-2026-03-06 9394154 feat: add LinkNotionView component for enhanced link display and interaction
-2026-03-06 f6a91aa feat: add positionInStatus for link ordering and implement reorder functionality in LinkBoardView
-2026-03-06 f1e513b feat: remove othermeta fallback from metadata fetching and update source options
-2026-03-06 46ee1b6 feat: update search_links function and adjust permissions for authenticated users
-2026-03-06 fd45d67 feat: enhance link handling with phase 1 schema support and fallback mechanism
-2026-03-06 ee4ef09 feat: add reorder functionality for links within the same status in LinkBoardView
-2026-03-06 19ca354 feat: implement drag-and-drop functionality for link status updates in LinkBoardView
-2026-03-06 66b7904 feat: add batch status and priority update functionality to BatchActionBar and LinkBoardView
-2026-03-06 f4a4ceb feat: add status, priority, and due date properties to links with filtering and exporting capabilities
-2026-03-06 9aebabb feat: rearrange sections in README for improved clarity and navigation
-2026-03-06 a3964c0 feat: add version table to README for improved navigation and clarity
-2026-03-06 e571ecf feat: update CHANGELOG with version table for improved clarity
-2026-03-06 1489473 feat: add recent version link to CHANGELOG for improved navigation
-2026-03-06 6eec5a7 feat: add link to CHANGELOG for version 0.14.1 in README
-2026-03-06 4925579 feat: update README with new features and improvements for version 0.14.1
-2026-03-06 d7bc195 feat: update CHANGELOG with metadata corrections and design system token standardization
-2026-03-06 37558ca feat: apply TEXT_XS_CLASS for consistent text sizing in Badge and Sidebar components
-2026-03-06 bfa1301 feat: apply TEXT_XS_CLASS for consistent text sizing across ColorPicker, ExportFormatDialog, LinkForm, LinkTableView, MarkdownPreview, and RichTextEditor components
-2026-03-06 10b43fc feat: apply TEXT_XS_CLASS for consistent text sizing across CommandPalette, ErrorBoundary, IconPicker, and SearchBar components
-2026-03-06 a3567e2 feat: apply TEXT_XS_CLASS for consistent text sizing across ActivityPanel, ImportFormatDialog, LinkCheckerPanel, LinkGalleryView, StatsOverview, and TrashView components
-2026-03-06 27f3472 feat: enhance styling consistency by applying TEXT_XS_CLASS and ICON_BTN_MD_CLASS across AppSidebar, BatchActionBar, and ViewSwitcher components
-2026-03-06 ff6a952 feat: enhance styling consistency by introducing TEXT_XS_CLASS and ICON_BTN classes across components
-2026-03-06 58617c0 feat: standardize badge styles across components using COMPACT_BADGE_CLASS
-2026-03-06 f3ab9b0 feat: update Badge component styles for improved readability across LinkBoardView, LinkCard, and LinkTableView
-2026-03-06 d93270e feat: update badges in LinkPreview for improved clarity and conciseness
-2026-03-06 b119e0b feat: enhance LinkPreview component with badge display for metadata source and attributes
-2026-03-06 84abc0a feat: add source field to LinkMetadata and display metadata source in LinkPreview
-2026-03-06 0a47e19 feat: add local fallback for metadata extraction when no result is found
-2026-03-06 99ffb77 feat: implement fetchWithTimeout function and add noembed as a fallback for metadata extraction
-2026-03-06 5164b56 feat: enhance LinkForm and LinkPreview components with URL normalization and hostname extraction
-2026-02-27 ae17e2b feat: add og_image field to link selection in useLinks function
-2026-02-27 ad8ba6c feat: add console log for ogImage in useLinks function
-2026-02-27 a0bb3ba feat: add console logs for ogImage in LinkCard and LinkForm components
-2026-02-27 5d6925c chore: remove outdated security audit reports to streamline documentation
-2026-02-27 5739ba2 feat: add comprehensive security audit report with vulnerabilities and remediation steps
-2026-02-27 758a05a Refactor code structure for improved readability and maintainability
-2026-02-27 940403f fix: migrate Tailwind CSS configuration from TypeScript to CommonJS format and update content paths
-2026-02-27 9899f59 fix: update Tailwind CSS content paths to include HTML and JSX files
-2026-02-27 b84bcf9 fix: update Content-Security-Policy headers for improved security and remove unnecessary headers
-2026-02-27 6e9fe7c fix: add additional Content-Security-Policy header for enhanced security
-2026-02-27 a605f01 fix: restore Tailwind directives and refine design system variables in CSS
-2026-02-27 5f6580c fix: migrate PostCSS configuration from ES module to CommonJS format
-2026-02-27 1e1e0bf fix: correct PostCSS configuration structure by nesting plugins array
-2026-02-27 90ab0c9 fix: update PostCSS configuration to use require syntax and add Tailwind config file
-2026-02-27 86ec21f fix: remove unused CSS variable for border radius
-2026-02-27 d451284 fix: close CSS rule for muted colors in design system
-2026-02-27 9f79fae fix: adjust indentation for CSS variables in dark mode for consistency
-2026-02-27 7ffb9a3 fix: restore @tailwind directives and clean up unused theme definitions
-2026-02-27 e465508 fix: remove Tailwind directives to prevent build tool incompatibility
-2026-02-27 2488409 fix: restore @tailwind directives and restructure CSS variables for improved theme management
-2026-02-27 f49d621 fix: refactor CSS variables and remove unused themes for improved clarity
-2026-02-27 ea799c1 fix: remove @tailwind directives due to build tool incompatibility
-2026-02-27 6cd6da5 fix: remove unnecessary code comment in usePWA function
-2026-02-27 00d508b fix: remove unused PWA logic and simplify usePWA hook
-2026-02-27 1fae5f4 fix: remove commented-out code and clean up imports in use-pwa.ts and vite.config.ts
-2026-02-27 b150100 fix: update Content-Security-Policy to include 'unsafe-inline' for script-src
-2026-02-27 6922842 feat: add new vite.config.js file with server and build configurations
-2026-02-27 1a5536a fix: remove unused VitePWA plugin configuration and clean up comments in vite.config.ts
-2026-02-27 f1a3e78 fix: update autoprefixer version in package.json and package-lock.json; add ogImage to LinkItem in utils.test.ts
-2026-02-27 4ef1a0d fix: add @vitejs/plugin-react-swc dependency to package.json and package-lock.json
-2026-02-27 c92c63e fix: disable fast refresh in React plugin configuration
-2026-02-27 155fb47 fix: enable fast refresh for development mode only in Vite config
-2026-02-26 7fa25ba fix: update Nginx configuration for correct document root and security headers
-2026-02-26 cbaab51 chore: update rollup and minimatch dependencies to latest versions
-2026-02-26 6925516 fix: remove Content Security Policy meta tag from index.html
-2026-02-26 916b385 fix: disable fast refresh in React plugin configuration
-2026-02-26 c4d2622 feat: integrate DOMPurify for sanitizing HTML in MarkdownPreview and RichTextEditor components
-2026-02-26 70fe29e fix: remove deprecated @vitejs/plugin-react-swc dependency from package.json
-2026-02-26 bf91faa chore: add @vitejs/plugin-react dependency to package.json
-2026-02-26 41e64fa fix: update React plugin import in Vite configuration
-2026-02-24 3a64640 fix: improve formatting and clarity in security audit report
-2026-02-24 7fef31b fix: update security documentation with onboarding guidelines, backup checklist, and security testing procedures
-2026-02-24 eba3492 fix: enhance favicon retrieval logic and improve import link handling with error reporting
-2026-02-24 39a9153 fix: update security policies in HTML and Vite config for improved protection
-2026-02-23 5fdf03a fix: update code block syntax in Docker documentation for clarity
-2026-02-23 df1107a fix: improve table formatting for better readability in documentation files
-2026-02-23 01c3d5a fix: update autoprefixer and tailwindcss versions in package.json and package-lock.json; remove unused schema reference in components.json
-2026-02-23 519922f fix: clean up formatting in documentation files for better readability
-2026-02-23 9a81255 fix: enhance type definitions for import.meta.env and improve localStorage checks
-2026-02-23 6510273 fix: update import path for addLink and add missing addLink function implementation
-2026-02-23 b33476e fix: add linkSchema definition for link validation and import handling
-2026-02-23 d963453 fix: streamline import validation process and improve error handling; adjust import paths for linkSchema and addLink
-2026-02-23 2f8c26d fix: update favicon handling for improved privacy; adjust import paths and add react-toastify dependency
-2026-02-23 f184c87 fix: add missing action icons and colors for trashed and restored links; update link status title rendering
-2026-02-23 ebb49ef fix: cast supabase queries to 'any' to resolve TypeScript type issues
-2026-02-23 39bb4d9 fix: include 'og_image' field in link fetching query to enhance data retrieval
-2026-02-23 a5372de fix: update link fetching to include missing fields and improve error handling during link addition
-2026-02-23 f0f9bcc fix: improve logging messages for sign-up and sign-in errors; enhance link fetching and category creation with additional fields
-2026-02-23 369ce84 feat: add new activity log actions for trashed and restored links
-2026-02-23 7daf4e3 refactor: clean up whitespace and improve formatting in PROJECT_ANALYSIS.md
-2026-02-23 d12ea58 fix: add missing closing tag in DragDropOverlay component
-2026-02-23 017e6d6 refactor: remove unnecessary blank line in DragDropOverlay component
-2026-02-23 f442a35 fix: add missing closing brace in DragDropOverlay component
-2026-02-23 b7febc4 refactor: remove unnecessary closing brace in DragDropOverlay component
-2026-02-23 b646f00 refactor: remove unnecessary blank line in DragDropOverlayProps interface
-2026-02-23 adb0bde refactor: remove unnecessary blank line at the beginning of DragDropOverlay component
-2026-02-23 c78d096 feat: enhance DragDropOverlay with cursor tracking and improved dragged link display
-2026-02-23 3b2d981 feat: add snap animation for card drop in LinkCard and LinkCardsView components
-2026-02-23 4496b49 feat: enhance LinkCard styling for improved drag-and-drop feedback and selection visibility
-2026-02-23 04da3aa feat: disable link and underline options in RichTextEditor configuration
-2026-02-23 d0fc7d0 feat: enhance dialog components with overflow handling and add workspace configuration
-2026-02-22 51994fc feat: update changelog and project analysis for version 0.14.0, add new features and fixes
-2026-02-22 7bc85a5 feat: add useEffect import to Index component for enhanced functionality
-2026-02-22 d91a702 feat: enhance batch operations with multi-select, range selection, and tag management features
-2026-02-22 15ace8e chore: update version to 0.13.0 and add Tiptap rich text editor dependencies
-2026-02-22 1cee4a4 feat: add Progress component using Radix UI for enhanced UI feedback
-2026-02-22 524e590 feat: implement soft delete functionality for links
-2026-02-21 056d11d feat: update version to 0.11.0 in package.json
-2026-02-21 81f958e feat: update project analysis and README with new version details, improved icon system, and enhanced security features
-2026-02-21 3ca1885 feat: update changelog with enhancements to categories and icon system, including drag & drop, color selection, custom icon upload, and editing functionality
-2026-02-21 7621f2a feat: add support for custom icons in icon picker and category renderer
-2026-02-21 b66e7b8 feat: enhance icon picker with dynamic categories and improved search functionality
-2026-02-21 f0dabc7 feat: add icon editing functionality in category renaming process
-2026-02-21 a37cc09 feat: simplify drag-and-drop logic to insert dragged item directly at target position
-2026-02-21 7cb4199 feat: enhance drag-and-drop functionality to respect visual direction for item insertion
-2026-02-21 eb8c051 feat: update delete confirmation logic to handle categories with subcategories
-2026-02-21 f049d11 feat: swap icons for export and import buttons for clarity
-2026-02-21 14a42c7 feat: replace Button with div for ColorPicker and category toggle for improved accessibility
-2026-02-21 4e72187 feat: update icon names to include AlarmClock for consistency
-2026-02-21 7274142 feat: enhance icon picker with search functionality
-2026-02-21 d0178f8 feat: enhance LinkCardsView with improved layout, new Globe icon, and refined drag-and-drop interactions
-2026-02-21 975f1c6 feat: add drag-and-drop functionality to LinkCardsView for improved link management
-2026-02-21 b53b9e3 feat: update CHANGELOG with new Cards View, dynamic card sizes, and removal of Lovable dependency
-2026-02-21 03af702 feat: add card size selection to ViewSwitcher and LinkCardsView for improved layout customization
-2026-02-21 5bf0b07 feat: update README and security documents, remove lovable-tagger dependency
-2026-02-21 e1cefb5 feat: add card view mode and LinkCardsView component for enhanced link display
-2026-02-20 5833ae5 feat: enhance server-side search with fallback handling for unavailable RPC
-2026-02-20 e6e1960 feat: implement full-text search for links with server-side support and debounce functionality
-2026-02-20 5a64cf7 feat: update CHANGELOG with new features including API Key Rotation, Activity Log, Command Palette, OG Preview, and ViewSwitcher enhancements
-2026-02-20 8d726b2 feat: implement API key rotation system with fallback support for Supabase
-2026-02-20 59b13b3 feat: add DialogTitle to CommandPalette for improved accessibility
-2026-02-20 95e34f8 feat: implement activity log system; add ActivityPanel and CommandPalette components for user actions history
-2026-02-20 24147c7 feat: enhance ViewSwitcher with grid column selection; update Index page to manage grid column state
-2026-02-20 0ebac01 feat: implement view switching functionality with LinkTableView and LinkBoardView components; update Index page to support multiple view modes
-2026-02-20 2978132 feat: add ogImage support to LinkItem, LinkCard, and LinkForm components; update validation and database schema
-2026-02-20 97fb98c feat: add backlog of future features with priorities and descriptions
-2026-02-20 c402204 feat: update changelog for version 0.7.0, add centralized logging system, error boundary component, favicon fallback, bundle optimization, and clean up unused components
-2026-02-20 65a6752 feat: remove unused Slider and useToast components, and enhance Vite configuration for vendor chunking
-2026-02-20 e0d83e3 fix: correct meta tag name for mobile web app capability in index.html
-2026-02-20 dd2b4a3 feat: refactor logger usage in useAuth hook to use named functions for user identification
-2026-02-20 bae8f79 feat: add centralized logging system, implement ErrorBoundary component, and enhance error handling in useAuth and useLinks hooks
-2026-02-20 1a7e657 feat: implement rate limiting for links and categories, add client-side enforcement, and update database triggers
-2026-02-19 97b7be6 feat: rename project to WebNest and implement PWA features
-2026-02-17 9428d04 feat: implement drag-and-drop functionality in AppSidebar and add related tests
-2026-02-17 1bcb7b1 feat: add multiple themes to ThemeToggle and update theme switching logic
-2026-02-17 5549ff9 feat: add notes functionality to links, including UI updates and database migration
-2026-02-17 648ced9 feat: implement global keyboard shortcuts and enhance SearchBar with ref
-2026-02-17 d52f9bf refactor: remove unused UI components and improve metadata caching
-2026-02-17 75f2a08 refactor: improve drag and drop reordering logic to use filtered links
-2026-02-17 5e45b77 drag & drop err 8
-2026-02-17 ea3f9c5 drag & drop err 7
-2026-02-17 6db2d33 drag & drop err 6
-2026-02-17 92a8754 drag & drop err 6
-2026-02-17 0d7ad26 drag & drop err 5
-2026-02-17 a601afa drag & drop erro4
-2026-02-17 43628f8 Drag & Drop erro 3
-2026-02-17 7297a7c drag & drop erro pisca
-2026-02-17 0afd960 drag & drop erro ao arrastar
-2026-02-17 9bf6196 Drag & Drop erro
-2026-02-17 b836f3a Drag & Drop melhorias
-2026-02-17 c8a869e docker erro 2
-2026-02-17 6297cca docker - erro
-2026-02-17 a5bb294 docker
-2026-02-16 5d19810 bookmark navegador
-2026-02-16 80b488b Detecção de links duplicados
-2026-02-16 3362fa0 Soft Delete/Trash
-2026-02-16 46c1173 segurança de deleção
-2026-02-16 57dea88 drag & drop erro 1
-2026-02-16 31a4508 drag drop melhoria
-2026-02-16 d352e97 erro ao criar subcategoria
-2026-02-16 5779337 Subcategoria
-2026-02-16 b21fc81 erro 5 ao colar o link
-2026-02-16 057853c erro 4 ao colar o ink
-2026-02-16 8f504ee erro 3 ao colar o link
-2026-02-16 b35df6f erro 2 ao colar o link
-2026-02-16 d006d3e erro ao colar o link
-2026-02-16 be46291 Link Preview
-2026-02-16 f210b67 Implementação de Export/Import
-2026-02-16 4de870c correção erro dash 2
-2026-02-16 6331296 correção de erro dashboard
-2026-02-16 6ab89e9 Busca Avançada
-2026-02-16 8f3f71d otimização do projeto
-2026-02-15 4316c6e icone erro 2
-2026-02-15 61cc57d icon erro 1
-2026-02-15 b39543d icon
-2026-02-15 6ccaa7f erro 4
-2026-02-15 4ca90b0 erro 4
-2026-02-15 e4728c1 erro 3
-2026-02-15 6f9de95 Remove leaked .env
-2026-02-15 7a8cd84 supabase - erro
-2026-02-15 a8434ea .env atualizado
-2026-02-15 7321fea warning 2
-2026-02-15 0a6aa13 warning 1
-2026-02-15 cddf624 Atualizações para correção do drag & drop
-2026-02-15 1791b9e Merge branch 'main' of https://github.com/aluizr/internet-gems-finder
-2026-02-15 fc49500 Adicionado Drag & Drop
-2026-02-15 c63ad2c Fix minify option in vite config
-2026-02-15 16fd428 Changes
-2026-02-15 6c3988f Corrigido fetch wrapper
-2026-02-15 45db9cc Changes
-2026-02-15 96b395c Atualização de segurança.
-2026-02-15 cf7c036 Add auth and validation
-2026-02-15 f54e25b Changes
-2026-02-14 097d295 Add dark mode toggle in header
-2026-02-14 cf29a8c Changes
-2026-02-14 efc77ac Add import/export JSON backup
-2026-02-14 4eabb71 Changes
-2026-02-14 b9d4827 Migrate to Supabase DB
-2026-02-14 9ce9ee2 Changes
-2026-02-14 d247757 Lovable update
-2026-02-14 61cabb4 Changes
-2026-02-13 25ae481 Implement sidebar UI for links repository
-2026-02-13 1f8524c Changes
-2026-02-13 a33b107 Updated plan file
-2025-01-01 b331aa1 template: new_style_vite_react_shadcn_ts_testing_2026-01-08
+2026-03-30 - feat: implementa integração completa com Notion API
+2026-03-29 - fix(metadata): skip screenshot when page returns 4xx error status
+2026-03-29 - fix(csp): allow *.microlink.io subdomains for screenshot images
+2026-03-29 - fix(metadata): use Microlink screenshot API to get thumb for JS-rendered sites
+2026-03-29 - fix(metadata): use Microlink screenshot as fallback when no OG image available
+2026-03-29 - fix(metadata): ignore Microlink error page responses as valid metadata
+2026-03-21 - fix(metadata): fix cache key inconsistency with hash-containing URLs
+2026-03-21 - fix(metadata): strip URL hash before fetching metadata and cache key
+2026-03-19 - chore: update commits-by-date.txt
+2026-03-19 - docs(summary): fix CORP/CSP blocking of external images and APIs
+2026-03-19 - fix(proxy): route ogImage through /og-proxy in all remaining view components
+2026-03-19 - fix(proxy): send browser-like headers to avoid 400 from external servers
+2026-03-19 - fix(proxy): fix og-proxy URL parsing and add redirect following
+2026-03-19 - fix(images): fix duplicate src attrs and replace icon.horse in LinkForm
+2026-03-19 - fix(corp): add og-image proxy middleware to bypass CORP same-origin blocks
+2026-03-19 - fix(corp): resolve NotSameOrigin errors and clean up LinkCard
+2026-03-19 - fix(csp): allow external metadata/favicon APIs and fix CORP blocked resources
+2026-03-11 - chore(repo): update issue template links after repo rename
+2026-03-11 - chore(branding): align project naming to WebNest
+2026-03-11 - feat(table): improve inline edit discoverability and due date signals
+2026-03-11 - docs(readme): update top release summary to 0.14.2
+2026-03-11 - fix(process): remove orphan label from sprint day 2 template
+2026-03-11 - chore(labels): enforce strict label sync catalog
+2026-03-11 - fix(labels): quote YAML color values for sync compatibility
+2026-03-11 - fix(labels): grant checkout permission to label sync workflow
+2026-03-11 - chore(labels): add GitHub Actions label sync catalog
+2026-03-11 - docs(process): add label taxonomy and triage convention
+2026-03-11 - docs(process): convert sprint day issue templates to interactive YAML
+2026-03-11 - docs(process): add reusable release issue template
+2026-03-11 - docs(release): add post-release operational checklist
+2026-03-11 - chore(release): finalize sprint day 5 go decision and release notes
+2026-03-11 - feat(observability): instrument critical flows and add diagnostics runbook
+2026-03-11 - docs(process): finalize day 3 evidence with published test commit
+2026-03-11 - test(table): add inline edit and filter/sort regression coverage
+2026-03-11 - fix(table): harden inline edit key handling and skip no-op updates
+2026-03-11 - feat(dnd): improve drop-target visual cues across board cards and sidebar
+2026-03-11 - chore(process): add sprint day issue templates
+2026-03-11 - chore(lint): stabilize hook deps and silence react-refresh warnings
+2026-03-11 - refactor(types): remove any usage and restore drag-drop reorder API
+2026-03-09 - style: improve className formatting in LinkTableView for consistency
+2026-03-08 - style: standardize section headers in CODEOWNERS for improved readability
+2026-03-08 - fix: correct file extension in tsconfig include path; ensure compatibility with JavaScript files
+2026-03-08 - feat: update CODEOWNERS for proper ownership; fix issue template URLs; adjust CI permissions; enhance type definitions in LinkNotionView
+2026-03-08 - feat: update .gitignore to include coverage, test artifacts, and local Supabase files; add CODEOWNERS and issue templates for bug reports and feature requests; create CI workflow and contributing guidelines
+2026-03-08 - feat: update Content Security Policy to include worker-src directive; refactor drag-and-drop logic in useDragDropManager and Index
+2026-03-08 - feat: enhance drag-and-drop functionality; improve manual reordering hints and filter handling in LinkBoardView and Index
+2026-03-08 - feat: enhance manual reordering functionality in Index; add user hints for reordering links
+2026-03-08 - feat: adjust layout and spacing in LinkBoardView, LinkCardsView, and LinkGalleryView for improved responsiveness
+2026-03-08 - feat: add advanced filters to LinkCardsView and LinkGalleryView
+2026-03-08 - feat: update Vite configuration for optimized chunking and security; remove legacy vite.config.ts
+2026-03-08 - feat: implement configurable curation rules for LinkBoardView, LinkCardsView, and LinkGalleryView; enhance lazy loading in Index page and update Vite config for better chunking
+2026-03-08 - feat: enhance filtering options in LinkCardsView and LinkGalleryView
+2026-03-08 - feat: implement saved views functionality in LinkBoardView, LinkCardsView, and LinkGalleryView; add options to save, duplicate, rename, and delete presets
+2026-03-08 - feat: enhance catalog filtering and sorting in LinkBoardView, LinkCardsView, and LinkGalleryView; add inline badges for new, featured, and trending links
+2026-03-08 - feat: enhance LinkBoardView with inline title editing and column filters, improve AppSidebar drag-and-drop functionality, and update changelog
+2026-03-08 - feat: add inline editing for description and due date filters in LinkTableView
+2026-03-08 - feat: update description display in LinkTableView for improved text wrapping
+2026-03-08 - feat: enhance LinkTableView with sticky headers, horizontal snap scrolling, and table density options
+2026-03-08 - feat: add inline editing features and customizable table columns in LinkTableView
+2026-03-07 - feat: add option to disable theme transition animations and update related styles
+2026-03-07 - feat: enhance theme transition effects and add motion intensity controls
+2026-03-07 - feat: add new light themes and enhance theme toggle functionality
+2026-03-07 - feat: add new themes and update styles for improved UI customization
+2026-03-07 - Refactor code structure for improved readability and maintainability
+2026-03-07 - feat: add new color themes and background gradients for improved UI aesthetics
+2026-03-07 - feat: update thumbnail snapping widths for improved resizing options
+2026-03-07 - feat: reorganize changelog sections for improved clarity and readability
+2026-03-07 - feat: update changelog with new features for view mode persistence and mobile actions
+2026-03-07 - feat: persist view mode selection in local storage and initialize from it
+2026-03-07 - feat: enhance LinkNotionView with additional density styles and layout adjustments
+2026-03-07 - feat: add snapping functionality for thumbnail resizing in LinkNotionView
+2026-03-07 - feat: update changelog with new Notion style enhancements and layout improvements
+2026-03-07 - feat: update LinkNotionView styles for improved layout and spacing adjustments
+2026-03-07 - feat: enhance LinkNotionView with contentLeftPadding for improved layout consistency
+2026-03-07 - feat: update domainClass spacing in DENSITY_STYLES for improved layout consistency
+2026-03-07 - feat: update LinkNotionView styles for improved layout and responsiveness
+2026-03-07 - feat: enhance LinkNotionView layout with improved flex properties and spacing adjustments
+2026-03-07 - feat: enhance DENSITY_STYLES with action button classes for improved layout and responsiveness
+2026-03-07 - feat: refactor ACTIONS_COLUMN_WIDTH to be density-based for improved layout flexibility
+2026-03-07 - feat: add ACTIONS_COLUMN_WIDTH constant and update textRightPadding for improved layout consistency
+2026-03-07 - feat: add list density options and styles to LinkNotionView for improved layout control
+2026-03-07 - feat: enhance LinkNotionView to show resize tooltip for the first row and improve visibility during resizing
+2026-03-07 - feat: enhance resizing button with tooltip and improved styles for better user experience
+2026-03-06 - feat: enhance thumbnail resizing functionality with improved cursor styles and local storage key refactor
+2026-03-06 - feat: refactor thumbnail resizing to use pointer events for improved responsiveness
+2026-03-06 - feat: implement thumbnail resizing functionality in LinkNotionView with local storage support
+2026-03-06 - feat: update LinkNotionView layout by adjusting padding and background colors for improved aesthetics
+2026-03-06 - feat: enhance LinkNotionView layout by adjusting flex properties and image dimensions for improved responsiveness
+2026-03-06 - feat: refine LinkNotionView layout by adjusting grid structure and padding for improved responsiveness
+2026-03-06 - feat: update LinkNotionView grid layout to adjust column proportions for improved display
+2026-03-06 - feat: adjust padding in LinkNotionView for improved layout and spacing
+2026-03-06 - feat: update LinkNotionView layout to use grid for improved structure and responsiveness
+2026-03-06 - feat: simplify LinkNotionView component by removing unused status and priority labels, and adjusting layout for improved responsiveness
+2026-03-06 - feat: update view mode in Index component from grid to list for improved layout
+2026-03-06 - feat: adjust LinkNotionView image container sizes and layout for improved display
+2026-03-06 - feat: enhance LinkNotionView layout with flexbox for improved image display and alignment
+2026-03-06 - feat: update LinkNotionView layout for improved responsiveness and styling
+2026-03-06 - feat: refine LinkNotionView layout with adjusted grid sizes and improved image container styling
+2026-03-06 - feat: adjust grid layout and minimum height in LinkNotionView for better responsiveness
+2026-03-06 - feat: add due date, category, and tags display in LinkNotionView
+2026-03-06 - feat: enhance LinkNotionView styles for improved layout and responsiveness
+2026-03-06 - feat: adjust margin for Links Grid/List based on view mode
+2026-03-06 - feat: update LinkNotionView styles for improved layout and responsiveness
+2026-03-06 - feat: add LinkNotionView component for enhanced link display and interaction
+2026-03-06 - feat: add positionInStatus for link ordering and implement reorder functionality in LinkBoardView
+2026-03-06 - feat: remove othermeta fallback from metadata fetching and update source options
+2026-03-06 - feat: update search_links function and adjust permissions for authenticated users
+2026-03-06 - feat: enhance link handling with phase 1 schema support and fallback mechanism
+2026-03-06 - feat: add reorder functionality for links within the same status in LinkBoardView
+2026-03-06 - feat: implement drag-and-drop functionality for link status updates in LinkBoardView
+2026-03-06 - feat: add batch status and priority update functionality to BatchActionBar and LinkBoardView
+2026-03-06 - feat: add status, priority, and due date properties to links with filtering and exporting capabilities
+2026-03-06 - feat: rearrange sections in README for improved clarity and navigation
+2026-03-06 - feat: add version table to README for improved navigation and clarity
+2026-03-06 - feat: update CHANGELOG with version table for improved clarity
+2026-03-06 - feat: add recent version link to CHANGELOG for improved navigation
+2026-03-06 - feat: add link to CHANGELOG for version 0.14.1 in README
+2026-03-06 - feat: update README with new features and improvements for version 0.14.1
+2026-03-06 - feat: update CHANGELOG with metadata corrections and design system token standardization
+2026-03-06 - feat: apply TEXT_XS_CLASS for consistent text sizing in Badge and Sidebar components
+2026-03-06 - feat: apply TEXT_XS_CLASS for consistent text sizing across ColorPicker, ExportFormatDialog, LinkForm, LinkTableView, MarkdownPreview, and RichTextEditor components
+2026-03-06 - feat: apply TEXT_XS_CLASS for consistent text sizing across CommandPalette, ErrorBoundary, IconPicker, and SearchBar components
+2026-03-06 - feat: apply TEXT_XS_CLASS for consistent text sizing across ActivityPanel, ImportFormatDialog, LinkCheckerPanel, LinkGalleryView, StatsOverview, and TrashView components
+2026-03-06 - feat: enhance styling consistency by applying TEXT_XS_CLASS and ICON_BTN_MD_CLASS across AppSidebar, BatchActionBar, and ViewSwitcher components
+2026-03-06 - feat: enhance styling consistency by introducing TEXT_XS_CLASS and ICON_BTN classes across components
+2026-03-06 - feat: standardize badge styles across components using COMPACT_BADGE_CLASS
+2026-03-06 - feat: update Badge component styles for improved readability across LinkBoardView, LinkCard, and LinkTableView
+2026-03-06 - feat: update badges in LinkPreview for improved clarity and conciseness
+2026-03-06 - feat: enhance LinkPreview component with badge display for metadata source and attributes
+2026-03-06 - feat: add source field to LinkMetadata and display metadata source in LinkPreview
+2026-03-06 - feat: add local fallback for metadata extraction when no result is found
+2026-03-06 - feat: implement fetchWithTimeout function and add noembed as a fallback for metadata extraction
+2026-03-06 - feat: enhance LinkForm and LinkPreview components with URL normalization and hostname extraction
+2026-02-27 - feat: add og_image field to link selection in useLinks function
+2026-02-27 - feat: add console log for ogImage in useLinks function
+2026-02-27 - feat: add console logs for ogImage in LinkCard and LinkForm components
+2026-02-27 - chore: remove outdated security audit reports to streamline documentation
+2026-02-27 - feat: add comprehensive security audit report with vulnerabilities and remediation steps
+2026-02-27 - Refactor code structure for improved readability and maintainability
+2026-02-27 - fix: migrate Tailwind CSS configuration from TypeScript to CommonJS format and update content paths
+2026-02-27 - fix: update Tailwind CSS content paths to include HTML and JSX files
+2026-02-27 - fix: update Content-Security-Policy headers for improved security and remove unnecessary headers
+2026-02-27 - fix: add additional Content-Security-Policy header for enhanced security
+2026-02-27 - fix: restore Tailwind directives and refine design system variables in CSS
+2026-02-27 - fix: migrate PostCSS configuration from ES module to CommonJS format
+2026-02-27 - fix: correct PostCSS configuration structure by nesting plugins array
+2026-02-27 - fix: update PostCSS configuration to use require syntax and add Tailwind config file
+2026-02-27 - fix: remove unused CSS variable for border radius
+2026-02-27 - fix: close CSS rule for muted colors in design system
+2026-02-27 - fix: adjust indentation for CSS variables in dark mode for consistency
+2026-02-27 - fix: restore @tailwind directives and clean up unused theme definitions
+2026-02-27 - fix: remove Tailwind directives to prevent build tool incompatibility
+2026-02-27 - fix: restore @tailwind directives and restructure CSS variables for improved theme management
+2026-02-27 - fix: refactor CSS variables and remove unused themes for improved clarity
+2026-02-27 - fix: remove @tailwind directives due to build tool incompatibility
+2026-02-27 - fix: remove unnecessary code comment in usePWA function
+2026-02-27 - fix: remove unused PWA logic and simplify usePWA hook
+2026-02-27 - fix: remove commented-out code and clean up imports in use-pwa.ts and vite.config.ts
+2026-02-27 - fix: update Content-Security-Policy to include 'unsafe-inline' for script-src
+2026-02-27 - feat: add new vite.config.js file with server and build configurations
+2026-02-27 - fix: remove unused VitePWA plugin configuration and clean up comments in vite.config.ts
+2026-02-27 - fix: update autoprefixer version in package.json and package-lock.json; add ogImage to LinkItem in utils.test.ts
+2026-02-27 - fix: add @vitejs/plugin-react-swc dependency to package.json and package-lock.json
+2026-02-27 - fix: disable fast refresh in React plugin configuration
+2026-02-27 - fix: enable fast refresh for development mode only in Vite config
+2026-02-26 - fix: update Nginx configuration for correct document root and security headers
+2026-02-26 - chore: update rollup and minimatch dependencies to latest versions
+2026-02-26 - fix: remove Content Security Policy meta tag from index.html
+2026-02-26 - fix: disable fast refresh in React plugin configuration
+2026-02-26 - feat: integrate DOMPurify for sanitizing HTML in MarkdownPreview and RichTextEditor components
+2026-02-26 - fix: remove deprecated @vitejs/plugin-react-swc dependency from package.json
+2026-02-26 - chore: add @vitejs/plugin-react dependency to package.json
+2026-02-26 - fix: update React plugin import in Vite configuration
+2026-02-24 - fix: improve formatting and clarity in security audit report
+2026-02-24 - fix: update security documentation with onboarding guidelines, backup checklist, and security testing procedures
+2026-02-24 - fix: enhance favicon retrieval logic and improve import link handling with error reporting
+2026-02-24 - fix: update security policies in HTML and Vite config for improved protection
+2026-02-23 - fix: update code block syntax in Docker documentation for clarity
+2026-02-23 - fix: improve table formatting for better readability in documentation files
+2026-02-23 - fix: update autoprefixer and tailwindcss versions in package.json and package-lock.json; remove unused schema reference in components.json
+2026-02-23 - fix: clean up formatting in documentation files for better readability
+2026-02-23 - fix: enhance type definitions for import.meta.env and improve localStorage checks
+2026-02-23 - fix: update import path for addLink and add missing addLink function implementation
+2026-02-23 - fix: add linkSchema definition for link validation and import handling
+2026-02-23 - fix: streamline import validation process and improve error handling; adjust import paths for linkSchema and addLink
+2026-02-23 - fix: update favicon handling for improved privacy; adjust import paths and add react-toastify dependency
+2026-02-23 - fix: add missing action icons and colors for trashed and restored links; update link status title rendering
+2026-02-23 - fix: cast supabase queries to 'any' to resolve TypeScript type issues
+2026-02-23 - fix: include 'og_image' field in link fetching query to enhance data retrieval
+2026-02-23 - fix: update link fetching to include missing fields and improve error handling during link addition
+2026-02-23 - fix: improve logging messages for sign-up and sign-in errors; enhance link fetching and category creation with additional fields
+2026-02-23 - feat: add new activity log actions for trashed and restored links
+2026-02-23 - refactor: clean up whitespace and improve formatting in PROJECT_ANALYSIS.md
+2026-02-23 - fix: add missing closing tag in DragDropOverlay component
+2026-02-23 - refactor: remove unnecessary blank line in DragDropOverlay component
+2026-02-23 - fix: add missing closing brace in DragDropOverlay component
+2026-02-23 - refactor: remove unnecessary closing brace in DragDropOverlay component
+2026-02-23 - refactor: remove unnecessary blank line in DragDropOverlayProps interface
+2026-02-23 - refactor: remove unnecessary blank line at the beginning of DragDropOverlay component
+2026-02-23 - feat: enhance DragDropOverlay with cursor tracking and improved dragged link display
+2026-02-23 - feat: add snap animation for card drop in LinkCard and LinkCardsView components
+2026-02-23 - feat: enhance LinkCard styling for improved drag-and-drop feedback and selection visibility
+2026-02-23 - feat: disable link and underline options in RichTextEditor configuration
+2026-02-23 - feat: enhance dialog components with overflow handling and add workspace configuration
+2026-02-22 - feat: update changelog and project analysis for version 0.14.0, add new features and fixes
+2026-02-22 - feat: add useEffect import to Index component for enhanced functionality
+2026-02-22 - feat: enhance batch operations with multi-select, range selection, and tag management features
+2026-02-22 - chore: update version to 0.13.0 and add Tiptap rich text editor dependencies
+2026-02-22 - feat: add Progress component using Radix UI for enhanced UI feedback
+2026-02-22 - feat: implement soft delete functionality for links
+2026-02-21 - feat: update version to 0.11.0 in package.json
+2026-02-21 - feat: update project analysis and README with new version details, improved icon system, and enhanced security features
+2026-02-21 - feat: update changelog with enhancements to categories and icon system, including drag & drop, color selection, custom icon upload, and editing functionality
+2026-02-21 - feat: add support for custom icons in icon picker and category renderer
+2026-02-21 - feat: enhance icon picker with dynamic categories and improved search functionality
+2026-02-21 - feat: add icon editing functionality in category renaming process
+2026-02-21 - feat: simplify drag-and-drop logic to insert dragged item directly at target position
+2026-02-21 - feat: enhance drag-and-drop functionality to respect visual direction for item insertion
+2026-02-21 - feat: update delete confirmation logic to handle categories with subcategories
+2026-02-21 - feat: swap icons for export and import buttons for clarity
+2026-02-21 - feat: replace Button with div for ColorPicker and category toggle for improved accessibility
+2026-02-21 - feat: update icon names to include AlarmClock for consistency
+2026-02-21 - feat: enhance icon picker with search functionality
+2026-02-21 - feat: enhance LinkCardsView with improved layout, new Globe icon, and refined drag-and-drop interactions
+2026-02-21 - feat: add drag-and-drop functionality to LinkCardsView for improved link management
+2026-02-21 - feat: update CHANGELOG with new Cards View, dynamic card sizes, and removal of Lovable dependency
+2026-02-21 - feat: add card size selection to ViewSwitcher and LinkCardsView for improved layout customization
+2026-02-21 - feat: update README and security documents, remove lovable-tagger dependency
+2026-02-21 - feat: add card view mode and LinkCardsView component for enhanced link display
+2026-02-20 - feat: enhance server-side search with fallback handling for unavailable RPC
+2026-02-20 - feat: implement full-text search for links with server-side support and debounce functionality
+2026-02-20 - feat: update CHANGELOG with new features including API Key Rotation, Activity Log, Command Palette, OG Preview, and ViewSwitcher enhancements
+2026-02-20 - feat: implement API key rotation system with fallback support for Supabase
+2026-02-20 - feat: add DialogTitle to CommandPalette for improved accessibility
+2026-02-20 - feat: implement activity log system; add ActivityPanel and CommandPalette components for user actions history
+2026-02-20 - feat: enhance ViewSwitcher with grid column selection; update Index page to manage grid column state
+2026-02-20 - feat: implement view switching functionality with LinkTableView and LinkBoardView components; update Index page to support multiple view modes
+2026-02-20 - feat: add ogImage support to LinkItem, LinkCard, and LinkForm components; update validation and database schema
+2026-02-20 - feat: add backlog of future features with priorities and descriptions
+2026-02-20 - feat: update changelog for version 0.7.0, add centralized logging system, error boundary component, favicon fallback, bundle optimization, and clean up unused components
+2026-02-20 - feat: remove unused Slider and useToast components, and enhance Vite configuration for vendor chunking
+2026-02-20 - fix: correct meta tag name for mobile web app capability in index.html
+2026-02-20 - feat: refactor logger usage in useAuth hook to use named functions for user identification
+2026-02-20 - feat: add centralized logging system, implement ErrorBoundary component, and enhance error handling in useAuth and useLinks hooks
+2026-02-20 - feat: implement rate limiting for links and categories, add client-side enforcement, and update database triggers
+2026-02-19 - feat: rename project to WebNest and implement PWA features
+2026-02-17 - feat: implement drag-and-drop functionality in AppSidebar and add related tests
+2026-02-17 - feat: add multiple themes to ThemeToggle and update theme switching logic
+2026-02-17 - feat: add notes functionality to links, including UI updates and database migration
+2026-02-17 - feat: implement global keyboard shortcuts and enhance SearchBar with ref
+2026-02-17 - refactor: remove unused UI components and improve metadata caching
+2026-02-17 - refactor: improve drag and drop reordering logic to use filtered links
+2026-02-17 - drag & drop err 8
+2026-02-17 - drag & drop err 7
+2026-02-17 - drag & drop err 6
+2026-02-17 - drag & drop err 6
+2026-02-17 - drag & drop err 5
+2026-02-17 - drag & drop erro4
+2026-02-17 - Drag & Drop erro 3
+2026-02-17 - drag & drop erro pisca
+2026-02-17 - drag & drop erro ao arrastar
+2026-02-17 - Drag & Drop erro
+2026-02-17 - Drag & Drop melhorias
+2026-02-17 - docker erro 2
+2026-02-17 - docker - erro
+2026-02-17 - docker
+2026-02-16 - bookmark navegador
+2026-02-16 - Detecção de links duplicados
+2026-02-16 - Soft Delete/Trash
+2026-02-16 - segurança de deleção
+2026-02-16 - drag & drop erro 1
+2026-02-16 - drag drop melhoria
+2026-02-16 - erro ao criar subcategoria
+2026-02-16 - Subcategoria
+2026-02-16 - erro 5 ao colar o link
+2026-02-16 - erro 4 ao colar o ink
+2026-02-16 - erro 3 ao colar o link
+2026-02-16 - erro 2 ao colar o link
+2026-02-16 - erro ao colar o link
+2026-02-16 - Link Preview
+2026-02-16 - Implementação de Export/Import
+2026-02-16 - correção erro dash 2
+2026-02-16 - correção de erro dashboard
+2026-02-16 - Busca Avançada
+2026-02-16 - otimização do projeto
+2026-02-15 - icone erro 2
+2026-02-15 - icon erro 1
+2026-02-15 - icon
+2026-02-15 - erro 4
+2026-02-15 - erro 4
+2026-02-15 - erro 3
+2026-02-15 - Remove leaked .env
+2026-02-15 - supabase - erro
+2026-02-15 - .env atualizado
+2026-02-15 - warning 2
+2026-02-15 - warning 1
+2026-02-15 - Atualizações para correção do drag & drop
+2026-02-15 - Merge branch 'main' of https://github.com/aluizr/internet-gems-finder
+2026-02-15 - Adicionado Drag & Drop
+2026-02-15 - Fix minify option in vite config
+2026-02-15 - Changes
+2026-02-15 - Corrigido fetch wrapper
+2026-02-15 - Changes
+2026-02-15 - Atualização de segurança.
+2026-02-15 - Add auth and validation
+2026-02-15 - Changes
+2026-02-14 - Add dark mode toggle in header
+2026-02-14 - Changes
+2026-02-14 - Add import/export JSON backup
+2026-02-14 - Changes
+2026-02-14 - Migrate to Supabase DB
+2026-02-14 - Changes
+2026-02-14 - Lovable update
+2026-02-14 - Changes
+2026-02-13 - Implement sidebar UI for links repository
+2026-02-13 - Changes
+2026-02-13 - Updated plan file
+2025-01-01 - template: new_style_vite_react_shadcn_ts_testing_2026-01-08
