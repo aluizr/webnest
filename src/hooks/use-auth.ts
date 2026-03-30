@@ -12,7 +12,17 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      // Se houver erro de refresh token, limpar sessão local
+      if (error && error.message.includes("Refresh Token")) {
+        logger.warn("auth.session.refresh_failed", null, { reason: error.message });
+        supabase.auth.signOut();
+        setSession(null);
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+      
       setSession(session);
       setUser(session?.user ?? null);
       logger.info("auth.session.bootstrap", { hasSession: Boolean(session?.user) });
