@@ -35,10 +35,12 @@ export default defineConfig(({ mode }) => ({
           server.middlewares.use("/og-proxy", (req, res) => {
             const rawUrl = new URL(req.url, "http://localhost:8080").searchParams.get("url");
             
-            console.log("[og-proxy] Request:", rawUrl);
+            console.log("[og-proxy] ========================================");
+            console.log("[og-proxy] Request received:", rawUrl);
+            console.log("[og-proxy] Full request URL:", req.url);
             
             if (!rawUrl) { 
-              console.error("[og-proxy] Missing url parameter");
+              console.error("[og-proxy] ERROR: Missing url parameter");
               res.statusCode = 400; 
               res.end("Missing url parameter"); 
               return; 
@@ -47,8 +49,9 @@ export default defineConfig(({ mode }) => ({
             // Validate URL format
             try {
               new URL(rawUrl);
+              console.log("[og-proxy] URL validation: PASSED");
             } catch (e) {
-              console.error("[og-proxy] Invalid URL format:", rawUrl, e.message);
+              console.error("[og-proxy] ERROR: Invalid URL format:", rawUrl, e.message);
               res.statusCode = 400;
               res.end("Invalid URL format");
               return;
@@ -73,6 +76,8 @@ export default defineConfig(({ mode }) => ({
               }
               
               console.log("[og-proxy] Fetching:", target.href);
+              console.log("[og-proxy] Hostname:", target.hostname);
+              console.log("[og-proxy] Protocol:", target.protocol);
               
               const client = target.protocol === "https:" ? https : http;
               const options = {
@@ -95,7 +100,10 @@ export default defineConfig(({ mode }) => ({
               };
               
               client.get(options, (upstream) => {
-                console.log("[og-proxy] Response status:", upstream.statusCode);
+                console.log("[og-proxy] Response received");
+                console.log("[og-proxy] Status code:", upstream.statusCode);
+                console.log("[og-proxy] Content-Type:", upstream.headers["content-type"]);
+                console.log("[og-proxy] Content-Length:", upstream.headers["content-length"]);
                 
                 // Follow redirects
                 if ([301, 302, 303, 307, 308].includes(upstream.statusCode) && upstream.headers.location) {
@@ -143,11 +151,18 @@ export default defineConfig(({ mode }) => ({
                 
                 // Log SVG specifically for debugging
                 if (contentType.includes("svg")) {
-                  console.log("[og-proxy] Serving SVG:", urlStr);
+                  console.log("[og-proxy] SUCCESS: Serving SVG:", urlStr);
+                } else {
+                  console.log("[og-proxy] SUCCESS: Serving image:", contentType);
                 }
                 
                 res.statusCode = 200;
                 upstream.pipe(res);
+                
+                res.on('finish', () => {
+                  console.log("[og-proxy] Response sent successfully");
+                  console.log("[og-proxy] ========================================");
+                });
               }).on("error", (err) => {
                 console.error("[og-proxy] Network error:", err.message, "for URL:", urlStr);
                 res.statusCode = 502; 
