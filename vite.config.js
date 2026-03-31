@@ -112,10 +112,22 @@ export default defineConfig(({ mode }) => ({
                   console.error("[og-proxy] Upstream error:", upstream.statusCode, urlStr);
                   
                   // Try fallback for known sites with broken OG images
-                  if (upstream.statusCode === 404 && target.hostname.includes('kaggle.com')) {
-                    console.log("[og-proxy] Trying Kaggle fallback logo");
-                    upstream.resume();
-                    return fetchUrl("https://www.kaggle.com/static/images/site-logo.svg", redirectCount);
+                  if (upstream.statusCode === 404) {
+                    const hostname = target.hostname;
+                    
+                    // Kaggle fallback
+                    if (hostname.includes('kaggle.com')) {
+                      console.log("[og-proxy] Trying Kaggle fallback logo");
+                      upstream.resume();
+                      return fetchUrl("https://www.kaggle.com/static/images/site-logo.svg", redirectCount);
+                    }
+                    
+                    // Joblib fallback
+                    if (hostname.includes('joblib.readthedocs.io')) {
+                      console.log("[og-proxy] Trying Joblib fallback logo");
+                      upstream.resume();
+                      return fetchUrl("https://joblib.readthedocs.io/en/stable/_static/joblib_logo.svg", redirectCount);
+                    }
                   }
                   
                   res.statusCode = upstream.statusCode;
