@@ -17,7 +17,9 @@ export function ensureProxied(imageUrl: string | null | undefined): string | nul
   
   // External URL - needs proxy
   if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-    return `/og-proxy?url=${encodeURIComponent(imageUrl)}`;
+    const proxied = `/og-proxy?url=${encodeURIComponent(imageUrl)}`;
+    console.log('[ensureProxied]', imageUrl, '->', proxied);
+    return proxied;
   }
   
   // Relative URL or data URL - no proxy needed
