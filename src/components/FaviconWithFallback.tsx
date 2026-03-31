@@ -98,9 +98,10 @@ export function FaviconWithFallback({
       const hostname = new URL(url).hostname;
       if (!hostname) return null;
       
-      // For Claude.ai, use a known working favicon through proxy
+      // For Claude.ai, skip favicon entirely - Cloudflare blocks everything
+      // Just show the avatar fallback
       if (hostname.includes('claude.ai')) {
-        return ensureProxied('https://claude.ai/images/claude_app_icon.png');
+        return null;
       }
       
       return `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
