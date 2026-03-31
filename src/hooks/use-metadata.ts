@@ -199,6 +199,7 @@ async function fetchFromNotion(url: string): Promise<LinkMetadata | null> {
  */
 async function fetchOgImageFromHtml(url: string): Promise<string | null> {
   try {
+    console.log("[fetchOgImageFromHtml] Fetching HTML from:", url);
     const response = await fetchWithTimeout(url, {
       method: "GET",
       headers: {
@@ -207,25 +208,32 @@ async function fetchOgImageFromHtml(url: string): Promise<string | null> {
       },
     });
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      console.log("[fetchOgImageFromHtml] Response not OK:", response.status);
+      return null;
+    }
 
     const html = await response.text();
+    console.log("[fetchOgImageFromHtml] HTML length:", html.length);
     
     // Try to extract og:image
     const ogImageMatch = html.match(/<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i);
     if (ogImageMatch && ogImageMatch[1]) {
+      console.log("[fetchOgImageFromHtml] Found OG image:", ogImageMatch[1]);
       return ogImageMatch[1];
     }
 
     // Try alternative format
     const ogImageMatch2 = html.match(/<meta\s+content=["']([^"']+)["']\s+property=["']og:image["']/i);
     if (ogImageMatch2 && ogImageMatch2[1]) {
+      console.log("[fetchOgImageFromHtml] Found OG image (alt format):", ogImageMatch2[1]);
       return ogImageMatch2[1];
     }
 
+    console.log("[fetchOgImageFromHtml] No OG image found in HTML");
     return null;
   } catch (err) {
-    console.debug("Failed to fetch OG image from HTML:", err);
+    console.debug("[fetchOgImageFromHtml] Error:", err);
     return null;
   }
 }
@@ -267,22 +275,32 @@ async function fetchFromMicrolink(url: string): Promise<LinkMetadata | null> {
 
     // Try to get OG image from original source
     let image = data.data.image?.url || null;
+    console.log("[fetchFromMicrolink] Microlink image:", image);
+    console.log("[fetchFromMicrolink] Microlink statusCode:", data.statusCode);
     
     // If no OG image and we got an error, try fetching directly from HTML
     if (!image && data.statusCode >= 400) {
-      console.debug("Microlink failed, trying direct HTML fetch for OG image");
+      console.log("[fetchFromMicrolink] Microlink failed, trying direct HTML fetch for OG image");
       image = await fetchOgImageFromHtml(url);
+      console.log("[fetchFromMicrolink] HTML fetch result:", image);
     }
     
     // If still no image, use screenshot as last resort
     if (!image) {
       image = data.data.screenshot?.url || null;
+      console.log("[fetchFromMicrolink] Using screenshot:", image);
     }
     
     // Extract original URL from proxy services to avoid CORS issues
     if (image) {
+      const originalImage = image;
       image = extractOriginalImageUrl(image);
+      if (originalImage !== image) {
+        console.log("[fetchFromMicrolink] Extracted from proxy:", originalImage, "->", image);
+      }
     }
+
+    console.log("[fetchFromMicrolink] Final image:", image);
 
     if (!title && !image && !data.data.description) return null;
 
