@@ -1,3 +1,5 @@
+2026-03-30 - feat: adiciona logs específicos para SVGs no proxy
+2026-03-30 - chore: atualiza commits-by-date.txt
 2026-03-30 - fix: detecta e limpa URLs com /og-proxy no banco de dados
 2026-03-30 - chore: atualiza commits-by-date.txt após reset
 2026-03-30 - fix: adiciona fallback para logo do Kaggle quando OG image retorna 404
