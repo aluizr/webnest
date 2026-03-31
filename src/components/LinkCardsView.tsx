@@ -3,6 +3,7 @@ import { Star, ExternalLink, Pencil, Trash2, StickyNote, GripVertical, Globe, Fl
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ensureProxied } from "@/lib/image-utils";
 import {
   Select,
   SelectContent,
@@ -1025,7 +1026,7 @@ export function LinkCardsView({
               )}
               {link.ogImage ? (
                 <img
-                  src={`/og-proxy?url=${encodeURIComponent(link.ogImage)}`}
+                  src={ensureProxied(link.ogImage)}
                   alt=""
                   loading="lazy"
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { ExternalLink, GripVertical, MoreHorizontal, Pencil, ShieldAlert, Star, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FaviconWithFallback } from "@/components/FaviconWithFallback";
+import { ensureProxied } from "@/lib/image-utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -548,7 +549,7 @@ export function LinkNotionView({
               >
                 {link.ogImage ? (
                   <img
-                    src={`/og-proxy?url=${encodeURIComponent(link.ogImage)}`}
+                    src={ensureProxied(link.ogImage)}
                     alt=""
                     loading="lazy"
                     className="h-full w-full object-cover"

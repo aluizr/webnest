@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { FaviconWithFallback } from "@/components/FaviconWithFallback";
+import { ensureProxied } from "@/lib/image-utils";
 import {
   Select,
   SelectContent,
@@ -909,7 +910,7 @@ export function LinkGalleryView({
             {link.ogImage ? (
               <div className="w-full overflow-hidden bg-muted">
                 <img
-                  src={`/og-proxy?url=${encodeURIComponent(link.ogImage)}`}
+                  src={ensureProxied(link.ogImage)}
                   alt=""
                   loading="lazy"
                   className="w-full object-cover transition-transform duration-300 group-hover:scale-105"

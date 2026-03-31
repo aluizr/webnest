@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ensureProxied } from "@/lib/image-utils";
 import {
   Select,
   SelectContent,
@@ -1108,7 +1109,7 @@ export function LinkBoardView({ links, onToggleFavorite, onUpdateLink, onEdit, o
                 {link.ogImage && (
                   <div className="w-full h-24 overflow-hidden bg-muted">
                     <img
-                      src={`/og-proxy?url=${encodeURIComponent(link.ogImage)}`}
+                      src={ensureProxied(link.ogImage)}
                       alt=""
                       loading="lazy"
                       className="w-full h-full object-cover"
