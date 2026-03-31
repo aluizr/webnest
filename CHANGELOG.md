@@ -2,14 +2,47 @@
 
 Todas as mudanças relevantes deste projeto estão documentadas neste arquivo.
 
-Versão mais recente: [0.14.2 — 2026-03-11](CHANGELOG.md#0142--2026-03-11)
+Versão mais recente: [0.14.3 — 2026-03-31](CHANGELOG.md#0143--2026-03-31)
 
 | Versão | Data | Link |
 | --- | --- | --- |
+| 0.14.3 | 2026-03-31 | [Ver mudanças](CHANGELOG.md#0143--2026-03-31) |
 | 0.14.2 | 2026-03-11 | [Ver mudanças](CHANGELOG.md#0142--2026-03-11) |
 | 0.14.1 | 2026-03-06 | [Ver mudanças](CHANGELOG.md#0141--2026-03-06) |
 | 0.14.0 | 2026-02-22 | [Ver mudanças](CHANGELOG.md#0140--2026-02-22) |
 | 0.13.0 | 2026-02-21 | [Ver mudanças](CHANGELOG.md#0130--2026-02-21) |
+
+---
+
+## [0.14.3] — 2026-03-31
+
+### Correções de Thumbnails e Sistema de Proxy
+
+`Thumbnails`
+
+- **Corrigido carregamento de thumbnails em todos os modos de visualização**: Removido `ensureProxied()` que causava falhas no carregamento de imagens
+- **Modo lista (LinkNotionView) corrigido**: Thumbnails agora aparecem corretamente no modo lista
+- **Consistência entre visualizações**: Todos os modos (grade, lista, cards, gallery, board) agora usam `link.ogImage` diretamente
+- **Logs de debug adicionados**: Facilita investigação de problemas futuros com carregamento de imagens
+
+`Sistema de Proxy e Fallbacks`
+
+- **Melhorado sistema de fallback de imagens**: Validação de URLs relativas e conversão automática para absolutas
+- **Dicionário de fallbacks conhecidos**: Claude.ai, Kaggle, Joblib, NanoBanana com imagens alternativas
+- **Favicon do Claude.ai corrigido**: Usa `claude_app_icon.png` através do proxy para evitar bloqueio CORS
+- **Proxy otimizado**: Google Favicon Service não usa mais proxy (já tem CORS permissivo)
+
+`Ferramentas de Diagnóstico`
+
+- **Exportação de relatório de thumbnails**: Botão para exportar JSON com estatísticas completas
+- **Funções de limpeza em lote**: "Limpar Imagens", "Limpar Favicons", "Re-buscar Todos"
+- **Verificação de status**: Diagnóstico mostra quais thumbnails carregam e quais falham
+
+`Integração Notion`
+
+- **HTML proxy para metadados**: Busca og:image, og:title, og:description via servidor quando Microlink falha
+- **Fallbacks inteligentes**: Tenta Notion API → Microlink → HTML proxy → Fallbacks conhecidos → Screenshot
+- **Token armazenado localmente**: Configuração do Notion API key em localStorage
 
 ---
 
