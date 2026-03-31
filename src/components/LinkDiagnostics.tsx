@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Image, AlertCircle, CheckCircle, XCircle, RefreshCw, Wand2 } from "lucide-react";
+import { ExternalLink, Image, AlertCircle, CheckCircle, XCircle, RefreshCw, Wand2, Download } from "lucide-react";
 import { useMetadata } from "@/hooks/use-metadata";
 import { toast } from "sonner";
 import type { LinkItem } from "@/types/link";
@@ -401,6 +401,43 @@ export function LinkDiagnostics({ links, onUpdateLink }: LinkDiagnosticsProps) {
     }
   };
 
+  const exportReport = () => {
+    if (results.length === 0) {
+      toast.info("Execute o diagnóstico primeiro!");
+      return;
+    }
+
+    const report = {
+      timestamp: new Date().toISOString(),
+      stats,
+      links: results.map(r => ({
+        id: r.link.id,
+        url: r.link.url,
+        title: r.link.title,
+        hasOgImage: r.hasOgImage,
+        ogImageUrl: r.link.ogImage,
+        ogImageStatus: r.ogImageStatus,
+        ogImageError: r.ogImageError,
+        hasFavicon: r.hasFavicon,
+        faviconUrl: r.link.favicon,
+        faviconStatus: r.faviconStatus,
+        faviconError: r.faviconError,
+      }))
+    };
+
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `thumbnail-report-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast.success("Relatório exportado!");
+  };
+
   const filteredResults = results.filter((r) => {
     if (filter === "missing-thumb") return !r.hasOgImage || r.ogImageStatus === "error";
     if (filter === "missing-favicon") return !r.hasFavicon || r.faviconStatus === "error";
@@ -433,6 +470,14 @@ export function LinkDiagnostics({ links, onUpdateLink }: LinkDiagnosticsProps) {
             
             {results.length > 0 && (
               <>
+                <Button 
+                  onClick={exportReport} 
+                  variant="outline"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Exportar Relatório
+                </Button>
+                
                 <Button 
                   onClick={ensureAllImagesUseProxy} 
                   disabled={fixing.size > 0}
