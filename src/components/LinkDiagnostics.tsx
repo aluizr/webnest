@@ -279,6 +279,50 @@ export function LinkDiagnostics({ links, onUpdateLink }: LinkDiagnosticsProps) {
     toast.success("Correção em lote concluída!");
   };
 
+  const ensureAllImagesUseProxy = async () => {
+    // Find all links with external images not using proxy
+    const linksNeedingProxy = results.filter(
+      (r) => r.hasOgImage && 
+             r.link.ogImage.startsWith('http') && 
+             !r.link.ogImage.startsWith('/og-proxy')
+    );
+    
+    if (linksNeedingProxy.length === 0) {
+      toast.info("Todas as imagens já usam proxy!");
+      return;
+    }
+
+    toast.info(`Atualizando ${linksNeedingProxy.length} imagens para usar proxy...`);
+    
+    let updated = 0;
+    for (const result of linksNeedingProxy) {
+      setFixing((prev) => new Set(prev).add(result.link.id));
+      
+      try {
+        // Don't double-encode if already has /og-proxy
+        const cleanUrl = cleanProxyUrl(result.link.ogImage);
+        
+        // Update to use proxy
+        onUpdateLink(result.link.id, { 
+          ogImage: cleanUrl 
+        });
+        
+        updated++;
+      } catch (err) {
+        console.error("Error updating link:", result.link.id, err);
+      } finally {
+        setFixing((prev) => {
+          const next = new Set(prev);
+          next.delete(result.link.id);
+          return next;
+        });
+      }
+    }
+    
+    await runDiagnostics();
+    toast.success(`${updated} imagens atualizadas para usar proxy!`);
+  };
+
   const filteredResults = results.filter((r) => {
     if (filter === "missing-thumb") return !r.hasOgImage || r.ogImageStatus === "error";
     if (filter === "missing-favicon") return !r.hasFavicon || r.faviconStatus === "error";
@@ -308,6 +352,17 @@ export function LinkDiagnostics({ links, onUpdateLink }: LinkDiagnosticsProps) {
             <Button onClick={runDiagnostics} disabled={checking || links.length === 0}>
               {checking ? "Verificando..." : "Iniciar Diagnóstico"}
             </Button>
+            
+            {results.length > 0 && (
+              <Button 
+                onClick={ensureAllImagesUseProxy} 
+                disabled={fixing.size > 0}
+                variant="default"
+              >
+                <Wand2 className="h-4 w-4 mr-2" />
+                Garantir Proxy em Todas
+              </Button>
+            )}
             
             {results.length > 0 && stats.proxyUrls > 0 && (
               <Button 
