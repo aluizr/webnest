@@ -216,11 +216,22 @@ async function fetchFromMicrolink(url: string): Promise<LinkMetadata | null> {
 
     const rawTitle = data.data.title || null;
     const isErrorTitle = rawTitle && /^error:/i.test(rawTitle.trim());
-    const title = isErrorTitle ? null : rawTitle;
+    
+    // If title is an error but we have a screenshot, try to derive title from URL
+    let title = isErrorTitle ? null : rawTitle;
+    if (!title && data.data.screenshot?.url) {
+      try {
+        const urlObj = new URL(url);
+        const hostname = urlObj.hostname.replace(/^www\./i, "");
+        title = hostname.split('.')[0].charAt(0).toUpperCase() + hostname.split('.')[0].slice(1);
+      } catch {
+        title = null;
+      }
+    }
 
-    // Don't use screenshot if the page returned an error status (e.g. 403 CloudFront block)
-    const isErrorStatus = data.statusCode >= 400;
-    let image = data.data.image?.url || (!isErrorStatus ? data.data.screenshot?.url : null) || null;
+    // Use screenshot as fallback when no OG image is available
+    // Screenshot is useful for JS-rendered sites even if they return error status
+    let image = data.data.image?.url || data.data.screenshot?.url || null;
     
     // Extract original URL from proxy services to avoid CORS issues
     if (image) {
