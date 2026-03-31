@@ -125,8 +125,15 @@ export default defineConfig(({ mode }) => ({
                 
                 res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
                 res.setHeader("Access-Control-Allow-Origin", "*");
-                res.setHeader("Content-Type", upstream.headers["content-type"] || "image/jpeg");
+                const contentType = upstream.headers["content-type"] || "image/jpeg";
+                res.setHeader("Content-Type", contentType);
                 res.setHeader("Cache-Control", "public, max-age=86400");
+                
+                // Log SVG specifically for debugging
+                if (contentType.includes("svg")) {
+                  console.log("[og-proxy] Serving SVG:", urlStr);
+                }
+                
                 res.statusCode = 200;
                 upstream.pipe(res);
               }).on("error", (err) => {
