@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ensureProxied } from "@/lib/image-utils";
 
 /**
  * Paleta de cores consistente para avatares de fallback.
@@ -83,11 +84,15 @@ export function FaviconWithFallback({
 
   // Determinar URL do favicon
   const faviconUrl = (() => {
-    if (favicon && favicon.startsWith("http")) return favicon;
+    // If custom favicon provided, use proxy for external URLs
+    if (favicon && favicon.startsWith("http")) {
+      return ensureProxied(favicon);
+    }
+    
+    // Otherwise use Google favicon service (more permissive with CORP)
     try {
       const hostname = new URL(url).hostname;
       if (!hostname) return null;
-      // Google favicon service is more permissive with CORP headers
       return `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
     } catch {
       return null;
