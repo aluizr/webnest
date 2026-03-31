@@ -549,11 +549,13 @@ export function LinkNotionView({
               >
                 {link.ogImage ? (
                   <img
-                    src={ensureProxied(link.ogImage)}
+                    src={ensureProxied(link.ogImage) || link.ogImage}
                     alt=""
                     loading="lazy"
                     className="h-full w-full object-cover"
+                    onLoad={() => console.log('[LinkNotionView] Image loaded:', link.ogImage)}
                     onError={(e) => {
+                      console.error('[LinkNotionView] Image failed:', link.ogImage, 'proxied:', ensureProxied(link.ogImage));
                       e.currentTarget.style.display = "none";
                     }}
                   />
