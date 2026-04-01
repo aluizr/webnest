@@ -1,0 +1,61 @@
+{
+  "status": "success",
+  "data": {
+    "lang": "pt",
+    "author": "Irina Zubova",
+    "title": "CRM Analytics",
+    "date": "2026-03-30T00:00:00Z",
+    "description": "Insights visuais e previsões baseadas em IA incorporadas diretamente em seu CRM.",
+    "url": "https://www.salesforce.com/br/analytics/crm/",
+    "publisher": "Salesforce",
+    "image": {
+      "url": "https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2023/04/og-salescloud-pdp.jpg?w=1024",
+      "type": "jpg",
+      "size": 28184,
+      "height": 576,
+      "width": 1024,
+      "size_pretty": "28.2 kB"
+    },
+    "logo": {
+      "url": "https://www.salesforce.com/c2/public/app/favicon.ico",
+      "type": "ico",
+      "size": 5430,
+      "height": 16,
+      "width": 16,
+      "size_pretty": "5.43 kB"
+    },
+    "screenshot": {
+      "size_pretty": "593 kB",
+      "size": 593064,
+      "type": "png",
+      "url": "https://iad.microlink.io/URbAFD9Kqfi3HSse1btuYSvvWqjERrHpr5znzw3usNvcV9TgIdbOyVUGhcExHjTkDtyR9RKKoaD1a3Yd5p2xIQ.png",
+      "width": 2560,
+      "height": 1600
+    }
+  },
+  "statusCode": 200,
+  "redirects": [],
+  "headers": {
+    "ak-uuid": "0.c485d817.1775066963.3585c80d",
+    "cache-control": "max-age=85702",
+    "content-encoding": "gzip",
+    "content-type": "text/html; charset=utf-8",
+    "date": "Wed, 01 Apr 2026 18:09:23 GMT",
+    "etag": "W/\"a1058-qTP2tF0FIz9L4hLCCjIwKb6+Vv0\"",
+    "expires": "Thu, 02 Apr 2026 17:57:45 GMT",
+    "origin-agent-cluster": "?1",
+    "referrer-policy": "strict-origin-when-cross-origin",
+    "server-timing": "cdn-cache; desc=HIT\nedge; dur=31\norigin; dur=0\nak_p; desc=\"1775066963064_400065988_897959949_3114_286558_1_53_255\";dur=1",
+    "vary": "Accept-Encoding",
+    "x-akamai-transformed": "9 66100 0 pmb=mRUM,2",
+    "x-content-type-options": "nosniff",
+    "x-dns-prefetch-control": "on",
+    "x-download-options": "noopen",
+    "x-frame-options": "SAMEORIGIN",
+    "x-permitted-cross-domain-policies": "master-only",
+    "x-sfdc-agent-cohort-apply-experiment": "false",
+    "x-sfdc-agent-cohort-decision": "",
+    "x-sfdc-agent-cohort-source": "experiment-disabled",
+    "x-xss-protection": "0"
+  }
+}

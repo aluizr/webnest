@@ -280,6 +280,7 @@ export const KNOWN_FALLBACKS: Record<string, string> = (() => {
     'x.com': 'https://abs.twimg.com/icons/apple-touch-icon-192x192.png',
     'youtube.com': 'https://www.youtube.com/img/desktop/yt_1200.png',
     'medium.com': 'https://miro.medium.com/v2/1*m-R_BkNf1Qjr1YbyOIJY2w.png',
+    'greenhouse.io': 'https://mma.prnewswire.com/media/1802066/Greenhouse_Logo.jpg',
   };
 })();
 
@@ -419,17 +420,35 @@ async function fetchFromMicrolink(url: string): Promise<LinkMetadata | null> {
       headers: { Accept: "application/json" },
     });
 
-    if (response.status === 400) return null;
-    
-    // Se atingiu o limite (429), pular Microlink e ir direto para fallbacks
-    if (response.status === 429) {
-      console.warn("[fetchFromMicrolink] Rate limit atingido (429), usando fallbacks");
-      // Salvar flag no localStorage para mostrar aviso
-      localStorage.setItem("webnest:microlink_rate_limit", Date.now().toString());
+    if (!response.ok) {
+      if (response.status === 429) {
+        console.warn("[fetchFromMicrolink] Rate limit atingido (429), usando fallbacks");
+        localStorage.setItem("webnest:microlink_rate_limit", Date.now().toString());
+      } else {
+        console.warn(`[fetchFromMicrolink] HTTP Error ${response.status}, checking for known fallbacks`);
+      }
+      
+      // If we have a known fallback, use it even if Microlink failed completely (like Greenhouse's 400 error)
+      const fallback = getKnownFallback(url);
+      if (fallback) {
+        let title = null;
+        try {
+          const urlObj = new URL(url);
+          const hostname = urlObj.hostname.replace(/^www\./i, "");
+          title = hostname.split('.')[0].charAt(0).toUpperCase() + hostname.split('.')[0].slice(1);
+        } catch {}
+        return {
+          title,
+          description: null,
+          image: fallback,
+          favicon: getKnownFaviconFallback(url),
+          loading: false,
+          error: null,
+          source: "microlink",
+        };
+      }
       return null;
     }
-    
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
     const data = await response.json();
     if (!data.data) return null;
@@ -449,20 +468,18 @@ async function fetchFromMicrolink(url: string): Promise<LinkMetadata | null> {
       }
     }
 
-    // Try to get OG image from original source
-    let image = data.data.image?.url || null;
-    console.log("[fetchFromMicrolink] Microlink image:", image);
-    console.log("[fetchFromMicrolink] Microlink statusCode:", data.statusCode);
-    
-    // If no OG image, try known fallbacks for specific domains FIRST
-    // This avoids unnecessary HTML fetches for sites we know are blocked
-    if (!image) {
-      const fallback = getKnownFallback(url);
-      if (fallback) {
-        console.log("[fetchFromMicrolink] Using known fallback:", fallback);
-        image = fallback;
-      }
+    // Check known fallbacks FIRST, overriding Microlink's returned image
+    // This is crucial for domains where we know their OG image is broken or completely blocked by CORS in the browser
+    let image = null;
+    const fallback = getKnownFallback(url);
+    if (fallback) {
+      console.log("[fetchFromMicrolink] Using known fallback (overriding original image):", fallback);
+      image = fallback;
+    } else {
+      image = data.data.image?.url || null;
+      console.log("[fetchFromMicrolink] Microlink image:", image);
     }
+    console.log("[fetchFromMicrolink] Microlink statusCode:", data.statusCode);
     
     // If still no image, try fetching directly from HTML
     // This works for sites that Microlink can't access but we can
