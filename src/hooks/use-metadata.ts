@@ -13,14 +13,50 @@ export interface LinkMetadata {
 }
 
 // LRU cache with bounded size for metadata requests
+// Persiste no localStorage para sobreviver a reloads
 class LRUCache<K, V> {
   private maxSize: number;
   private cache = new Map<K, { value: V; timestamp: number }>();
   private expiry: number;
+  private storageKey: string;
 
-  constructor(maxSize = 100, expiryMs = 24 * 60 * 60 * 1000) {
+  constructor(maxSize = 100, expiryMs = 24 * 60 * 60 * 1000, storageKey = "webnest:metadata_cache") {
     this.maxSize = maxSize;
     this.expiry = expiryMs;
+    this.storageKey = storageKey;
+    this.loadFromStorage();
+  }
+
+  private loadFromStorage(): void {
+    try {
+      const stored = localStorage.getItem(this.storageKey);
+      if (stored) {
+        const data = JSON.parse(stored);
+        const now = Date.now();
+        // Carregar apenas entradas não expiradas
+        for (const [key, entry] of Object.entries(data)) {
+          const typedEntry = entry as { value: V; timestamp: number };
+          if (now - typedEntry.timestamp < this.expiry) {
+            this.cache.set(key as K, typedEntry);
+          }
+        }
+        console.log(`[LRUCache] Carregadas ${this.cache.size} entradas do cache`);
+      }
+    } catch (err) {
+      console.warn("[LRUCache] Erro ao carregar cache:", err);
+    }
+  }
+
+  private saveToStorage(): void {
+    try {
+      const data: Record<string, { value: V; timestamp: number }> = {};
+      for (const [key, entry] of this.cache.entries()) {
+        data[key as string] = entry;
+      }
+      localStorage.setItem(this.storageKey, JSON.stringify(data));
+    } catch (err) {
+      console.warn("[LRUCache] Erro ao salvar cache:", err);
+    }
   }
 
   get(key: K): V | undefined {
@@ -28,6 +64,7 @@ class LRUCache<K, V> {
     if (!entry) return undefined;
     if (Date.now() - entry.timestamp > this.expiry) {
       this.cache.delete(key);
+      this.saveToStorage();
       return undefined;
     }
     // Move to end (most recently used)
@@ -45,6 +82,7 @@ class LRUCache<K, V> {
       if (oldest !== undefined) this.cache.delete(oldest);
     }
     this.cache.set(key, { value, timestamp: Date.now() });
+    this.saveToStorage();
   }
 }
 
@@ -201,7 +239,14 @@ const KNOWN_FALLBACKS: Record<string, string> = {
   'claude.ai': 'https://claude.ai/images/claude_ogimage.png',
   'kaggle.com': 'https://www.kaggle.com/static/images/site-logo.svg',
   'joblib.readthedocs.io': 'https://joblib.readthedocs.io/en/stable/_static/joblib_logo.svg',
-  'nanobananaimg.com': 'https://nanobananaimg.com/favicon.ico', // Fallback to favicon if OG image doesn't exist
+  'nanobananaimg.com': 'https://nanobananaimg.com/favicon.ico',
+  'salesforce.com': 'https://www.salesforce.com/content/dam/sfdc-docs/www/logos/logo-salesforce.svg',
+  'github.com': 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png',
+  'linkedin.com': 'https://static.licdn.com/aero-v1/sc/h/al2o9zrvru7aqj8e1x2rzsrca',
+  'twitter.com': 'https://abs.twimg.com/icons/apple-touch-icon-192x192.png',
+  'x.com': 'https://abs.twimg.com/icons/apple-touch-icon-192x192.png',
+  'youtube.com': 'https://www.youtube.com/img/desktop/yt_1200.png',
+  'medium.com': 'https://miro.medium.com/v2/1*m-R_BkNf1Qjr1YbyOIJY2w.png',
 };
 
 /**
@@ -325,6 +370,15 @@ async function fetchFromMicrolink(url: string): Promise<LinkMetadata | null> {
     });
 
     if (response.status === 400) return null;
+    
+    // Se atingiu o limite (429), pular Microlink e ir direto para fallbacks
+    if (response.status === 429) {
+      console.warn("[fetchFromMicrolink] Rate limit atingido (429), usando fallbacks");
+      // Salvar flag no localStorage para mostrar aviso
+      localStorage.setItem("webnest:microlink_rate_limit", Date.now().toString());
+      return null;
+    }
+    
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
     const data = await response.json();

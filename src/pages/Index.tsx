@@ -4,6 +4,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { NotionSettingsDialog } from "@/components/NotionSettingsDialog";
 import { LinkDiagnostics } from "@/components/LinkDiagnostics";
+import { MicrolinkRateLimitWarning } from "@/components/MicrolinkRateLimitWarning";
+import { useMicrolinkRateLimit } from "@/hooks/use-microlink-rate-limit";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { LinkCard } from "@/components/LinkCard";
@@ -44,6 +46,7 @@ interface IndexProps {
 
 const Index = ({ user, onSignOut }: IndexProps) => {
   const isMobile = useIsMobile();
+  const { isRateLimited, dismiss: dismissRateLimit, timeRemaining } = useMicrolinkRateLimit();
   const {
     links,
     categories,
@@ -608,6 +611,14 @@ const Index = ({ user, onSignOut }: IndexProps) => {
             categories={categories}
             onNavigate={(cat) => handleSidebarFilter({ type: cat ? "category" : "all", value: cat ?? undefined })}
           />
+
+          {/* Microlink Rate Limit Warning */}
+          {isRateLimited && (
+            <MicrolinkRateLimitWarning 
+              onDismiss={dismissRateLimit}
+              timeRemaining={timeRemaining}
+            />
+          )}
 
           {showManualReorderHint && (
             <div className="mt-3 rounded-md border border-border/70 bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
