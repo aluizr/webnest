@@ -24,6 +24,7 @@ import { useActivityLog } from "@/hooks/use-activity-log";
 import { useDragDropManager } from "@/hooks/use-drag-drop-manager";
 import { toast } from "sonner";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { useThumbnailBatchFetch } from "@/hooks/use-thumbnail-batch-fetch";
 import type { LinkItem, SearchFilters, ViewMode } from "@/types/link";
 import type { User } from "@supabase/supabase-js";
 
@@ -72,6 +73,8 @@ const Index = ({ user, onSignOut }: IndexProps) => {
     updateCategoryColor,
     updateCategoryIcon,
   } = useLinks(user.id);
+
+  const { startBatchThumbnailFetch } = useThumbnailBatchFetch();
 
   const {
     dragState,
@@ -451,6 +454,10 @@ const Index = ({ user, onSignOut }: IndexProps) => {
     let successCount = 0;
     let errorCount = 0;
     const errors: string[] = [];
+
+    // Snapshot of existing link URLs to detect which ones are truly new after import
+    const urlsBefore = new Set(links.map((l) => l.url));
+
     for (let index = 0; index < importedLinks.length; index++) {
       const linkData = importedLinks[index];
       try {
@@ -470,6 +477,32 @@ const Index = ({ user, onSignOut }: IndexProps) => {
       if (errors.length <= 5) {
         console.error("Erros de importação:", errors.join("\n"));
       }
+    }
+
+    // Kick off background thumbnail fetch for newly imported links without ogImage.
+    // We wait a tick so that React has flushed the state update from addLink.
+    if (successCount > 0) {
+      setTimeout(() => {
+        // links state may not have updated yet inside this closure — read from the
+        // importedLinks list instead and match by URL after the import.
+        const needsThumbs = importedLinks
+          .filter((l) => !l.ogImage && !urlsBefore.has(l.url));
+
+        if (needsThumbs.length === 0) return;
+
+        // We don't have the real DB IDs at this point (addLink is fire-and-forget).
+        // Schedule a second tick to read IDs from the updated links state.
+        setTimeout(() => {
+          const newUrlSet = new Set(needsThumbs.map((l) => l.url));
+          const pending = links
+            .filter((l) => newUrlSet.has(l.url) && !l.ogImage)
+            .map((l) => ({ id: l.id, url: l.url }));
+
+          if (pending.length > 0) {
+            startBatchThumbnailFetch(pending, (id, data) => updateLink(id, data));
+          }
+        }, 1500);
+      }, 200);
     }
   };
 

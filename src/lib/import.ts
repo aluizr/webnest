@@ -50,6 +50,7 @@ export function parseCSV(content: string): ImportResult {
   const statusIdx = headers.findIndex(h => h.includes('status'));
   const priorityIdx = headers.findIndex(h => h.includes('priority') || h.includes('prioridade'));
   const dueDateIdx = headers.findIndex(h => h.includes('due') || h.includes('prazo'));
+  const ogImageIdx = headers.findIndex(h => h.includes('ogimage') || h.includes('og_image') || h.includes('image'));
 
   // Parse data rows
   for (let i = 1; i < lines.length; i++) {
@@ -77,6 +78,7 @@ export function parseCSV(content: string): ImportResult {
       const isFavorite = favoriteStr === 'yes' || favoriteStr === 'true' || favoriteStr === '1';
 
       // Create linkItem and validate with Zod
+      const ogImage = ogImageIdx >= 0 ? (fields[ogImageIdx]?.trim() || '') : '';
       const linkData = {
         title,
         url,
@@ -86,6 +88,7 @@ export function parseCSV(content: string): ImportResult {
         notes,
         isFavorite,
         favicon: '',
+        ogImage,
         status,
         priority,
         dueDate,
@@ -179,6 +182,7 @@ export function parseHTML(content: string): ImportResult {
   const statusIdx = headers.findIndex(h => h.includes('status'));
   const priorityIdx = headers.findIndex(h => h.includes('priority') || h.includes('prioridade'));
   const dueDateIdx = headers.findIndex(h => h.includes('due') || h.includes('prazo'));
+  const ogImageIdx = headers.findIndex(h => h.includes('ogimage') || h.includes('og_image') || h.includes('image'));
 
   const links: Omit<LinkItem, "id" | "createdAt" | "position">[] = [];
   const errors: Array<{ row: number; error: string }> = [];
@@ -212,6 +216,7 @@ export function parseHTML(content: string): ImportResult {
         : [];
       const isFavorite = favoriteStr === '★' || favoriteStr === 'yes' || favoriteStr === 'true';
 
+      const ogImage = ogImageIdx >= 0 ? (texts[ogImageIdx]?.trim() || '') : '';
       const linkData = {
         title,
         url,
@@ -221,6 +226,7 @@ export function parseHTML(content: string): ImportResult {
         notes,
         isFavorite,
         favicon: '',
+        ogImage,
         status,
         priority,
         dueDate,
@@ -269,6 +275,8 @@ export function parseJSON(content: string): ImportResult {
           notes: item.notes || '',
           isFavorite: !!item.isFavorite,
           favicon: item.favicon || '',
+          // Preserve ogImage from exported WebNest backups (camelCase or snake_case)
+          ogImage: item.ogImage || item.og_image || '',
           status: normalizeStatus(item.status),
           priority: normalizePriority(item.priority),
           dueDate: item.dueDate || null,
@@ -323,6 +331,7 @@ export function parseBookmarks(content: string): ImportResult {
           notes: '',
           isFavorite: false,
           favicon: link.favicon,
+          ogImage: '', // Bookmarks format does not carry OG images
         };
 
         const validated = linkSchema.parse(linkData);

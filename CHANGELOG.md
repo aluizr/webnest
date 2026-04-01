@@ -2,15 +2,47 @@
 
 Todas as mudanças relevantes deste projeto estão documentadas neste arquivo.
 
-Versão mais recente: [0.14.3 — 2026-03-31](CHANGELOG.md#0143--2026-03-31)
+Versão mais recente: [0.14.4 — 2026-04-01](CHANGELOG.md#0144--2026-04-01)
 
 | Versão | Data | Link |
 | --- | --- | --- |
+| 0.14.4 | 2026-04-01 | [Ver mudanças](CHANGELOG.md#0144--2026-04-01) |
 | 0.14.3 | 2026-03-31 | [Ver mudanças](CHANGELOG.md#0143--2026-03-31) |
 | 0.14.2 | 2026-03-11 | [Ver mudanças](CHANGELOG.md#0142--2026-03-11) |
 | 0.14.1 | 2026-03-06 | [Ver mudanças](CHANGELOG.md#0141--2026-03-06) |
 | 0.14.0 | 2026-02-22 | [Ver mudanças](CHANGELOG.md#0140--2026-02-22) |
 | 0.13.0 | 2026-02-21 | [Ver mudanças](CHANGELOG.md#0130--2026-02-21) |
+
+---
+
+## [0.14.4] — 2026-04-01
+
+### Correções de Importação de Thumbnails (P0)
+
+`Importação`
+
+- **`ogImage` preservado na importação JSON**: backups exportados pelo próprio WebNest agora restauram as thumbnails corretamente (mapeamento de `item.ogImage` e `item.og_image`)
+- **`ogImage` suportado na importação CSV**: coluna `ogImage`, `og_image` ou `image` é detectada automaticamente e preservada
+- **`ogImage` suportado na importação HTML**: mesmo comportamento do CSV — coluna mapeada por cabeçalho
+- **Bookmarks explicitamente sem `ogImage`**: formato Netscape não carrega OG images; campo setado como string vazia com comentário explicativo
+
+`Componentes`
+
+- **Remoção da função `getFaviconUrl()` duplicada no `LinkCard`**: a função local usava `icon.horse` enquanto `FaviconWithFallback` internamente usava Google Favicon Service — as duas fontes competiam e o proxy era aplicado duplamente. `link.favicon` agora é passado diretamente ao componente, que já centraliza toda a lógica de fallback
+
+`Fetch em Lote Pós-Importação (P1)`
+
+- **Novo hook `use-thumbnail-batch-fetch.ts`**: após uma importação, links sem `ogImage` são automaticamente enfileirados para busca de thumbnail em background
+- **Processamento em lotes de 2** com 600ms de pausa entre lotes para não sobrecarregar a API do Microlink nem o `/html-proxy`
+- **Cadeia de fallback completa**: Microlink → `/html-proxy` → screenshot do Microlink (com guard). Thumbnails encontradas são persistidas no banco via `updateLink`
+- **Toast de progresso**: `🖼 Buscando thumbnails… N/total` enquanto o fetch roda; ao final exibe quantas foram encontradas
+- **Nenhuma ação do usuário necessária**: o processo começa automaticamente ~1,7s após a confirmação da importação, tempo suficiente para o estado React ser atualizado com os IDs reais dos links recém-criados
+
+`Validação de Screenshot do Microlink (P1)`
+
+- **Guard contra screenshots de páginas de erro**: quando o Microlink retorna um screenshot mas o título da página indica erro (ex: `Error: 403`, `Access Denied`, `404 Not Found`, `429 Too Many Requests`), o screenshot é descartado em vez de ser salvo como thumbnail
+- Padrão detectado por regex cobrindo: prefixo `error:`, códigos HTTP 403/404/429/500/502/503, e frases como `forbidden`, `not found`, `rate limit`, `unauthorized`
+- Mesmo guard aplicado no hook `use-thumbnail-batch-fetch.ts`
 
 ---
 

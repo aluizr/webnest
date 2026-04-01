@@ -84,6 +84,13 @@ class LRUCache<K, V> {
     this.cache.set(key, { value, timestamp: Date.now() });
     this.saveToStorage();
   }
+
+  delete(key: K): void {
+    if (this.cache.has(key)) {
+      this.cache.delete(key);
+      this.saveToStorage();
+    }
+  }
 }
 
 const metadataCache = new LRUCache<string, LinkMetadata>(100);
@@ -154,10 +161,31 @@ function extractOriginalImageUrl(imageUrl: string): string {
       }
     }
     
+    // Imgix, Unsplash
+    if (url.hostname.includes('imgix.net') || url.hostname === 'images.unsplash.com') {
+      const original = new URL(imageUrl);
+      original.search = '';
+      return original.toString();
+    }
+    
     return imageUrl;
   } catch {
     return imageUrl;
   }
+}
+
+export function invalidateThumbnailCache(url: string) {
+  let normalizedUrl = url.trim();
+  try {
+    const parsedUrl = new URL(normalizedUrl);
+    normalizedUrl = parsedUrl.origin + parsedUrl.pathname + parsedUrl.search;
+  } catch {
+    if (!normalizedUrl.startsWith("http://") && !normalizedUrl.startsWith("https://")) {
+      normalizedUrl = "https://" + normalizedUrl;
+    }
+  }
+  metadataCache.delete(normalizedUrl);
+  metadataCache.delete(url.trim());
 }
 
 function buildLocalFallback(url: string): LinkMetadata {
@@ -235,31 +263,53 @@ async function fetchFromNotion(url: string): Promise<LinkMetadata | null> {
 /**
  * Known fallback images for sites that block scraping or have broken OG images
  */
-const KNOWN_FALLBACKS: Record<string, string> = {
-  'claude.ai': 'https://claude.ai/images/claude_ogimage.png',
-  'kaggle.com': 'https://www.kaggle.com/static/images/site-logo.svg',
-  'joblib.readthedocs.io': 'https://joblib.readthedocs.io/en/stable/_static/joblib_logo.svg',
-  'nanobananaimg.com': 'https://nanobananaimg.com/favicon.ico',
-  'salesforce.com': 'https://www.salesforce.com/content/dam/sfdc-docs/www/logos/logo-salesforce.svg',
-  'github.com': 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png',
-  'linkedin.com': 'https://static.licdn.com/aero-v1/sc/h/al2o9zrvru7aqj8e1x2rzsrca',
-  'twitter.com': 'https://abs.twimg.com/icons/apple-touch-icon-192x192.png',
-  'x.com': 'https://abs.twimg.com/icons/apple-touch-icon-192x192.png',
-  'youtube.com': 'https://www.youtube.com/img/desktop/yt_1200.png',
-  'medium.com': 'https://miro.medium.com/v2/1*m-R_BkNf1Qjr1YbyOIJY2w.png',
-};
+export const KNOWN_FALLBACKS: Record<string, string> = (() => {
+  try {
+    const stored = localStorage.getItem("webnest:known_fallbacks");
+    if (stored) return JSON.parse(stored);
+  } catch {}
+  return {
+    'claude.ai': 'https://claude.ai/images/claude_ogimage.png',
+    'kaggle.com': 'https://www.kaggle.com/static/images/site-logo.svg',
+    'joblib.readthedocs.io': 'https://joblib.readthedocs.io/en/stable/_static/joblib_logo.svg',
+    'nanobananaimg.com': 'https://nanobananaimg.com/favicon.ico',
+    'salesforce.com': 'https://www.salesforce.com/content/dam/sfdc-docs/www/logos/logo-salesforce.svg',
+    'github.com': 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png',
+    'linkedin.com': 'https://static.licdn.com/aero-v1/sc/h/al2o9zrvru7aqj8e1x2rzsrca',
+    'twitter.com': 'https://abs.twimg.com/icons/apple-touch-icon-192x192.png',
+    'x.com': 'https://abs.twimg.com/icons/apple-touch-icon-192x192.png',
+    'youtube.com': 'https://www.youtube.com/img/desktop/yt_1200.png',
+    'medium.com': 'https://miro.medium.com/v2/1*m-R_BkNf1Qjr1YbyOIJY2w.png',
+  };
+})();
 
 /**
  * Known fallback favicons for sites with CORS-blocked favicons
  */
-const KNOWN_FAVICON_FALLBACKS: Record<string, string> = {
-  'claude.ai': 'https://claude.ai/images/claude_app_icon.png',
-};
+export const KNOWN_FAVICON_FALLBACKS: Record<string, string> = (() => {
+  try {
+    const stored = localStorage.getItem("webnest:known_favicon_fallbacks");
+    if (stored) return JSON.parse(stored);
+  } catch {}
+  return {
+    'claude.ai': 'https://claude.ai/images/claude_app_icon.png',
+  };
+})();
+
+export function saveKnownFallbacks(fallbacks: Record<string, string>) {
+  Object.assign(KNOWN_FALLBACKS, fallbacks);
+  localStorage.setItem("webnest:known_fallbacks", JSON.stringify(KNOWN_FALLBACKS));
+}
+
+export function saveKnownFaviconFallbacks(fallbacks: Record<string, string>) {
+  Object.assign(KNOWN_FAVICON_FALLBACKS, fallbacks);
+  localStorage.setItem("webnest:known_favicon_fallbacks", JSON.stringify(KNOWN_FAVICON_FALLBACKS));
+}
 
 /**
  * Get fallback image for known problematic domains
  */
-function getKnownFallback(url: string): string | null {
+export function getKnownFallback(url: string): string | null {
   try {
     const hostname = new URL(url).hostname;
     
@@ -284,7 +334,7 @@ function getKnownFallback(url: string): string | null {
 /**
  * Get fallback favicon for known problematic domains
  */
-function getKnownFaviconFallback(url: string): string | null {
+export function getKnownFaviconFallback(url: string): string | null {
   try {
     const hostname = new URL(url).hostname;
     
@@ -422,10 +472,21 @@ async function fetchFromMicrolink(url: string): Promise<LinkMetadata | null> {
       console.log("[fetchFromMicrolink] HTML fetch result:", image);
     }
     
-    // If still no image, use screenshot as last resort
-    if (!image) {
-      image = data.data.screenshot?.url || null;
+    // If still no image, use screenshot as last resort.
+    // Guard: skip screenshot if the page title signals an error response
+    // (e.g., "Error: 403", "Access Denied", "404 Not Found", "429 Too Many Requests").
+    const screenshotUrl = data.data.screenshot?.url || null;
+    const titleLower = (rawTitle || "").toLowerCase();
+    const looksLikeErrorPage =
+      /^error:/i.test(titleLower) ||
+      /\b(403|404|429|500|502|503)\b/.test(titleLower) ||
+      /(access denied|forbidden|not found|too many requests|rate limit|unauthorized)/i.test(titleLower);
+
+    if (!image && screenshotUrl && !looksLikeErrorPage) {
+      image = screenshotUrl;
       console.log("[fetchFromMicrolink] Using screenshot:", image);
+    } else if (!image && screenshotUrl && looksLikeErrorPage) {
+      console.log("[fetchFromMicrolink] Skipping screenshot — title suggests error page:", rawTitle);
     }
     
     // Extract original URL from proxy services to avoid CORS issues

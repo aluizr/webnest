@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ensureProxied } from "@/lib/image-utils";
+import { getKnownFaviconFallback } from "@/hooks/use-metadata";
 
 /**
  * Paleta de cores consistente para avatares de fallback.
@@ -98,10 +99,9 @@ export function FaviconWithFallback({
       const hostname = new URL(url).hostname;
       if (!hostname) return null;
       
-      // For Claude.ai, skip favicon entirely - Cloudflare blocks everything
-      // Just show the avatar fallback
-      if (hostname.includes('claude.ai')) {
-        return null;
+      const knownFallback = getKnownFaviconFallback(url);
+      if (knownFallback) {
+        return knownFallback;
       }
       
       return `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
