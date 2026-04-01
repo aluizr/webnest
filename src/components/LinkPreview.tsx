@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { AlertCircle, Loader2, Globe } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +23,13 @@ function getHostname(rawUrl: string): string {
 }
 
 export function LinkPreview({ metadata, url }: LinkPreviewProps) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const [proxyFailed, setProxyFailed] = useState(false);
+
+  useEffect(() => {
+    setImageFailed(false);
+    setProxyFailed(false);
+  }, [metadata?.image]);
   if (!url) {
     return null;
   }
@@ -53,17 +61,21 @@ export function LinkPreview({ metadata, url }: LinkPreviewProps) {
   return (
     <div className="mt-4 p-4 border rounded-lg bg-muted/50 space-y-3">
       <div className="flex items-start gap-3">
-        {metadata.image ? (
+        {metadata.image && !imageFailed ? (
           <img
-            src={`/og-proxy?url=${encodeURIComponent(metadata.image!)}`}
+            src={metadata.image.startsWith('data:') || proxyFailed ? metadata.image : `/og-proxy?url=${encodeURIComponent(metadata.image)}`}
             alt="Preview"
-            className="h-20 w-20 object-cover rounded border"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = "none";
+            className="h-20 w-20 object-cover rounded border flex-shrink-0"
+            onError={() => {
+              if (!proxyFailed && metadata.image && !metadata.image.startsWith('data:')) {
+                setProxyFailed(true);
+              } else {
+                setImageFailed(true);
+              }
             }}
           />
         ) : (
-          <div className="h-20 w-20 flex items-center justify-center rounded border bg-background">
+          <div className="h-20 w-20 flex-shrink-0 flex items-center justify-center rounded border bg-background">
             <Globe className="h-8 w-8 text-muted-foreground" />
           </div>
         )}

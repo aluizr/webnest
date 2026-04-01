@@ -263,38 +263,65 @@ async function fetchFromNotion(url: string): Promise<LinkMetadata | null> {
 /**
  * Known fallback images for sites that block scraping or have broken OG images
  */
+const DEFAULT_KNOWN_FALLBACKS: Record<string, string> = {
+  'claude.ai': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Anthropic_logo.svg/1024px-Anthropic_logo.svg.png',
+  'kaggle.com': 'https://www.kaggle.com/static/images/site-logo.svg',
+  'joblib.readthedocs.io': 'https://joblib.readthedocs.io/en/stable/_static/joblib_logo.svg',
+  'nanobananaimg.com': 'https://nanobananaimg.com/favicon.ico',
+  'salesforce.com': 'https://www.salesforce.com/content/dam/sfdc-docs/www/logos/logo-salesforce.svg',
+  'github.com': 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png',
+  'linkedin.com': 'https://static.licdn.com/aero-v1/sc/h/al2o9zrvru7aqj8e1x2rzsrca',
+  'twitter.com': 'https://abs.twimg.com/icons/apple-touch-icon-192x192.png',
+  'x.com': 'https://abs.twimg.com/icons/apple-touch-icon-192x192.png',
+  'youtube.com': 'https://www.youtube.com/img/desktop/yt_1200.png',
+  'medium.com': 'https://miro.medium.com/v2/1*m-R_BkNf1Qjr1YbyOIJY2w.png',
+  'greenhouse.io': 'https://mma.prnewswire.com/media/1802066/Greenhouse_Logo.jpg',
+};
+
 export const KNOWN_FALLBACKS: Record<string, string> = (() => {
+  const dict = { ...DEFAULT_KNOWN_FALLBACKS };
   try {
     const stored = localStorage.getItem("webnest:known_fallbacks");
-    if (stored) return JSON.parse(stored);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      for (const [k, v] of Object.entries(parsed)) {
+        dict[k] = v as string;
+      }
+      
+      // Self-heal known broken cached domains
+      if (dict['claude.ai'] && dict['claude.ai'].includes('claude.ai/images')) {
+        dict['claude.ai'] = DEFAULT_KNOWN_FALLBACKS['claude.ai'];
+        localStorage.setItem("webnest:known_fallbacks", JSON.stringify(dict));
+      }
+    }
   } catch {}
-  return {
-    'claude.ai': 'https://claude.ai/images/claude_ogimage.png',
-    'kaggle.com': 'https://www.kaggle.com/static/images/site-logo.svg',
-    'joblib.readthedocs.io': 'https://joblib.readthedocs.io/en/stable/_static/joblib_logo.svg',
-    'nanobananaimg.com': 'https://nanobananaimg.com/favicon.ico',
-    'salesforce.com': 'https://www.salesforce.com/content/dam/sfdc-docs/www/logos/logo-salesforce.svg',
-    'github.com': 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png',
-    'linkedin.com': 'https://static.licdn.com/aero-v1/sc/h/al2o9zrvru7aqj8e1x2rzsrca',
-    'twitter.com': 'https://abs.twimg.com/icons/apple-touch-icon-192x192.png',
-    'x.com': 'https://abs.twimg.com/icons/apple-touch-icon-192x192.png',
-    'youtube.com': 'https://www.youtube.com/img/desktop/yt_1200.png',
-    'medium.com': 'https://miro.medium.com/v2/1*m-R_BkNf1Qjr1YbyOIJY2w.png',
-    'greenhouse.io': 'https://mma.prnewswire.com/media/1802066/Greenhouse_Logo.jpg',
-  };
+  return dict;
 })();
 
 /**
  * Known fallback favicons for sites with CORS-blocked favicons
  */
+const DEFAULT_FAVICON_FALLBACKS: Record<string, string> = {
+  'claude.ai': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Anthropic_logo.svg/32px-Anthropic_logo.svg.png',
+};
+
 export const KNOWN_FAVICON_FALLBACKS: Record<string, string> = (() => {
+  const dict = { ...DEFAULT_FAVICON_FALLBACKS };
   try {
     const stored = localStorage.getItem("webnest:known_favicon_fallbacks");
-    if (stored) return JSON.parse(stored);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      for (const [k, v] of Object.entries(parsed)) {
+        dict[k] = v as string;
+      }
+      
+      if (dict['claude.ai'] && dict['claude.ai'].includes('claude.ai/images')) {
+        dict['claude.ai'] = DEFAULT_FAVICON_FALLBACKS['claude.ai'];
+        localStorage.setItem("webnest:known_favicon_fallbacks", JSON.stringify(dict));
+      }
+    }
   } catch {}
-  return {
-    'claude.ai': 'https://claude.ai/images/claude_app_icon.png',
-  };
+  return dict;
 })();
 
 export function saveKnownFallbacks(fallbacks: Record<string, string>) {
@@ -454,11 +481,40 @@ async function fetchFromMicrolink(url: string): Promise<LinkMetadata | null> {
     if (!data.data) return null;
 
     const rawTitle = data.data.title || null;
-    const isErrorTitle = rawTitle && /^error:/i.test(rawTitle.trim());
-    
-    // If title is an error but we have a screenshot, try to derive title from URL
-    let title = isErrorTitle ? null : rawTitle;
-    if (!title && data.data.screenshot?.url) {
+    const isBlockedPage = rawTitle && (
+      /^error:/i.test(rawTitle.trim()) ||
+      /^Attention Required!/i.test(rawTitle.trim()) ||
+      /^Just a moment\.\.\./i.test(rawTitle.trim()) ||
+      /Cloudflare/i.test(rawTitle.trim()) ||
+      /Access Denied/i.test(rawTitle.trim()) ||
+      /403 Forbidden/i.test(rawTitle.trim()) ||
+      /Not Acceptable!/i.test(rawTitle.trim())
+    );
+
+    if (isBlockedPage) {
+      console.warn("[fetchFromMicrolink] Detected Anti-Bot/Error page:", rawTitle);
+      const fallback = getKnownFallback(url);
+      
+      let derivedTitle = null;
+      try {
+        const urlObj = new URL(url);
+        const hostname = urlObj.hostname.replace(/^www\./i, "");
+        derivedTitle = hostname.split('.')[0].charAt(0).toUpperCase() + hostname.split('.')[0].slice(1);
+      } catch {}
+
+      return {
+        title: derivedTitle,
+        description: null,
+        image: fallback || null,
+        favicon: getKnownFaviconFallback(url),
+        loading: false,
+        error: null,
+        source: "microlink",
+      };
+    }
+
+    let title = rawTitle;
+    if (!title) {
       try {
         const urlObj = new URL(url);
         const hostname = urlObj.hostname.replace(/^www\./i, "");

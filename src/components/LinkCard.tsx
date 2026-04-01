@@ -1,4 +1,5 @@
-import { Star, ExternalLink, Pencil, Trash2, GripVertical, StickyNote, ShieldAlert } from "lucide-react";
+import { Star, ExternalLink, Pencil, Trash2, GripVertical, StickyNote, ShieldAlert, Link as LinkIcon } from "lucide-react";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,19 @@ interface LinkCardProps {
   linkStatus?: "unknown" | "checking" | "ok" | "broken" | "error";
 }
 
+// Função helper para gerar uma cor de fallback
+const getAvatarColor = (url: string) => {
+  try {
+    const hostname = new URL(url).hostname;
+    const colors = ['bg-rose-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-indigo-500', 'bg-cyan-500', 'bg-orange-500'];
+    let hash = 0;
+    for (let i = 0; i < hostname.length; i++) hash = hostname.charCodeAt(i) + ((hash << 5) - hash);
+    return colors[Math.abs(hash) % colors.length];
+  } catch {
+    return 'bg-slate-500';
+  }
+};
+
 export function LinkCard({
   link,
   categories,
@@ -68,6 +82,7 @@ export function LinkCard({
   onToggleSelect,
   linkStatus,
 }: LinkCardProps) {
+  const [imageFailed, setImageFailed] = useState(false);
   const dragEnabled = Boolean(onDragStart);
 
   return (
@@ -134,20 +149,24 @@ export function LinkCard({
       )}
 
       {/* OG Image Cover */}
-      {link.ogImage && (
-        <div className="w-full h-24 overflow-hidden bg-muted">
+      {link.ogImage && !imageFailed ? (
+        <div className="w-full h-24 overflow-hidden bg-muted relative">
           <img
             src={link.ogImage}
             alt=""
             loading="lazy"
             className="w-full h-full object-cover"
-            onError={(e) => {
-              (e.currentTarget.parentElement as HTMLElement).style.display = 'none';
+            onError={() => {
+              setImageFailed(true);
               invalidateThumbnailCache(link.url);
             }}
           />
         </div>
-      )}
+      ) : link.ogImage && imageFailed ? (
+        <div className={`w-full h-24 flex items-center justify-center opacity-80 ${getAvatarColor(link.url)}`}>
+          <LinkIcon className="h-8 w-8 text-white/50" />
+        </div>
+      ) : null}
 
       <CardContent className="p-4">
           <div className="flex items-start gap-3">

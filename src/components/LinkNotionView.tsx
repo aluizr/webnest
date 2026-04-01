@@ -142,6 +142,8 @@ export function LinkNotionView({
   onToggleSelect,
   linkStatusById,
 }: LinkNotionViewProps) {
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+  const [proxyFailedImages, setProxyFailedImages] = useState<Set<string>>(new Set());
   const [thumbWidth, setThumbWidth] = useState<number>(() => {
     if (typeof window === "undefined") return THUMB_DEFAULT_WIDTH;
     const saved = Number(window.localStorage.getItem(THUMB_STORAGE_KEY));
@@ -544,23 +546,38 @@ export function LinkNotionView({
                 <span className={`absolute left-1/2 top-1/2 h-12 w-[3px] -translate-x-1/2 -translate-y-1/2 rounded-full transition-colors ${isResizingThumb ? "bg-primary" : "bg-border group-hover:bg-foreground/50"}`} />
               </button>
               <div
-                className="overflow-hidden rounded-lg border border-border/30 bg-muted/10"
+                className="overflow-hidden rounded-lg border border-border/30 bg-muted/10 relative"
                 style={{ width: `${thumbFrameWidth}px`, height: `${thumbFrameHeight}px` }}
               >
-                {link.ogImage ? (
+                {link.ogImage && !failedImages.has(link.id) ? (
                   <img
-                    src={ensureProxiedIfCorp(link.ogImage) ?? link.ogImage}
+                    src={(() => {
+                      const initialSrc = ensureProxiedIfCorp(link.ogImage) ?? link.ogImage;
+                      if (proxyFailedImages.has(link.id) && initialSrc.startsWith('/og-proxy')) {
+                        try {
+                          return new URL(initialSrc, 'http://localhost').searchParams.get('url') || initialSrc;
+                        } catch {
+                          return initialSrc;
+                        }
+                      }
+                      return initialSrc;
+                    })()}
                     alt=""
                     loading="lazy"
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-cover relative z-10"
                     onLoad={() => console.log('[LinkNotionView] Image loaded:', link.ogImage)}
-                    onError={(e) => {
+                    onError={() => {
                       console.error('[LinkNotionView] Image failed:', link.ogImage);
-                      e.currentTarget.style.display = "none";
+                      const currentSrc = ensureProxiedIfCorp(link.ogImage) ?? link.ogImage;
+                      if (!proxyFailedImages.has(link.id) && currentSrc.startsWith('/og-proxy')) {
+                        setProxyFailedImages(prev => new Set(prev).add(link.id));
+                      } else {
+                        setFailedImages(prev => new Set(prev).add(link.id));
+                      }
                     }}
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center">
+                  <div className="absolute inset-0 z-0 flex h-full w-full items-center justify-center bg-muted/30">
                     <div className="flex flex-col items-center gap-1.5 px-1 text-muted-foreground">
                       <FaviconWithFallback url={link.url} favicon={link.favicon} size={16} />
                       <span className={`max-w-full truncate ${TEXT_XS_CLASS}`}>{domain}</span>

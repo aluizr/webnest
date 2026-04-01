@@ -50,7 +50,15 @@ async function fetchOgImageForUrl(url: string): Promise<string | null> {
         let image: string | null = d.image?.url || null;
 
         // Fail-safe: if Microlink returns an error-page screenshot ignore raw image
-        const errorTitle = d.title && /^error:/i.test(String(d.title).trim());
+        const errorTitle = d.title && (
+          /^error:/i.test(String(d.title).trim()) ||
+          /^Attention Required!/i.test(String(d.title).trim()) ||
+          /^Just a moment\.\.\./i.test(String(d.title).trim()) ||
+          /Cloudflare/i.test(String(d.title).trim()) ||
+          /Access Denied/i.test(String(d.title).trim()) ||
+          /403 Forbidden/i.test(String(d.title).trim()) ||
+          /Not Acceptable!/i.test(String(d.title).trim())
+        );
         if (errorTitle) image = null;
 
         // Not in og:image → try /html-proxy

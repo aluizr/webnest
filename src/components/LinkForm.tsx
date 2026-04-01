@@ -427,7 +427,17 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
               )}
             </div>
           )}
-          {url && <LinkPreview metadata={metadata} url={url} />}
+          {url && (
+            <LinkPreview 
+              metadata={{
+                ...metadata,
+                title: title.trim() || metadata.title,
+                description: description.trim() || metadata.description,
+                image: ogImage.trim() || metadata.image,
+              }} 
+              url={url} 
+            />
+          )}
           <div className="space-y-2">
             <Label htmlFor="title">Título</Label>
             <Input
@@ -457,6 +467,26 @@ export function LinkForm({ open, onOpenChange, categories, links, editingLink, o
               onChange={setNotes}
               placeholder="Escreva suas notas..."
             />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="ogImage">URL da Imagem (Thumb)</Label>
+              <Input
+                id="ogImage"
+                placeholder="https://exemplo.com/imagem.jpg"
+                value={ogImage}
+                onChange={(e) => setOgImage(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="favicon">URL do Favicon</Label>
+              <Input
+                id="favicon"
+                placeholder="https://exemplo.com/icon.png"
+                value={favicon}
+                onChange={(e) => setFavicon(e.target.value)}
+              />
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="category-select">Categoria</Label>
