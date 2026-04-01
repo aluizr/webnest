@@ -44,6 +44,20 @@ Versão mais recente: [0.14.4 — 2026-04-01](CHANGELOG.md#0144--2026-04-01)
 - Padrão detectado por regex cobrindo: prefixo `error:`, códigos HTTP 403/404/429/500/502/503, e frases como `forbidden`, `not found`, `rate limit`, `unauthorized`
 - Mesmo guard aplicado no hook `use-thumbnail-batch-fetch.ts`
 
+### Resiliência e Cache de Thumbnails (P2)
+
+`Anti-Link Rot e Cache`
+
+- **Invalidação proativa de cache no fallback**: Falhas de carregamento no navegador (`<img onError>`) devido a bloqueios CORS ou remoção da imagem na CDN do Host acionam agora a função `invalidateThumbnailCache()`, removendo do cache metadados quebrados imediatamente, sem esperar expirar.
+- **Fallbacks dinâmicos**: Dicionários de contingência `KNOWN_FALLBACKS` e `KNOWN_FAVICON_FALLBACKS` movidos para leitura do `localStorage`. Setters integrados (`saveKnownFallbacks` e `saveKnownFaviconFallbacks`) abrem caminho para futuras customizações do usuário.
+- **Proxy Extraction Resiliente**: Função `extractOriginalImageUrl` estendida para suportar provedores agressivos de Resize. Parâmetros de queries são limpos para URLs hospedadas no `imgix.net` e `images.unsplash.com` devolvendo a imagem em resolução canônica.
+
+`Correções de Domínios Problemáticos (Microlink e CORS)`
+
+- **Prioridade invertida para Hotlinking (Ex: Salesforce)**: Domínios com bloqueio rigoroso de hotlinking agora têm seus *Known Fallbacks* priorizados acima do resultado devolvido pela API do Microlink. Mesmo se o scraper achar imagem, a arquitetura usará o nosso design de fallback genérico local para evitar quebra ao renderizar no client.
+- **Contenção de Erros de Proxy (Ex: Greenhouse)**: Plataformas com proteção forte de bot como Cloudflare/Datadome agora respondem em Graceful Degradation. Retornos isolados `HTTP 400 Proxy Needed` do Microlink não abortam mais a varredura da classe; o sistema resgata falhas pesadas e insere uma imagem temporária listada no fallback, eliminando covers em branco.
+- **Desacoplamento do Favicon do Claude**: Remoção da verificação `if claude.ai` hardcoded em `FaviconWithFallback`. A validação agora consome integralmente e dinamicamente do dicionário comum `getKnownFaviconFallback`.
+
 ---
 
 ## [0.14.3] — 2026-03-31

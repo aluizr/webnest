@@ -6,20 +6,19 @@ Organize seus links favoritos com estilo e segurança.
 
 | Versão | Data | Link |
 | --- | --- | --- |
+| 0.14.4 | 2026-04-01 | [Ver changelog](CHANGELOG.md#0144--2026-04-01) |
+| 0.14.3 | 2026-03-31 | [Ver changelog](CHANGELOG.md#0143--2026-03-31) |
 | 0.14.2 | 2026-03-11 | [Ver changelog](CHANGELOG.md#0142--2026-03-11) |
-| 0.14.1 | 2026-03-06 | [Ver changelog](CHANGELOG.md#0141--2026-03-06) |
-| 0.14.0 | 2026-02-22 | [Ver changelog](CHANGELOG.md#0140--2026-02-22) |
 
-## What's new — 0.14.2 (2026-03-11)
+## What's new — 0.14.4 (2026-04-01)
 
-Detalhes completos da release: [CHANGELOG 0.14.2](CHANGELOG.md#0142--2026-03-11)
+Detalhes completos da release: [CHANGELOG 0.14.4](CHANGELOG.md#0144--2026-04-01)
 
-- **Drag and drop mais legível** no board, cards e sidebar com pistas visuais de drop e reorder mais claras
-- **Edição inline estabilizada** na tabela com fluxo consistente de Enter/Tab/Escape e prevenção de commits duplicados por blur
-- **Atualizações no-op ignoradas** para evitar persistência e toast quando o valor não muda
-- **Observabilidade ampliada** com eventos padronizados em auth, links, categorias, lixeira e contexto estruturado para troubleshooting
-- **Runbook operacional publicado** em [docs/OBSERVABILITY_RUNBOOK.md](docs/OBSERVABILITY_RUNBOOK.md)
-- **Release validada** com `lint`, `test` (96/96), `build` e smoke checks de `/`, `/auth` e `/robots.txt`
+- **Correções Globais na Importação de Metadados** para preservar a imagem original (og:image) durante extração de arquivos CSV, HTML e JSON.
+- **Fetch Automático em Lote (Background)** nativo para buscar thumbnails pendentes ao finalizar fluxos de importações em massa, operando de forma invisível via rate-limits.
+- **Prevenção Anti-Link Rot** incorporando invalidação proativa de cache (`invalidateThumbnailCache()`) no client perante quebras da imagem na CDN de terceiros (404/403).
+- **Aprimoramento do Fallback Dicionário Local**. Fallbacks dinâmicos usando `localStorage` com suporte avançado a blindagem contra hotlinkings e proxies em domínios estritos (Ex: ferramentas como Salesforce, Greenhouse e Claude).
+- **Validação de Screenshot e Expansão Resiliente** contornando páginas bloqueadas por bot para extrair resoluções canônicas de serviços de imagem (Imgix e Unsplash).
 
 ## Funcionalidades
 
